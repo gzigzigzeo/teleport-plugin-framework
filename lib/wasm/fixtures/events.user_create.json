@@ -1,0 +1,23 @@
+{
+    "type": "types.OneOf",
+    "description": "Create user event",
+    "data": {
+        "UserCreate": {
+            "Metadata": {
+                "Index": 1,
+                "ID": "{{ uuid }}",
+                "Type": "user.create",
+                "ClusterName": "test-cluster",
+                "Time": "{{ time }}"
+            },
+            "User": {
+                "Login": "foo",
+                "User": "foo"
+            },
+            "Resource": {
+                "Name": "foo"
+            },
+            "Roles": ["test-user"]
+        }
+    }
+}

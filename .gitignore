@@ -1,0 +1,5 @@
+plugin-framework
+wasmer-go
+build
+plugin.wasm
+node_modules

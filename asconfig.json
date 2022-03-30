@@ -1,0 +1,28 @@
+{
+  "targets": {
+    "development": {
+      "outFile": "build/development.wasm",
+      "textFile": "build/development.wat",
+      "debug": true
+    },
+    "production": {
+      "outFile": "build/production.wasm",
+      "textFile": "build/production.wat",
+      "optimizeLevel": 3,
+      "shrinkLevel": 0,
+      "converge": false,
+      "noAssert": true
+    },
+    "test": {
+      "outFile": "build/test.wasm",
+      "textFile": "build/test.wat",
+      "debug": true
+    }
+  },
+  "options": {
+    "lib": "./node_modules",
+    "sourceMap": true,
+    "exportRuntime": true,
+    "memoryBase": "0x100000"
+  }
+}

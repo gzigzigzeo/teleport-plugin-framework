@@ -1,0 +1,22 @@
+{
+    "type": "types.OneOf",
+    "description": "User login event",
+    "data": {
+        "UserLogin": {
+            "Metadata": {
+                "Index": 1,
+                "ID": "{{ uuid }}",
+                "Type": "user.login",
+                "ClusterName": "test-cluster",
+                "Time": "{{ time }}"
+            },
+            "User": {
+                "Login": "foo",
+                "User": "foo"
+            },
+            "Status": {
+                "Success": true
+            }
+        }
+    }
+}
