@@ -169,7 +169,7 @@ func (r *TestingTrait) getFixtureBody(args []wasmer.Value) ([]wasmer.Value, erro
 
 // getLatestAPIRequestSize returns size of a latest API request
 func (r *TestingTrait) getLatestAPIRequestSize(args []wasmer.Value) ([]wasmer.Value, error) {
-	request := r.runner.MockAPIClient.GetLatestRequest(r.ectx.currentContext)
+	request := r.runner.MockAPIClient.GetLatestRequest(r.ectx.CurrentContext)
 	if request == nil {
 		return []wasmer.Value{wasmer.NewI32(0)}, trace.Errorf("There were no API requests")
 	}
@@ -184,7 +184,7 @@ func (r *TestingTrait) getLatestAPIRequestBody(args []wasmer.Value) ([]wasmer.Va
 	addr := int(args[0].I32())
 	memory := r.ectx.Memory
 
-	request := r.runner.MockAPIClient.GetLatestRequest(r.ectx.currentContext)
+	request := r.runner.MockAPIClient.GetLatestRequest(r.ectx.CurrentContext)
 	if request == nil {
 		return []wasmer.Value{wasmer.NewI32(0)}, trace.Errorf("There were no API requests")
 	}
@@ -202,7 +202,7 @@ func (r *TestingTrait) getLatestAPIRequestBody(args []wasmer.Value) ([]wasmer.Va
 
 // Run runs test suite
 func (r *TestingTrait) Run() error {
-	_, err := r.ectx.Execute(r.run)
+	_, err := r.run()
 	if err != nil {
 		return trace.Wrap(err)
 	}

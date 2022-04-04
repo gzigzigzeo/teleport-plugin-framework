@@ -92,7 +92,7 @@ func (e *TeleportAPITrait) upsertLock(args []wasmer.Value) ([]wasmer.Value, erro
 		return nil, trace.Wrap(err)
 	}
 
-	err = e.api.client.UpsertLock(e.ectx.currentContext, lock)
+	err = e.api.client.UpsertLock(e.ectx.CurrentContext, lock)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}

@@ -7,21 +7,26 @@ export {
     __protobuf_getLength,
 } from '../boilerplate/vendor/teleport';
 
+export declare function goMethod():void;
+
 export function ok():i32 {
     return 1;
 }
 
-export function fail():i32 {
+export function fail():void {
     throw new Error("Failure");
 }
 
-export function infinite():i32 {
+export function infinite():void {
     while(1);
-    return 0;
 }
 
 export function delay100ms(): void {
     sleep(100);
+}
+
+export function goMethodEntryPoint():void {
+    goMethod();
 }
 
 export function getEventIndex(view: DataView):i64 {

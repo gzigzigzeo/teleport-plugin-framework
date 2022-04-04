@@ -16,20 +16,15 @@ limitations under the License.
 package wasm
 
 import (
-	"context"
-
 	"github.com/gravitational/teleport-plugin-framework/lib/wasm/plugin"
 	"github.com/gravitational/teleport/api/types/events"
 	"github.com/gravitational/trace"
 	wasmer "github.com/wasmerio/wasmer-go/wasmer"
 )
 
-const (
-	handleEventFnName = "handleEvent"
-)
-
 // HandleEvent represents collection of traits
 type HandleEvent struct {
+	fnName          string
 	traits          []*HandleEventTrait
 	protobufInterop *ProtobufInterop
 }
@@ -42,8 +37,8 @@ type HandleEventTrait struct {
 }
 
 // NewHandleEvent creates new HandleEvent trait collection
-func NewHandleEvent(protobufInterop *ProtobufInterop) *HandleEvent {
-	return &HandleEvent{traits: make([]*HandleEventTrait, 0), protobufInterop: protobufInterop}
+func NewHandleEvent(fnName string, protobufInterop *ProtobufInterop) *HandleEvent {
+	return &HandleEvent{traits: make([]*HandleEventTrait, 0), fnName: fnName, protobufInterop: protobufInterop}
 }
 
 // CreateTrait creates trait and binds it to the ExecutionContext
@@ -68,7 +63,7 @@ func (e *HandleEvent) For(ec *ExecutionContext) (*HandleEventTrait, error) {
 func (e *HandleEventTrait) ImportMethodsFromWASM() error {
 	var err error
 
-	e.handleEvent, err = e.ectx.GetFunction(handleEventFnName)
+	e.handleEvent, err = e.ectx.GetFunction(e.collection.fnName)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -82,7 +77,7 @@ func (e *HandleEventTrait) ExportMethodsToWASM(store *wasmer.Store, importObject
 }
 
 // HandleEvent wraps handleEvent call to proto def
-func (e *HandleEventTrait) HandleEvent(ctx context.Context, evt events.AuditEvent) (*plugin.HandleEventResponse, error) {
+func (e *HandleEventTrait) HandleEvent(evt events.AuditEvent) (*plugin.HandleEventResponse, error) {
 	request := &plugin.HandleEventRequest{
 		Event: events.MustToOneOf(evt),
 	}
@@ -96,7 +91,7 @@ func (e *HandleEventTrait) HandleEvent(ctx context.Context, evt events.AuditEven
 	}
 
 	// Execute handleEvent method
-	err = pb.ExecuteProtobufMethod(request, e.handleEvent, handleEventFnName, result)
+	err = pb.ExecuteProtobufMethod(request, e.handleEvent, e.collection.fnName, result)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}

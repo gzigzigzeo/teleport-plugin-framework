@@ -31,32 +31,38 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type testTraits struct {
-	i []*testTrait
+// testTraitFactory represents trait factory for tests
+type testTraitFactory struct {
+	traits []*testTrait
 }
 
+// testTrait represents test trait
 type testTrait struct {
-	ec            *ExecutionContext
-	ok            wasmer.NativeFunction
-	fail          wasmer.NativeFunction
-	infinite      wasmer.NativeFunction
-	delay100ms    wasmer.NativeFunction
-	getEventIndex wasmer.NativeFunction
+	ectx               *ExecutionContext
+	OK                 wasmer.NativeFunction
+	Fail               wasmer.NativeFunction
+	Infinite           wasmer.NativeFunction
+	Delay100ms         wasmer.NativeFunction
+	GetEventIndex      wasmer.NativeFunction
+	GoMethodEntryPoint wasmer.NativeFunction
 }
 
-func newTestTraits() *testTraits {
-	return &testTraits{i: make([]*testTrait, 0)}
+// newTestTraitFactory creates new test trait factory
+func newTestTraitFactory() *testTraitFactory {
+	return &testTraitFactory{traits: make([]*testTrait, 0)}
 }
 
-func (e *testTraits) CreateTrait(ec *ExecutionContext) Trait {
-	t := &testTrait{ec: ec}
-	e.i = append(e.i, t)
+// CreateTrait creates new test trait and returns it
+func (e *testTraitFactory) CreateTrait(ectx *ExecutionContext) Trait {
+	t := &testTrait{ectx: ectx}
+	e.traits = append(e.traits, t)
 	return t
 }
 
-func (e *testTraits) For(ec *ExecutionContext) (*testTrait, error) {
-	for _, t := range e.i {
-		if t.ec == ec {
+// For returns test trait bound to the specific execution context or error
+func (e *testTraitFactory) For(ec *ExecutionContext) (*testTrait, error) {
+	for _, t := range e.traits {
+		if t.ectx == ec {
 			return t, nil
 		}
 	}
@@ -64,146 +70,175 @@ func (e *testTraits) For(ec *ExecutionContext) (*testTrait, error) {
 	return nil, trace.Errorf("testTrait not found for ExecutionContext %v", ec)
 }
 
+// ExportMethodsToWasm exports methods from go side to WASM side
 func (e *testTrait) ExportMethodsToWASM(store *wasmer.Store, imports *wasmer.ImportObject) error {
+	imports.Register(
+		"lib_wasm_test",
+		map[string]wasmer.IntoExtern{
+			"goMethod": wasmer.NewFunction(store, wasmer.NewFunctionType(
+				wasmer.NewValueTypes(), // void
+				wasmer.NewValueTypes(), // void
+			), e.goMethod),
+		},
+	)
+
 	return nil
 }
 
+// goMethod is the example go method, which could be called from WASM side and, in turn, calls infinite loop on WASM side
+func (e *testTrait) goMethod(args []wasmer.Value) ([]wasmer.Value, error) {
+	_, err := e.Infinite()
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return nil, nil
+}
+
+// ImportMethodsFromWASM reads WASM methods references to the current trait context
 func (e *testTrait) ImportMethodsFromWASM() error {
 	var err error
 
-	e.ok, err = e.ec.GetFunction("ok")
+	e.OK, err = e.ectx.GetFunction("ok")
 	if err != nil {
 		return trace.Wrap(err)
 	}
 
-	e.fail, err = e.ec.GetFunction("fail")
+	e.Fail, err = e.ectx.GetFunction("fail")
 	if err != nil {
 		return trace.Wrap(err)
 	}
 
-	e.infinite, err = e.ec.GetFunction("infinite")
+	e.Infinite, err = e.ectx.GetFunction("infinite")
 	if err != nil {
 		return trace.Wrap(err)
 	}
 
-	e.delay100ms, err = e.ec.GetFunction("delay100ms")
+	e.Delay100ms, err = e.ectx.GetFunction("delay100ms")
 	if err != nil {
 		return trace.Wrap(err)
 	}
 
-	e.getEventIndex, err = e.ec.GetFunction("getEventIndex")
+	e.GetEventIndex, err = e.ectx.GetFunction("getEventIndex")
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	e.GoMethodEntryPoint, err = e.ectx.GetFunction("goMethodEntryPoint")
 	if err != nil {
 		return trace.Wrap(err)
 	}
 
 	return nil
-}
-
-func (e *testTrait) OK() (interface{}, error) {
-	return e.ec.Execute(e.ok)
-}
-
-func (e *testTrait) Fail() (interface{}, error) {
-	return e.ec.Execute(e.fail)
-}
-
-func (e *testTrait) Infinite() (interface{}, error) {
-	return e.ec.Execute(e.infinite)
-}
-
-func (e *testTrait) Delay100ms() (interface{}, error) {
-	return e.ec.Execute(e.delay100ms)
-}
-
-func (e *testTrait) ValidatePBMessage(dataView interface{}) (interface{}, error) {
-	return e.ec.Execute(e.getEventIndex, dataView)
 }
 
 func TestPool(t *testing.T) {
 	ctx := context.Background()
-
-	b, err := os.ReadFile("test.wasm")
-	require.NoError(t, err)
-
 	log, _ := logrus.NewNullLogger()
-	e := NewAssemblyScriptEnv(log)
+
+	bytes, err := os.ReadFile("test.wasm")
+	require.NoError(t, err)
 
 	p, err := NewExecutionContextPool(ExecutionContextPoolOptions{
-		Bytes:       b,
+		Bytes:       bytes,
 		Timeout:     time.Second,
 		Concurrency: 2,
-	}, e)
+		TraitFactories: []TraitFactory{
+			NewAssemblyScriptEnv(log),
+			newTestTraitFactory(),
+		},
+	})
 	require.NoError(t, err)
 
-	i, err := p.Get(ctx)
+	ectx1, err := p.Get(ctx)
 	require.NoError(t, err)
-	require.NotNil(t, i)
-
+	require.NotNil(t, ectx1)
 	require.Len(t, p.contexts, 1)
-	ec, err := p.Get(ctx)
-	require.NoError(t, err)
-	require.NotNil(t, ec)
-	require.Len(t, p.contexts, 0)
 
-	err = p.Put(ctx, i)
+	ectx2, err := p.Get(ctx)
+	require.NoError(t, err)
+	require.NotNil(t, ectx2)
+	require.Len(t, p.contexts, 0)
+	require.NotEqual(t, ectx1, ectx2)
+
+	err = p.Put(ctx, ectx1)
 	require.NoError(t, err)
 
 	require.Len(t, p.contexts, 1)
 }
 
 func TestRegularMethods(t *testing.T) {
-	ctx := context.Background()
-
 	b, err := os.ReadFile("test.wasm")
 	require.NoError(t, err)
 
 	log, hook := logrus.NewNullLogger()
-	e := NewAssemblyScriptEnv(log)
-	f := newTestTraits()
+	testTraitFactory := newTestTraitFactory()
 
 	p, err := NewExecutionContextPool(ExecutionContextPoolOptions{
 		Bytes:       b,
 		Timeout:     time.Second,
 		Concurrency: 2,
-	}, e, f)
+		TraitFactories: []TraitFactory{
+			NewAssemblyScriptEnv(log),
+			testTraitFactory,
+		},
+	})
 	require.NoError(t, err)
 
-	i, err := p.Get(ctx)
-	require.NoError(t, err)
-	require.NotNil(t, i)
+	_, err = p.Execute(context.Background(), func(ectx *ExecutionContext) (interface{}, error) {
+		tt, err := testTraitFactory.For(ectx)
+		require.NoError(t, err)
+		require.NotNil(t, tt)
 
-	fi, err := f.For(i)
-	require.NoError(t, err)
-	require.NotNil(t, fi)
+		r, err := tt.OK()
+		require.NoError(t, err)
+		require.Equal(t, r, int32(1))
 
-	r, err := fi.OK()
-	require.NoError(t, err)
-	require.Equal(t, r, int32(1))
+		_, err = tt.Fail()
+		require.Error(t, err, "unreachable")
+		require.Contains(t, hook.LastEntry().Message, "Failure")
 
-	_, err = fi.Fail()
-	require.Error(t, err, "unreachable")
-	require.Contains(t, hook.LastEntry().Message, "Failure")
+		_, err = tt.Infinite()
+		require.NoError(t, err)
 
-	_, err = fi.Infinite()
+		return nil, nil
+	})
+
 	require.Error(t, err, "execution timeout")
+
+	_, err = p.Execute(context.Background(), func(ctx *ExecutionContext) (interface{}, error) {
+		tt, err := testTraitFactory.For(ctx)
+		require.NoError(t, err)
+		require.NotNil(t, tt)
+
+		_, err = tt.GoMethodEntryPoint()
+		require.NoError(t, err)
+
+		return nil, nil
+	})
+
+	require.Error(t, err, "execution timeout")
+
 }
 
 // TestParallelExecution the purpose of this test is to ensure that there would be no crashes
 func TestParallelExecution(t *testing.T) {
 	ctx := context.Background()
+	log, _ := logrus.NewNullLogger()
 
 	b, err := os.ReadFile("test.wasm")
 	require.NoError(t, err)
 
-	log, _ := logrus.NewNullLogger()
-	e := NewAssemblyScriptEnv(log)
-	f := newTestTraits()
+	testTraitFactory := newTestTraitFactory()
 
 	p, err := NewExecutionContextPool(ExecutionContextPoolOptions{
 		Bytes:       b,
 		Timeout:     time.Second,
 		Concurrency: 5,
-	}, e, f)
+		TraitFactories: []TraitFactory{
+			NewAssemblyScriptEnv(log),
+			testTraitFactory,
+		},
+	})
 	require.NoError(t, err)
 
 	count := 50 // 100ms * 50 * 5 threads = ~1s
@@ -212,80 +247,18 @@ func TestParallelExecution(t *testing.T) {
 	wg.Add(count)
 
 	for i := 0; i < count; i++ {
-		go func() {
-			n, err := p.Get(ctx)
-			require.NoError(t, err)
+		go func(n int) {
+			_, err := p.Execute(ctx, func(ectx *ExecutionContext) (interface{}, error) {
+				tt, err := testTraitFactory.For(ectx)
+				require.NoError(t, err)
+				require.NotNil(t, tt)
 
-			s, err := f.For(n)
-			require.NoError(t, err)
-			require.NotNil(t, s)
+				_, err = tt.Delay100ms()
+				require.NoError(t, err)
 
-			_, err = s.Delay100ms()
-			require.NoError(t, err)
-
-			err = p.Put(ctx, n)
-			require.NoError(t, err)
-
-			wg.Done()
-		}()
-	}
-
-	wg.Wait()
-}
-
-func TestParallelProtobufInteropExecution(t *testing.T) {
-	ctx := context.Background()
-
-	b, err := os.ReadFile("test.wasm")
-	require.NoError(t, err)
-
-	log, hook := logrus.NewNullLogger()
-	e := NewAssemblyScriptEnv(log)
-	pb := NewProtobufInterop()
-	f := newTestTraits()
-
-	p, err := NewExecutionContextPool(ExecutionContextPoolOptions{
-		Bytes:       b,
-		Timeout:     time.Second,
-		Concurrency: 32,
-	}, e, f, pb)
-	require.NoError(t, err)
-
-	count := 50000
-
-	wg := sync.WaitGroup{}
-	wg.Add(count)
-
-	for i := 0; i < count; i++ {
-		go func(i int) {
-			oneof := events.MustToOneOf(&events.UserCreate{
-				Metadata: events.Metadata{
-					Index: int64(i),
-				},
+				return nil, nil
 			})
 
-			in, err := p.Get(ctx)
-			require.NoError(t, err)
-
-			ec, err := pb.For(in)
-			require.NoError(t, err)
-			require.NotNil(t, ec)
-
-			dataView, err := ec.SendMessage(oneof)
-			require.NoError(t, err)
-
-			if len(hook.AllEntries()) > 0 {
-				fmt.Println(hook.LastEntry())
-			}
-
-			tr, err := f.For(in)
-			require.NoError(t, err)
-
-			result, err := tr.ValidatePBMessage(dataView)
-			require.NoError(t, err)
-			require.Equal(t, result, int64(i))
-
-			err = p.Put(ctx, in)
 			require.NoError(t, err)
 
 			wg.Done()
@@ -295,64 +268,129 @@ func TestParallelProtobufInteropExecution(t *testing.T) {
 	wg.Wait()
 }
 
-func TestHandleEvent(t *testing.T) {
+func TestParallelProtobufInteropExecution(t *testing.T) {
 	ctx := context.Background()
+	log, hook := logrus.NewNullLogger()
 
 	b, err := os.ReadFile("test.wasm")
 	require.NoError(t, err)
 
-	log, _ := logrus.NewNullLogger()
-	e := NewAssemblyScriptEnv(log)
-	pb := NewProtobufInterop()
-	he := NewHandleEvent(pb)
+	protobufInterop := NewProtobufInterop()
+	testTraitFactory := newTestTraitFactory()
 
 	p, err := NewExecutionContextPool(ExecutionContextPoolOptions{
 		Bytes:       b,
 		Timeout:     time.Second,
 		Concurrency: 32,
-	}, e, pb, he)
+		TraitFactories: []TraitFactory{
+			NewAssemblyScriptEnv(log),
+			protobufInterop,
+			testTraitFactory,
+		},
+	})
 	require.NoError(t, err)
 
-	userCreate := &events.UserCreate{
-		Metadata: events.Metadata{
-			Index: int64(0),
-		},
+	count := 50000
+
+	wg := sync.WaitGroup{}
+	wg.Add(count)
+
+	for i := 0; i < count; i++ {
+		go func(i int) {
+			_, err = p.Execute(ctx, func(ectx *ExecutionContext) (interface{}, error) {
+				oneof := events.MustToOneOf(&events.UserCreate{
+					Metadata: events.Metadata{
+						Index: int64(i),
+					},
+				})
+
+				protobufInteropTrait, err := protobufInterop.For(ectx)
+				require.NoError(t, err)
+				require.NotNil(t, ectx)
+
+				dataView, err := protobufInteropTrait.SendMessage(oneof)
+				require.NoError(t, err)
+
+				if len(hook.AllEntries()) > 0 {
+					fmt.Println(hook.LastEntry())
+				}
+
+				tr, err := testTraitFactory.For(ectx)
+				require.NoError(t, err)
+
+				result, err := tr.GetEventIndex(dataView)
+				require.NoError(t, err)
+				require.Equal(t, result, int64(i))
+
+				wg.Done()
+
+				return nil, nil
+			})
+
+			require.NoError(t, err)
+		}(i)
 	}
 
-	userLogin := &events.UserLogin{
-		Metadata: events.Metadata{
-			Index: int64(1),
+	wg.Wait()
+}
+
+func TestHandleEvent(t *testing.T) {
+	ctx := context.Background()
+	log, _ := logrus.NewNullLogger()
+
+	b, err := os.ReadFile("test.wasm")
+	require.NoError(t, err)
+
+	protobufInterop := NewProtobufInterop()
+	handleEvent := NewHandleEvent("handleEvent", protobufInterop)
+	testTraitFactory := newTestTraitFactory()
+
+	p, err := NewExecutionContextPool(ExecutionContextPoolOptions{
+		Bytes:       b,
+		Timeout:     time.Second,
+		Concurrency: 32,
+		TraitFactories: []TraitFactory{
+			NewAssemblyScriptEnv(log),
+			protobufInterop,
+			handleEvent,
+			testTraitFactory,
 		},
-	}
-
-	userDelete := &events.UserDelete{
-		Metadata: events.Metadata{
-			Index: int64(1),
-		},
-	}
-
-	ectx, err := p.Get(ctx)
+	})
 	require.NoError(t, err)
 
-	h, err := he.For(ectx)
-	require.NoError(t, err)
-	require.NotNil(t, ectx)
+	_, err = p.Execute(ctx, func(ectx *ExecutionContext) (interface{}, error) {
+		h, err := handleEvent.For(ectx)
+		require.NoError(t, err)
 
-	r, err := h.HandleEvent(ctx, userCreate)
-	require.NoError(t, err)
-	require.False(t, r.Success)
-	require.Equal(t, r.Error, "UserCreate event is not allowed")
+		r, err := h.HandleEvent(&events.UserCreate{
+			Metadata: events.Metadata{
+				Index: int64(0),
+			},
+		})
+		require.NoError(t, err)
+		require.False(t, r.Success)
+		require.Equal(t, r.Error, "UserCreate event is not allowed")
 
-	r, err = h.HandleEvent(ctx, userLogin)
-	require.NoError(t, err)
-	require.True(t, r.Success)
-	require.Equal(t, r.Event.GetUserLogin().Metadata.Index, int64(999))
+		r, err = h.HandleEvent(&events.UserLogin{
+			Metadata: events.Metadata{
+				Index: int64(1),
+			},
+		})
+		require.NoError(t, err)
+		require.True(t, r.Success)
+		require.Equal(t, r.Event.GetUserLogin().Metadata.Index, int64(999))
 
-	r, err = h.HandleEvent(ctx, userDelete)
-	require.NoError(t, err)
-	require.True(t, r.Success)
-	require.Nil(t, r.Event)
+		r, err = h.HandleEvent(&events.UserDelete{
+			Metadata: events.Metadata{
+				Index: int64(1),
+			},
+		})
+		require.NoError(t, err)
+		require.True(t, r.Success)
+		require.Nil(t, r.Event)
 
-	err = p.Put(ctx, ectx)
+		return nil, nil
+	})
+
 	require.NoError(t, err)
 }

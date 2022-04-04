@@ -22,8 +22,6 @@ const (
 
 // RunTests runs tests
 func RunTests(log logrus.FieldLogger) {
-	ctx := context.Background()
-
 	b, err := os.ReadFile(testWasm)
 	if err != nil {
 		bail("%v", trace.Wrap(err))
@@ -34,37 +32,45 @@ func RunTests(log logrus.FieldLogger) {
 		bail("%v", trace.Wrap(err))
 	}
 
-	asEnv := wasm.NewAssemblyScriptEnv(log)
-	store := wasm.NewStore(wasm.NewBadgerPersistentStore(db), wasm.DecodeAssemblyScriptString)
 	testRunner, err := wasm.NewTesting(fixturesDir)
 	if err != nil {
 		log.Fatal(trace.Wrap(err))
 	}
-	pb := wasm.NewProtobufInterop()
-	api := wasm.NewTeleportAPI(log, testRunner.MockAPIClient, pb)
+	protobufInterop := wasm.NewProtobufInterop()
+	api := wasm.NewTeleportAPI(log, testRunner.MockAPIClient, protobufInterop)
 
 	opts := wasm.ExecutionContextPoolOptions{
 		Timeout:     defaultTimeout,
 		Concurrency: defaultConcurrency,
 		Bytes:       b,
+		TraitFactories: []wasm.TraitFactory{
+			wasm.NewAssemblyScriptEnv(log),
+			wasm.NewStore(wasm.NewBadgerPersistentStore(db), wasm.DecodeAssemblyScriptString),
+			testRunner,
+			protobufInterop,
+			api,
+		},
 	}
 
-	pool, err := wasm.NewExecutionContextPool(opts, asEnv, testRunner, store, api, pb)
+	pool, err := wasm.NewExecutionContextPool(opts)
 	if err != nil {
 		bail("%v", trace.Wrap(err))
 	}
 
-	c, err := pool.Get(ctx)
-	if err != nil {
-		bail("%v", trace.Wrap(err))
-	}
+	_, err = pool.Execute(context.Background(), func(ectx *wasm.ExecutionContext) (interface{}, error) {
+		runner, err := testRunner.For(ectx)
+		if err != nil {
+			return nil, trace.Wrap(err)
+		}
 
-	ec, err := testRunner.For(c)
-	if err != nil {
-		bail("%v", trace.Wrap(err))
-	}
+		err = runner.Run()
+		if err != nil {
+			return nil, trace.Wrap(err)
+		}
 
-	err = ec.Run()
+		return nil, nil
+	})
+
 	if err != nil {
 		bail("%v", trace.Wrap(err))
 	}

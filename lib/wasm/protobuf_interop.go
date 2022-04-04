@@ -98,7 +98,7 @@ func (i *ProtobufInteropTrait) SendMessage(message proto.Message) (int32, error)
 		return 0, trace.Wrap(err)
 	}
 
-	rawAddrSize, err := i.ectx.Execute(i.alloc, size)
+	rawAddrSize, err := i.alloc(size)
 	if err != nil {
 		return 0, trace.Wrap(err)
 	}
@@ -117,12 +117,12 @@ func (i *ProtobufInteropTrait) SendMessage(message proto.Message) (int32, error)
 
 // ReceiveMessage decodes message from WASM side. Type of the message must be known onset.
 func (i *ProtobufInteropTrait) ReceiveMessage(handle interface{}, m proto.Message) error {
-	rawLength, err := i.ectx.Execute(i.getLength, handle)
+	rawLength, err := i.getLength(handle)
 	if err != nil {
 		return trace.Wrap(err)
 	}
 
-	rawAddr, err := i.ectx.Execute(i.getAddr, handle)
+	rawAddr, err := i.getAddr(handle)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -151,7 +151,7 @@ func (i *ProtobufInteropTrait) ExecuteProtobufMethod(request proto.Message, fn w
 	}
 
 	// Get the result
-	resultHandle, err := i.ectx.Execute(fn, handle)
+	resultHandle, err := fn(handle)
 	if err != nil {
 		return trace.Wrap(err)
 	}

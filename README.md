@@ -56,9 +56,9 @@ cd ~/teleport-plugin && yarn test
 This will show the following output:
 
 ```sh
-INFO   teleport-plugin-framework tests  wasm/assembly_script_env.go:146
-INFO   Suspicious login activity detected, attempts made: 4 wasm/assembly_script_env.go:146
-INFO   Success!  wasm/assembly_script_env.go:146
+INFO[0000] teleport-plugin-framework tests
+INFO[0000] Event of type UserCreate received
+INFO[0000] Success!
 ```
 
 Meaning that the setup was successful.
