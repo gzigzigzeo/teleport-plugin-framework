@@ -64,20 +64,20 @@ func (e *ProtobufInterop) For(ec *ExecutionContext) (*ProtobufInteropTrait, erro
 }
 
 // ImportMethodsFromWASM imports WASM methods to go side
-func (i *ProtobufInteropTrait) ImportMethodsFromWASM() error {
+func (i *ProtobufInteropTrait) ImportMethodsFromWASM(getFunction GetFunctionFn) error {
 	var err error
 
-	i.alloc, err = i.ectx.GetFunction(allocFnName)
+	i.alloc, err = getFunction(allocFnName)
 	if err != nil {
 		return trace.Wrap(err)
 	}
 
-	i.getAddr, err = i.ectx.GetFunction(getAddrFnName)
+	i.getAddr, err = getFunction(getAddrFnName)
 	if err != nil {
 		return trace.Wrap(err)
 	}
 
-	i.getLength, err = i.ectx.GetFunction(getLengthFnName)
+	i.getLength, err = getFunction(getLengthFnName)
 	if err != nil {
 		return trace.Wrap(err)
 	}

@@ -51984,105 +51984,19 @@ export namespace plugin {
         } // encode HandleEventResponse
     } // HandleEventResponse
 
-    // Header HTTP header
-    export class Header {
-        public Key: string = "";
-        public Values: Array<string> = new Array<string>();
-
-        // Decodes Header from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): Header {
-            return Header.decode(new DataView(buf));
-        }
-
-        // Decodes Header from a DataView
-        static decode(view: DataView): Header {
-            const decoder = new __proto.Decoder(view);
-            const obj = new Header();
-
-            while (!decoder.eof()) {
-                const tag = decoder.tag();
-                const number = tag >>> 3;
-
-                switch (number) {
-                    case 1: {
-                        obj.Key = decoder.string();
-                        break;
-                    }
-                    case 2: {
-                        obj.Values.push(decoder.string());
-                        break;
-                    }
-
-                    default:
-                        decoder.skipType(tag & 7);
-                        break;
-                }
-            }
-            return obj;
-        } // decode Header
-
-        public size(): u32 {
-            let size: u32 = 0;
-
-            size +=
-                this.Key.length > 0
-                    ? 1 +
-                      __proto.Sizer.varint64(this.Key.length) +
-                      this.Key.length
-                    : 0;
-
-            size += __size_string_repeated(this.Values);
-
-            return size;
-        }
-
-        // Encodes Header to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
-        }
-
-        // Encodes Header to the Array<u8>
-        encodeU8Array(
-            encoder: __proto.Encoder = new __proto.Encoder(new Array<u8>())
-        ): Array<u8> {
-            const buf = encoder.buf;
-
-            if (this.Key.length > 0) {
-                encoder.uint32(0xa);
-                encoder.uint32(this.Key.length);
-                encoder.string(this.Key);
-            }
-
-            if (this.Values.length > 0) {
-                for (let n: i32 = 0; n < this.Values.length; n++) {
-                    encoder.uint32(0x12);
-                    encoder.uint32(this.Values[n].length);
-                    encoder.string(this.Values[n]);
-                }
-            }
-
-            return buf;
-        } // encode Header
-    } // Header
-
     // RewriteHeaderRequest represents the request passing the collection of HTTP headers
-    export class RewriteHeaderRequest {
-        public Header: Array<plugin.Header> = new Array<plugin.Header>();
+    export class RewriteHeadersRequest {
+        public Headers: Map<string, string> = new Map<string, string>();
 
-        // Decodes RewriteHeaderRequest from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): RewriteHeaderRequest {
-            return RewriteHeaderRequest.decode(new DataView(buf));
+        // Decodes RewriteHeadersRequest from an ArrayBuffer
+        static decodeArrayBuffer(buf: ArrayBuffer): RewriteHeadersRequest {
+            return RewriteHeadersRequest.decode(new DataView(buf));
         }
 
-        // Decodes RewriteHeaderRequest from a DataView
-        static decode(view: DataView): RewriteHeaderRequest {
+        // Decodes RewriteHeadersRequest from a DataView
+        static decode(view: DataView): RewriteHeadersRequest {
             const decoder = new __proto.Decoder(view);
-            const obj = new RewriteHeaderRequest();
+            const obj = new RewriteHeadersRequest();
 
             while (!decoder.eof()) {
                 const tag = decoder.tag();
@@ -52091,15 +52005,7 @@ export namespace plugin {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Header.push(
-                            plugin.Header.decode(
-                                new DataView(
-                                    decoder.view.buffer,
-                                    decoder.pos + decoder.view.byteOffset,
-                                    length
-                                )
-                            )
-                        );
+                        __decodeMap_string_string(decoder, length, obj.Headers);
                         decoder.skip(length);
 
                         break;
@@ -52111,24 +52017,28 @@ export namespace plugin {
                 }
             }
             return obj;
-        } // decode RewriteHeaderRequest
+        } // decode RewriteHeadersRequest
 
         public size(): u32 {
             let size: u32 = 0;
 
-            for (let n: i32 = 0; n < this.Header.length; n++) {
-                const messageSize = this.Header[n].size();
+            if (this.Headers.size > 0) {
+                const keys = this.Headers.keys();
 
-                if (messageSize > 0) {
-                    size +=
-                        1 + __proto.Sizer.varint64(messageSize) + messageSize;
+                for (let i = 0; i < keys.length; i++) {
+                    const key = keys[i];
+                    const value = this.Headers.get(key);
+                    const itemSize = __sizeMapEntry_string_string(key, value);
+                    if (itemSize > 0) {
+                        size += 1 + __proto.Sizer.varint64(itemSize) + itemSize;
+                    }
                 }
             }
 
             return size;
         }
 
-        // Encodes RewriteHeaderRequest to the DataView
+        // Encodes RewriteHeadersRequest to the DataView
         encode(): DataView {
             const source = this.encodeU8Array();
             const view = new DataView(new ArrayBuffer(source.length));
@@ -52138,44 +52048,57 @@ export namespace plugin {
             return view;
         }
 
-        // Encodes RewriteHeaderRequest to the Array<u8>
+        // Encodes RewriteHeadersRequest to the Array<u8>
         encodeU8Array(
             encoder: __proto.Encoder = new __proto.Encoder(new Array<u8>())
         ): Array<u8> {
             const buf = encoder.buf;
 
-            for (let n: i32 = 0; n < this.Header.length; n++) {
-                const messageSize = this.Header[n].size();
-
-                if (messageSize > 0) {
-                    encoder.uint32(0xa);
-                    encoder.uint32(messageSize);
-                    this.Header[n].encodeU8Array(encoder);
+            if (this.Headers.size > 0) {
+                const keys = this.Headers.keys();
+                for (let i = 0; i < keys.length; i++) {
+                    const key = keys[i];
+                    const value = this.Headers.get(key);
+                    const size = __sizeMapEntry_string_string(key, value);
+                    if (size > 0) {
+                        encoder.uint32(0xa);
+                        encoder.uint32(size);
+                        if (key.length > 0) {
+                            encoder.uint32(0xa);
+                            encoder.uint32(key.length);
+                            encoder.string(key);
+                        }
+                        if (value.length > 0) {
+                            encoder.uint32(0x12);
+                            encoder.uint32(value.length);
+                            encoder.string(value);
+                        }
+                    }
                 }
             }
 
             return buf;
-        } // encode RewriteHeaderRequest
-    } // RewriteHeaderRequest
+        } // encode RewriteHeadersRequest
+    } // RewriteHeadersRequest
 
     /**
      * RewriteHeaderRequest represents the response, returning success status,
      *  error message and the modified collection of headers
      */
-    export class RewriteHeaderResponse {
+    export class RewriteHeadersResponse {
         public Success: bool;
         public Error: string = "";
-        public Header: Array<plugin.Header> = new Array<plugin.Header>();
+        public Headers: Map<string, string> = new Map<string, string>();
 
-        // Decodes RewriteHeaderResponse from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): RewriteHeaderResponse {
-            return RewriteHeaderResponse.decode(new DataView(buf));
+        // Decodes RewriteHeadersResponse from an ArrayBuffer
+        static decodeArrayBuffer(buf: ArrayBuffer): RewriteHeadersResponse {
+            return RewriteHeadersResponse.decode(new DataView(buf));
         }
 
-        // Decodes RewriteHeaderResponse from a DataView
-        static decode(view: DataView): RewriteHeaderResponse {
+        // Decodes RewriteHeadersResponse from a DataView
+        static decode(view: DataView): RewriteHeadersResponse {
             const decoder = new __proto.Decoder(view);
-            const obj = new RewriteHeaderResponse();
+            const obj = new RewriteHeadersResponse();
 
             while (!decoder.eof()) {
                 const tag = decoder.tag();
@@ -52192,15 +52115,7 @@ export namespace plugin {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Header.push(
-                            plugin.Header.decode(
-                                new DataView(
-                                    decoder.view.buffer,
-                                    decoder.pos + decoder.view.byteOffset,
-                                    length
-                                )
-                            )
-                        );
+                        __decodeMap_string_string(decoder, length, obj.Headers);
                         decoder.skip(length);
 
                         break;
@@ -52212,7 +52127,7 @@ export namespace plugin {
                 }
             }
             return obj;
-        } // decode RewriteHeaderResponse
+        } // decode RewriteHeadersResponse
 
         public size(): u32 {
             let size: u32 = 0;
@@ -52225,19 +52140,23 @@ export namespace plugin {
                       this.Error.length
                     : 0;
 
-            for (let n: i32 = 0; n < this.Header.length; n++) {
-                const messageSize = this.Header[n].size();
+            if (this.Headers.size > 0) {
+                const keys = this.Headers.keys();
 
-                if (messageSize > 0) {
-                    size +=
-                        1 + __proto.Sizer.varint64(messageSize) + messageSize;
+                for (let i = 0; i < keys.length; i++) {
+                    const key = keys[i];
+                    const value = this.Headers.get(key);
+                    const itemSize = __sizeMapEntry_string_string(key, value);
+                    if (itemSize > 0) {
+                        size += 1 + __proto.Sizer.varint64(itemSize) + itemSize;
+                    }
                 }
             }
 
             return size;
         }
 
-        // Encodes RewriteHeaderResponse to the DataView
+        // Encodes RewriteHeadersResponse to the DataView
         encode(): DataView {
             const source = this.encodeU8Array();
             const view = new DataView(new ArrayBuffer(source.length));
@@ -52247,7 +52166,7 @@ export namespace plugin {
             return view;
         }
 
-        // Encodes RewriteHeaderResponse to the Array<u8>
+        // Encodes RewriteHeadersResponse to the Array<u8>
         encodeU8Array(
             encoder: __proto.Encoder = new __proto.Encoder(new Array<u8>())
         ): Array<u8> {
@@ -52263,19 +52182,32 @@ export namespace plugin {
                 encoder.string(this.Error);
             }
 
-            for (let n: i32 = 0; n < this.Header.length; n++) {
-                const messageSize = this.Header[n].size();
-
-                if (messageSize > 0) {
-                    encoder.uint32(0x1a);
-                    encoder.uint32(messageSize);
-                    this.Header[n].encodeU8Array(encoder);
+            if (this.Headers.size > 0) {
+                const keys = this.Headers.keys();
+                for (let i = 0; i < keys.length; i++) {
+                    const key = keys[i];
+                    const value = this.Headers.get(key);
+                    const size = __sizeMapEntry_string_string(key, value);
+                    if (size > 0) {
+                        encoder.uint32(0x1a);
+                        encoder.uint32(size);
+                        if (key.length > 0) {
+                            encoder.uint32(0xa);
+                            encoder.uint32(key.length);
+                            encoder.string(key);
+                        }
+                        if (value.length > 0) {
+                            encoder.uint32(0x12);
+                            encoder.uint32(value.length);
+                            encoder.string(value);
+                        }
+                    }
                 }
             }
 
             return buf;
-        } // encode RewriteHeaderResponse
-    } // RewriteHeaderResponse
+        } // encode RewriteHeadersResponse
+    } // RewriteHeadersResponse
 } // plugin
 
 // __decodeMap_string_google_protobuf_Value

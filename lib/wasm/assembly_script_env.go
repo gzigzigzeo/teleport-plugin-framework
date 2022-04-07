@@ -49,7 +49,7 @@ func (e *AsssemblyScriptEnv) CreateTrait(ectx *ExecutionContext) Trait {
 }
 
 // ImportMethodsFromWASM imports methods from WASM side
-func (e *AsssemblyScriptEnvTrait) ImportMethodsFromWASM() error {
+func (e *AsssemblyScriptEnvTrait) ImportMethodsFromWASM(getFunction GetFunctionFn) error {
 	return nil
 }
 

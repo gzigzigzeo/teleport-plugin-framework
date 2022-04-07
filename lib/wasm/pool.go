@@ -33,8 +33,11 @@ type ExecutionContext struct {
 	CurrentContext context.Context
 }
 
-// ExecuteFn is the function type used as the argument for pool.Execute
+// ExecuteFn represents the function type used as the argument for pool.Execute
 type ExecuteFn = func(*ExecutionContext) (interface{}, error)
+
+// GetFunctionFn represents the function type of ImportMethodsFromWASM argument
+type GetFunctionFn = func(string) (wasmer.NativeFunction, error)
 
 // ExecutionContextPool represents object pool of a contexts (wasmer instances)
 type ExecutionContextPool struct {
@@ -50,10 +53,11 @@ type TraitFactory interface {
 
 // Trait represents the set of wasmer and go methods bound to the specific execution context
 type Trait interface {
-	// Export exports trait methods
+	// ExportMethodsToWASM exports trait methods to WASM side
 	ExportMethodsToWASM(*wasmer.Store, *wasmer.ImportObject) error
-	// Bind binds execution context to this trait
-	ImportMethodsFromWASM() error
+	// ImportMethodsFromWASM imports WASM methods to Go side.
+	// The only parameter is a shortcut to the current instance GetFunction()
+	ImportMethodsFromWASM(fn GetFunctionFn) error
 }
 
 // ExecutionContextPoolOptions represents instance pool constructor options
@@ -110,7 +114,7 @@ func NewExecutionContextPool(options ExecutionContextPoolOptions) (*ExecutionCon
 		ec.Memory = memory
 
 		for _, t := range traits {
-			err = t.ImportMethodsFromWASM()
+			err = t.ImportMethodsFromWASM(ec.getFunction)
 			if err != nil {
 				return nil, trace.Wrap(err)
 			}
@@ -168,7 +172,7 @@ func (i *ExecutionContextPool) Close() {
 }
 
 // GetFunction gets function by name
-func (i *ExecutionContext) GetFunction(name string) (wasmer.NativeFunction, error) {
+func (i *ExecutionContext) getFunction(name string) (wasmer.NativeFunction, error) {
 	fn, err := i.Instance.Exports.GetFunction(name)
 	if fn == nil {
 		return nil, trace.BadParameter("Function `%v` is not a function", name)

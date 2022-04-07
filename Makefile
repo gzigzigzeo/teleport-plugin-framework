@@ -35,15 +35,13 @@ clean:
 test: build
 	yarn asbuild:test
 	./build/teleport-plugin-framework test
+	yarn asbuild:dev
+	go test ./... -v
 
 .PHONY: asbuild
 asbuild: clean
 	yarn asbuild
-
-.PHONY: asbuild-dev
-asbuild-dev: 
-	yarn asbuild:dev
-
+	
 CUSTOM_IMPORTS_TMP_DIR ?= /tmp/protoc-gen-terraform/custom-imports
 
 .PHONY: gen-vendor-teleport

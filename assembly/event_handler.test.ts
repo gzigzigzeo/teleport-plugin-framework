@@ -4,14 +4,10 @@ import { handleEvent } from "./index";
 
 // Main test function
 export function test(): void {
-    trace("teleport-plugin-framework tests")
-
     testRegularEvent();
     testSkipLoginSecretSanta();
     testAddAnnotation();
     testLocking();
-
-    trace("Success!")
 }
 
 // Ensure that nomal event passes through

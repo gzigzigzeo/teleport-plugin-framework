@@ -34,7 +34,7 @@ func (s *Store) CreateTrait(ectx *ExecutionContext) Trait {
 }
 
 // ImportMethodsFromWASM imports WASM methods to go
-func (t *StoreTrait) ImportMethodsFromWASM() error {
+func (t *StoreTrait) ImportMethodsFromWASM(getFunction GetFunctionFn) error {
 	return nil
 }
 

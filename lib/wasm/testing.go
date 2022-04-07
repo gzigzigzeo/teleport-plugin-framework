@@ -96,10 +96,10 @@ func (r *Testing) For(ectx *ExecutionContext) (*TestingTrait, error) {
 }
 
 // ImportMethodsFromWASM imports WASM methods to go side
-func (r *TestingTrait) ImportMethodsFromWASM() error {
+func (r *TestingTrait) ImportMethodsFromWASM(getFunction GetFunctionFn) error {
 	var err error
 
-	r.run, err = r.ectx.GetFunction("test")
+	r.run, err = getFunction("test")
 	if err != nil {
 		return trace.Wrap(err)
 	}

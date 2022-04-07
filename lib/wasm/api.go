@@ -56,7 +56,7 @@ func (e *TeleportAPI) CreateTrait(ectx *ExecutionContext) Trait {
 }
 
 // ImportMethodsFromWASM binds TeleportAPITrait to the execution context
-func (e *TeleportAPITrait) ImportMethodsFromWASM() error {
+func (e *TeleportAPITrait) ImportMethodsFromWASM(getFunction GetFunctionFn) error {
 	return nil
 }
 

@@ -60,10 +60,10 @@ func (e *HandleEvent) For(ec *ExecutionContext) (*HandleEventTrait, error) {
 }
 
 // ImportMethodsFromWASM imports WASM methods to go side
-func (e *HandleEventTrait) ImportMethodsFromWASM() error {
+func (e *HandleEventTrait) ImportMethodsFromWASM(getFunction GetFunctionFn) error {
 	var err error
 
-	e.handleEvent, err = e.ectx.GetFunction(e.collection.fnName)
+	e.handleEvent, err = getFunction(e.collection.fnName)
 	if err != nil {
 		return trace.Wrap(err)
 	}

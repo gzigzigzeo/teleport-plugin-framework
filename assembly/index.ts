@@ -1,5 +1,6 @@
 import { plugin } from '../boilerplate/vendor/teleport';
 import { handleEvent as handleEventActual } from "./event_handler"
+import { rewriteHeaders as rewriteHeadersActual } from './rewrite_headers';
 
 export { __protobuf_alloc, __protobuf_getAddr, __protobuf_getLength } from "../boilerplate/vendor/teleport"
 
@@ -9,3 +10,10 @@ export function handleEvent(requestData: DataView): DataView {
     const response = handleEventActual(request)
     return response.encode()
 }            
+
+// rewriteHeaders is the HTTP headers rewrite entrypoint
+export function rewriteHeaders(requestData: DataView): DataView {
+    let request:plugin.RewriteHeadersRequest = plugin.RewriteHeadersRequest.decode(requestData);
+    const response = rewriteHeadersActual(request)
+    return response.encode()
+}

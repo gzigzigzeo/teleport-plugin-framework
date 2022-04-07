@@ -29,6 +29,7 @@ type args struct {
 	targetDir       string
 	fixtureTemplate string
 	fixtureName     string
+	testConcurrency int
 }
 
 func main() {
@@ -46,6 +47,8 @@ func main() {
 	new.Arg("dir", "Path to the new plugin").
 		Required().
 		StringVar(&args.targetDir)
+
+	test.Flag("c", "Run multiple concurrent test suites").Default("1").IntVar(&args.testConcurrency)
 
 	generateFixture.Arg("template", "Fixture template name (use `fixtures list-templates` to get a name)").
 		Required().
@@ -65,7 +68,7 @@ func main() {
 		fmt.Println(pluginFrameworkName)
 		fmt.Println()
 
-		internal.RunTests(log)
+		internal.RunTests(log, args.testConcurrency)
 	case generateFixture.FullCommand():
 		fmt.Println(pluginFrameworkName)
 		fmt.Println()

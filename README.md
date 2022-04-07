@@ -116,30 +116,21 @@ message HandleEventResponse {
 
 This type of plugins are used to modify headers of a requests sent to Teleport applications.
 
-HTTP header is defined as following:
-
-```proto
-message Header {
-    string Key = 1;
-    repeated string Values = 2;
-}
-```
-
 `RewriteHeaderRequest` has the following definition:
 
 ```proto
-message RewriteHeaderRequest {
-    repeated Header Header = 1; // Request headers
+message RewriteHeadersRequest {
+    map<string, string> Headers = 1;
 }
 ```
 
 `RewriteHeaderResponse` is defined as:
 
 ```proto
-message RewriteHeaderResponse {
-    bool Success = 1; // Request was successful
-    string Error = 2; // Error message if a request was not successful
-    repeated Header Header = 3; // Modified request headers
+message RewriteHeadersResponse {
+    bool Success = 1;
+    string Error = 2;
+    map<string, string> Headers = 3;
 }
 ```
 
@@ -174,8 +165,6 @@ import { handleEvent } from './index';
 
 // Main test function
 export function test(): void {
-    trace("teleport-plugin-framework tests")
-
     // Get event from fixture #1
     const request = getFixtureAsHandleEventRequest(1)
 
@@ -193,8 +182,6 @@ export function test(): void {
     // Ensure that login has not been changed
     const userCreateEvent = event.UserCreate as events.UserCreate
     assert(userCreateEvent.User.Login == "foo", "Login has changed")
-
-    trace("Success!")
 }
 ```
 
@@ -357,15 +344,11 @@ import { handleEvent } from './index';
 
 // Main test function
 export function test(): void {
-    trace("teleport-plugin-framework tests")
-
     const request = getFixtureAsHandleEventRequest(2)
     const response = plugin.HandleEventResponse.decode(handleEvent(request))
 
     assert(response.Success == true, "Response was not successful")
     assert(response.Event.__oneOf_Event == "", "Event was not rejected")
-
-    trace("Success!")
 }
 ```
 
@@ -411,8 +394,6 @@ import { handleEvent } from './index';
 
 // Main test function
 export function test(): void {
-    trace("teleport-plugin-framework tests")
-
     const request = getFixtureAsHandleEventRequest(3)
     const response = plugin.HandleEventResponse.decode(handleEvent(request))
     assert(response.Event.AccessRequestCreate != null, "AccessRequestCreate is missing")
@@ -422,8 +403,6 @@ export function test(): void {
         event.Annotations.fields.get("seen-by-us").string_value == "yes", 
         "seen-by-us annotation is not set"
     )
-
-    trace("Success!")
 }
 ```
 
@@ -484,8 +463,6 @@ import { handleEvent } from './index';
 
 // Main test function
 export function test(): void {
-    trace("teleport-plugin-framework tests")
-
     const request = getFixtureAsHandleEventRequest(4)
 
     handleEvent(request)
@@ -501,8 +478,6 @@ export function test(): void {
     const lock = types.LockV2.decode(apiRequest)
     assert(lock.Spec.Target.Login == "foo", "Lock user foo has not been generated")
     assert(lock.Spec.Message == "Suspicious login activity", "Lock has the wrong message: " + lock.Spec.Message)
-
-    trace("Success!")
 }
 ```
 
@@ -549,13 +524,9 @@ import { handleEvent } from './index';
 
 // Main test function
 export function test(): void {
-    trace("teleport-plugin-framework tests")
-
     // Send test event to the plugin
     const result = handleEvent(getFixture(1))
     assert(result != null, "Event is not handled")
-
-    trace("Success!")
 }
 ```
 

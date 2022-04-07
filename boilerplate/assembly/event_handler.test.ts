@@ -4,8 +4,6 @@ import { handleEvent } from './index';
 
 // Main test function
 export function test(): void {
-    trace("teleport-plugin-framework tests")
-
     // Get event from fixture #1
     const request = getFixtureAsHandleEventRequest(1)
 
@@ -23,6 +21,4 @@ export function test(): void {
     // Ensure that login has not been changed
     const userCreateEvent = event.UserCreate as events.UserCreate
     assert(userCreateEvent.User.Login == "foo", "Login has changed")
-
-    trace("Success!")
 }

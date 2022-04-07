@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	"os"
+	"sync"
 	"time"
 
 	badger "github.com/dgraph-io/badger/v3"
@@ -12,8 +13,6 @@ import (
 )
 
 const (
-	// defaultConcurrency default test concurrency
-	defaultConcurrency = 1
 	// defaultTimeout default timeout for WASM method calls
 	defaultTimeout = time.Second * 30
 	// testWasm WASM test binary file
@@ -21,7 +20,7 @@ const (
 )
 
 // RunTests runs tests
-func RunTests(log logrus.FieldLogger) {
+func RunTests(log logrus.FieldLogger, concurrency int) {
 	b, err := os.ReadFile(testWasm)
 	if err != nil {
 		bail("%v", trace.Wrap(err))
@@ -41,7 +40,7 @@ func RunTests(log logrus.FieldLogger) {
 
 	opts := wasm.ExecutionContextPoolOptions{
 		Timeout:     defaultTimeout,
-		Concurrency: defaultConcurrency,
+		Concurrency: concurrency,
 		Bytes:       b,
 		TraitFactories: []wasm.TraitFactory{
 			wasm.NewAssemblyScriptEnv(log),
@@ -57,21 +56,33 @@ func RunTests(log logrus.FieldLogger) {
 		bail("%v", trace.Wrap(err))
 	}
 
-	_, err = pool.Execute(context.Background(), func(ectx *wasm.ExecutionContext) (interface{}, error) {
-		runner, err := testRunner.For(ectx)
-		if err != nil {
-			return nil, trace.Wrap(err)
-		}
+	var wg sync.WaitGroup
 
-		err = runner.Run()
-		if err != nil {
-			return nil, trace.Wrap(err)
-		}
+	for i := 0; i < concurrency; i++ {
+		wg.Add(1)
 
-		return nil, nil
-	})
+		go func() {
+			_, err = pool.Execute(context.Background(), func(ectx *wasm.ExecutionContext) (interface{}, error) {
+				runner, err := testRunner.For(ectx)
+				if err != nil {
+					return nil, trace.Wrap(err)
+				}
 
-	if err != nil {
-		bail("%v", trace.Wrap(err))
+				err = runner.Run()
+				if err != nil {
+					return nil, trace.Wrap(err)
+				}
+
+				return nil, nil
+			})
+
+			if err != nil {
+				bail("%v", trace.Wrap(err))
+			}
+
+			wg.Done()
+		}()
 	}
+
+	wg.Wait()
 }

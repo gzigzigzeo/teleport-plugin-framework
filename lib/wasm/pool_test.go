@@ -95,35 +95,35 @@ func (e *testTrait) goMethod(args []wasmer.Value) ([]wasmer.Value, error) {
 }
 
 // ImportMethodsFromWASM reads WASM methods references to the current trait context
-func (e *testTrait) ImportMethodsFromWASM() error {
+func (e *testTrait) ImportMethodsFromWASM(getFunction GetFunctionFn) error {
 	var err error
 
-	e.OK, err = e.ectx.GetFunction("ok")
+	e.OK, err = getFunction("ok")
 	if err != nil {
 		return trace.Wrap(err)
 	}
 
-	e.Fail, err = e.ectx.GetFunction("fail")
+	e.Fail, err = getFunction("fail")
 	if err != nil {
 		return trace.Wrap(err)
 	}
 
-	e.Infinite, err = e.ectx.GetFunction("infinite")
+	e.Infinite, err = getFunction("infinite")
 	if err != nil {
 		return trace.Wrap(err)
 	}
 
-	e.Delay100ms, err = e.ectx.GetFunction("delay100ms")
+	e.Delay100ms, err = getFunction("delay100ms")
 	if err != nil {
 		return trace.Wrap(err)
 	}
 
-	e.GetEventIndex, err = e.ectx.GetFunction("getEventIndex")
+	e.GetEventIndex, err = getFunction("getEventIndex")
 	if err != nil {
 		return trace.Wrap(err)
 	}
 
-	e.GoMethodEntryPoint, err = e.ectx.GetFunction("goMethodEntryPoint")
+	e.GoMethodEntryPoint, err = getFunction("goMethodEntryPoint")
 	if err != nil {
 		return trace.Wrap(err)
 	}
