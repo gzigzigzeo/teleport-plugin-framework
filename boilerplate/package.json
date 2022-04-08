@@ -31,6 +31,7 @@
     "@assemblyscript/loader": "^0.20.1",
     "as-sleep": "^0.0.2",
     "as-uuid": "^0.0.4",
+    "as-base64": "^0.2.0",
     "tslib": "~2.3.1"
   },
   "volta": {

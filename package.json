@@ -29,6 +29,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@assemblyscript/loader": "^0.20.1",
+    "as-base64": "^0.2.0",
     "as-sleep": "^0.0.2",
     "protobuf-as": "github:gravitational/protobuf-as",
     "tslib": "~2.3.1"
