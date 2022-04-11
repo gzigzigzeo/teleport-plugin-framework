@@ -60,7 +60,7 @@ gen-vendor-teleport:
 		-I$(CUSTOM_IMPORTS_TMP_DIR) \
 		--plugin=./node_modules/protobuf-as/bin/protoc-gen-as \
 		--as_out=boilerplate/vendor \
-		--as_opt=enableInterop=true:targetFileName=teleport.ts:typeAliases=Event+events.OneOf \
+		--as_opt=targetFileName=teleport.ts:typeAliases=Event+events.OneOf \
 	    types.proto events/events.proto interop.proto
 
 	@protoc \

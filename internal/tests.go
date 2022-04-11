@@ -36,15 +36,17 @@ func RunTests(log logrus.FieldLogger, concurrency int) {
 		log.Fatal(trace.Wrap(err))
 	}
 	protobufInterop := wasm.NewProtobufInterop()
-	api := wasm.NewTeleportAPI(log, testRunner.MockAPIClient, protobufInterop)
+	api := wasm.NewTeleportAPI(testRunner.MockAPIClient, protobufInterop)
 
 	opts := wasm.ExecutionContextPoolOptions{
-		Timeout:     defaultTimeout,
-		Concurrency: concurrency,
-		Bytes:       b,
-		TraitFactories: []wasm.TraitFactory{
-			wasm.NewAssemblyScriptEnv(log),
-			wasm.NewStore(wasm.NewBadgerPersistentStore(db), wasm.DecodeAssemblyScriptString),
+		Log:           log,
+		MemoryInterop: wasm.NewAssemblyScriptMemoryInterop(),
+		Timeout:       defaultTimeout,
+		Concurrency:   concurrency,
+		PluginBytes:   b,
+		Traits: []interface{}{
+			wasm.NewAssemblyScriptEnv(),
+			wasm.NewStore(wasm.NewBadgerPersistentStore(db)),
 			testRunner,
 			protobufInterop,
 			api,
@@ -63,12 +65,7 @@ func RunTests(log logrus.FieldLogger, concurrency int) {
 
 		go func() {
 			_, err = pool.Execute(context.Background(), func(ectx *wasm.ExecutionContext) (interface{}, error) {
-				runner, err := testRunner.For(ectx)
-				if err != nil {
-					return nil, trace.Wrap(err)
-				}
-
-				err = runner.Run()
+				err = testRunner.Run(ectx)
 				if err != nil {
 					return nil, trace.Wrap(err)
 				}

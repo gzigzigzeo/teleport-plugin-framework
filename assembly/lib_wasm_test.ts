@@ -1,11 +1,6 @@
 import { sleep } from 'as-sleep/assembly/index';
+import { getSecretString } from '../boilerplate/vendor/aws_secrets_manager';
 import { events, plugin } from '../boilerplate/vendor/teleport';
-
-export {
-    __protobuf_alloc,
-    __protobuf_getAddr,
-    __protobuf_getLength,
-} from '../boilerplate/vendor/teleport';
 
 export declare function goMethod():void;
 
@@ -13,15 +8,20 @@ export function ok():i32 {
     return 1;
 }
 
-export function fail():void {
+export function throwError():void {
     throw new Error("Failure");
 }
 
-export function infinite():void {
+export function getStringReturnString(key: string): string {
+    assert(key == "foo", "getStringReturnString string is not 'foo'")
+    return "bar"
+}
+
+export function infiniteLoop():void {
     while(1);
 }
 
-export function delay100ms(): void {
+export function delay100ms():void {
     sleep(100);
 }
 
@@ -29,7 +29,7 @@ export function goMethodEntryPoint():void {
     goMethod();
 }
 
-export function getEventIndex(view: DataView):i64 {
+export function getEventIndex(view: ArrayBuffer):i64 {
     const event = events.OneOf.decode(view)
     if (event.UserCreate == null) {
         return 0
@@ -38,7 +38,7 @@ export function getEventIndex(view: DataView):i64 {
     return userCreate.Metadata.Index
 }
 
-export function handleEvent(view: DataView): DataView {
+export function handleEvent(view: ArrayBuffer): ArrayBuffer {
     const request = plugin.HandleEventRequest.decode(view)
     const response = new plugin.HandleEventResponse()
 
@@ -64,4 +64,8 @@ export function handleEvent(view: DataView): DataView {
     }
 
     return response.encode();
+}
+
+export function getSecret(name: string): string {
+    return getSecretString(name)
 }

@@ -21,120 +21,45 @@ import (
 	wasmer "github.com/wasmerio/wasmer-go/wasmer"
 )
 
-const (
-	allocFnName     = "__protobuf_alloc"
-	getAddrFnName   = "__protobuf_getAddr"
-	getLengthFnName = "__protobuf_getLength"
-)
-
-// ProtobufInterop represents collection of traits
-type ProtobufInterop struct {
-	traits []*ProtobufInteropTrait
-}
-
 // ProtobufInterop represents protobuf interop methods
-type ProtobufInteropTrait struct {
-	ectx      *ExecutionContext
-	alloc     wasmer.NativeFunction
-	getAddr   wasmer.NativeFunction
-	getLength wasmer.NativeFunction
-}
+type ProtobufInterop struct{}
 
-// NewProtobufInterop creates new ProtobufInterop bindings
+// NewProtobufInterop creates new protobuf interop trait
 func NewProtobufInterop() *ProtobufInterop {
-	return &ProtobufInterop{traits: make([]*ProtobufInteropTrait, 0)}
-}
-
-// CreateTrait creates trait and binds it to the ExecutionContext
-func (e *ProtobufInterop) CreateTrait(ectx *ExecutionContext) Trait {
-	t := &ProtobufInteropTrait{ectx: ectx}
-	e.traits = append(e.traits, t)
-	return t
-}
-
-// For returns trait bound to the specific execution context
-func (e *ProtobufInterop) For(ec *ExecutionContext) (*ProtobufInteropTrait, error) {
-	for _, t := range e.traits {
-		if t.ectx == ec {
-			return t, nil
-		}
-	}
-
-	return nil, trace.Errorf("ProtobufInteropTrait bound to execution context %v not found", ec)
-}
-
-// ImportMethodsFromWASM imports WASM methods to go side
-func (i *ProtobufInteropTrait) ImportMethodsFromWASM(getFunction GetFunctionFn) error {
-	var err error
-
-	i.alloc, err = getFunction(allocFnName)
-	if err != nil {
-		return trace.Wrap(err)
-	}
-
-	i.getAddr, err = getFunction(getAddrFnName)
-	if err != nil {
-		return trace.Wrap(err)
-	}
-
-	i.getLength, err = getFunction(getLengthFnName)
-	if err != nil {
-		return trace.Wrap(err)
-	}
-
-	return nil
-}
-
-// ExportMethodsToWASM exports go methods to WASM
-func (i *ProtobufInteropTrait) ExportMethodsToWASM(store *wasmer.Store, importObject *wasmer.ImportObject) error {
-	return nil
+	return &ProtobufInterop{}
 }
 
 // SendMessage allocates memory and copies proto.Message to the AS side, returns memory address
-func (i *ProtobufInteropTrait) SendMessage(message proto.Message) (int32, error) {
+func (i *ProtobufInterop) SendMessage(ectx *ExecutionContext, message proto.Message) (wasmer.Value, error) {
 	size := proto.Size(message)
 	bytes, err := proto.Marshal(message)
 	if err != nil {
-		return 0, trace.Wrap(err)
+		return wasmer.NewI32(0), trace.Wrap(err)
 	}
 
-	rawAddrSize, err := i.alloc(size)
+	arrayBuffer, err := ectx.MemoryInterop.New(ectx, size, AssemblyScriptArrayBuffer)
 	if err != nil {
-		return 0, trace.Wrap(err)
+		return wasmer.NewI32(0), trace.Wrap(err)
 	}
 
-	i64 := wasmer.NewI64(rawAddrSize)
-	addrSize := i64.I64()
-	dataView := int32(addrSize >> 32)
-	addr := addrSize & 0xFFFFFFFF
+	arrayBufferAddr := arrayBuffer.I32()
 
 	// DMA copy
-	memory := i.ectx.Memory.Data()
-	copy(memory[addr:], bytes)
+	memory := ectx.Memory.Data()
+	copy(memory[arrayBufferAddr:], bytes)
 
-	return dataView, nil
+	return arrayBuffer, nil
 }
 
 // ReceiveMessage decodes message from WASM side. Type of the message must be known onset.
-func (i *ProtobufInteropTrait) ReceiveMessage(handle interface{}, m proto.Message) error {
-	rawLength, err := i.getLength(handle)
-	if err != nil {
-		return trace.Wrap(err)
-	}
+func (i *ProtobufInterop) ReceiveMessage(ectx *ExecutionContext, arrayBuffer wasmer.Value, m proto.Message) error {
+	len := ectx.MemoryInterop.Len(ectx, arrayBuffer)
 
-	rawAddr, err := i.getAddr(handle)
-	if err != nil {
-		return trace.Wrap(err)
-	}
+	bytes := make([]byte, len)
+	memory := ectx.Memory.Data()
+	copy(bytes, memory[arrayBuffer.I32():arrayBuffer.I32()+len])
 
-	length := wasmer.NewI32(rawLength)
-	addr := wasmer.NewI32(rawAddr)
-
-	bytes := make([]byte, length.I32())
-	memory := i.ectx.Memory.Data()
-	copy(bytes, memory[addr.I32():addr.I32()+length.I32()])
-
-	err = proto.Unmarshal(bytes, m)
+	err := proto.Unmarshal(bytes, m)
 	if err != nil {
 		return trace.Wrap(err, "Protobuf unmarshal error")
 	}
@@ -144,26 +69,24 @@ func (i *ProtobufInteropTrait) ReceiveMessage(handle interface{}, m proto.Messag
 
 // ExecuteProtobufMethod executes abitary WASM method which has a single proto.Message argument and a single
 // proto.Message return value. Method must be bound to the same execution context.
-func (i *ProtobufInteropTrait) ExecuteProtobufMethod(request proto.Message, fn wasmer.NativeFunction, fnName string, target proto.Message) error {
-	handle, err := i.SendMessage(request)
+func (i *ProtobufInterop) ExecuteProtobufMethod(ectx *ExecutionContext, request proto.Message, fn NativeFunctionWithExecutionContext, target proto.Message) error {
+	handle, err := i.SendMessage(ectx, request)
 	if err != nil {
 		return trace.Wrap(err)
 	}
 
 	// Get the result
-	resultHandle, err := fn(handle)
+	resultHandle, err := fn(ectx, handle)
 	if err != nil {
 		return trace.Wrap(err)
 	}
 
-	// Check if there is any result
-	h := wasmer.NewI32(resultHandle)
-	if h.I32() == 0 {
-		return trace.Errorf("%v returned null result", fnName)
+	if resultHandle.I32() == 0 {
+		return trace.Errorf("SendMessage returned nil handle")
 	}
 
 	// Get the response
-	err = i.ReceiveMessage(resultHandle, target)
+	err = i.ReceiveMessage(ectx, resultHandle, target)
 	if err != nil {
 		return trace.Wrap(err)
 	}

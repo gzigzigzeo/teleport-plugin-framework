@@ -8,61 +8,45 @@ import (
 	"github.com/wasmerio/wasmer-go/wasmer"
 )
 
-// Store represents object responsible for external persistent store
-type Store struct {
-	traits       []*StoreTrait
-	db           PersistentStore
-	decodeString StringDecoder
-}
-
 // Store represents store methods bound to specific execution context
-type StoreTrait struct {
-	ectx  *ExecutionContext
-	store *Store
+type Store struct {
+	db PersistentStore
 }
 
 // NewStore creats new Store struct
-func NewStore(db PersistentStore, decodeString StringDecoder) *Store {
-	return &Store{traits: make([]*StoreTrait, 0), db: db, decodeString: decodeString}
-}
-
-// CreateTrait creates StoreTrait and binds it to passed ExecutionContext
-func (s *Store) CreateTrait(ectx *ExecutionContext) Trait {
-	t := &StoreTrait{store: s, ectx: ectx}
-	s.traits = append(s.traits, t)
-	return t
-}
-
-// ImportMethodsFromWASM imports WASM methods to go
-func (t *StoreTrait) ImportMethodsFromWASM(getFunction GetFunctionFn) error {
-	return nil
+func NewStore(db PersistentStore) *Store {
+	return &Store{db: db}
 }
 
 // ExportMethodsToWASM exports Store methods to wasm
-func (t *StoreTrait) ExportMethodsToWASM(store *wasmer.Store, importObject *wasmer.ImportObject) error {
-	importObject.Register("store", map[string]wasmer.IntoExtern{
-		"takeToken": wasmer.NewFunction(store, wasmer.NewFunctionType(
-			wasmer.NewValueTypes(wasmer.I32, wasmer.I32), // prefix string, TTL i32
-			wasmer.NewValueTypes(wasmer.I32),             // i32 - tokens count
-		), t.takeToken),
-		"releaseTokens": wasmer.NewFunction(store, wasmer.NewFunctionType(
-			wasmer.NewValueTypes(wasmer.I32), // prefix string
-			wasmer.NewValueTypes(),           // void
-		), t.releaseTokens),
-	})
-	return nil
+func (t *Store) ExportMethodsToWASM(exports *Exports) {
+	exports.Define(
+		"store",
+		map[string]Export{
+			"takeToken": {
+				wasmer.NewValueTypes(wasmer.I32, wasmer.I32), // prefix string, TTL i32
+				wasmer.NewValueTypes(wasmer.I32),             // i32 - tokens count
+				t.takeToken,
+			},
+			"releaseTokens": {
+				wasmer.NewValueTypes(wasmer.I32), // prefix string
+				wasmer.NewValueTypes(),           // void
+				t.releaseTokens,
+			},
+		},
+	)
 }
 
 // takeToken generates new token scope and ttl
-func (t *StoreTrait) takeToken(args []wasmer.Value) ([]wasmer.Value, error) {
-	scope := t.store.decodeString(args[0], t.ectx.Memory)
+func (t *Store) takeToken(ectx *ExecutionContext, args []wasmer.Value) ([]wasmer.Value, error) {
+	scope := ectx.MemoryInterop.GetString(ectx, args[0])
 	if strings.TrimSpace(scope) == "" {
 		return nil, trace.BadParameter("Please, pass non-empty scope to takeToken")
 	}
 
 	ttl := args[1].I32()
 
-	n, err := t.store.db.TakeToken(scope, time.Duration(ttl)*time.Second)
+	n, err := t.db.TakeToken(scope, time.Duration(ttl)*time.Second)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -71,13 +55,13 @@ func (t *StoreTrait) takeToken(args []wasmer.Value) ([]wasmer.Value, error) {
 }
 
 // releaseTokens releases tokens within the scope
-func (t *StoreTrait) releaseTokens(args []wasmer.Value) ([]wasmer.Value, error) {
-	scope := t.store.decodeString(args[0], t.ectx.Memory)
+func (t *Store) releaseTokens(ectx *ExecutionContext, args []wasmer.Value) ([]wasmer.Value, error) {
+	scope := ectx.MemoryInterop.GetString(ectx, args[0])
 	if strings.TrimSpace(scope) == "" {
 		return nil, trace.BadParameter("Please, pass non-empty scope to releaseTokens")
 	}
 
-	err := t.store.db.ReleaseTokens(scope)
+	err := t.db.ReleaseTokens(scope)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}

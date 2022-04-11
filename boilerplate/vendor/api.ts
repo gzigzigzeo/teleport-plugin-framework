@@ -1,7 +1,7 @@
 import { types, google, events } from './teleport';
 
 // usertLock calls API with the provided lock
-export declare function upsertLock(lock: DataView): void;
+export declare function upsertLock(lock: ArrayBuffer): void;
 
 // createLock creates lock for user
 export function createLock(user: events.UserMetadata, timeout: i64, message: string): void {

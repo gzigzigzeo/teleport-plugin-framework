@@ -20,7 +20,6 @@ import (
 
 	"github.com/gravitational/teleport/api/types"
 	"github.com/gravitational/trace"
-	log "github.com/sirupsen/logrus"
 	"github.com/wasmerio/wasmer-go/wasmer"
 )
 
@@ -29,60 +28,38 @@ type TeleportClient interface {
 	UpsertLock(context.Context, types.Lock) error
 }
 
-// TeleportAPI represents Teleport API functions
+// TeleportAPITrait represents Teleport API functions bound to the specific instance
 type TeleportAPI struct {
-	traits []*TeleportAPITrait
-	log    log.FieldLogger
 	client TeleportClient
 	pb     *ProtobufInterop
 }
 
-// TeleportAPITrait represents Teleport API functions bound to the specific instance
-type TeleportAPITrait struct {
-	ectx *ExecutionContext
-	api  *TeleportAPI
-}
-
 // NewTeleportAPI creates new NewTeleportAPI collection instance
-func NewTeleportAPI(log log.FieldLogger, client TeleportClient, protobufInterop *ProtobufInterop) *TeleportAPI {
-	return &TeleportAPI{log: log, pb: protobufInterop, client: client, traits: make([]*TeleportAPITrait, 0)}
-}
-
-// CreateTrait creates TeleportAPITrait
-func (e *TeleportAPI) CreateTrait(ectx *ExecutionContext) Trait {
-	t := &TeleportAPITrait{api: e, ectx: ectx}
-	e.traits = append(e.traits, t)
-	return t
-}
-
-// ImportMethodsFromWASM binds TeleportAPITrait to the execution context
-func (e *TeleportAPITrait) ImportMethodsFromWASM(getFunction GetFunctionFn) error {
-	return nil
+func NewTeleportAPI(client TeleportClient, protobufInterop *ProtobufInterop) *TeleportAPI {
+	return &TeleportAPI{pb: protobufInterop, client: client}
 }
 
 // RegisterExports registers protobuf interop exports (nothing in our case)
-func (e *TeleportAPITrait) ExportMethodsToWASM(store *wasmer.Store, importObject *wasmer.ImportObject) error {
-	importObject.Register("api", map[string]wasmer.IntoExtern{
-		"upsertLock": wasmer.NewFunction(store, wasmer.NewFunctionType(
-			wasmer.NewValueTypes(wasmer.I32), // lock: DataView
-			wasmer.NewValueTypes(),           // void
-		), e.upsertLock),
-	})
-	return nil
+func (e *TeleportAPI) ExportMethodsToWASM(exports *Exports) {
+	exports.Define(
+		"api",
+		map[string]Export{
+			"upsertLock": {
+				wasmer.NewValueTypes(wasmer.I32), // lock: DataView
+				wasmer.NewValueTypes(),           // void
+				e.upsertLock,
+			},
+		},
+	)
 }
 
 // upsertLock upserts the new lock
-func (e *TeleportAPITrait) upsertLock(args []wasmer.Value) ([]wasmer.Value, error) {
+func (e *TeleportAPI) upsertLock(ectx *ExecutionContext, args []wasmer.Value) ([]wasmer.Value, error) {
 	lock := &types.LockV2{}
 
-	handle := args[0].I32()
+	handle := args[0]
 
-	pb, err := e.api.pb.For(e.ectx)
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	err = pb.ReceiveMessage(handle, lock)
+	err := e.pb.ReceiveMessage(ectx, handle, lock)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -92,7 +69,7 @@ func (e *TeleportAPITrait) upsertLock(args []wasmer.Value) ([]wasmer.Value, erro
 		return nil, trace.Wrap(err)
 	}
 
-	err = e.api.client.UpsertLock(e.ectx.CurrentContext, lock)
+	err = e.client.UpsertLock(ectx.CurrentContext, lock)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}

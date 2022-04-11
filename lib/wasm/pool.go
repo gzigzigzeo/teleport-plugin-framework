@@ -20,24 +20,9 @@ import (
 	"time"
 
 	"github.com/gravitational/trace"
+	"github.com/sirupsen/logrus"
 	wasmer "github.com/wasmerio/wasmer-go/wasmer"
 )
-
-// ExecutionContext represents object required to execute methods on the specific wasmer instance
-type ExecutionContext struct {
-	// Instance represents wasmer.Instance
-	Instance *wasmer.Instance
-	// Memory represents wasmer.Memory
-	Memory *wasmer.Memory
-	// CurrentContext represents current context for this execution chain
-	CurrentContext context.Context
-}
-
-// ExecuteFn represents the function type used as the argument for pool.Execute
-type ExecuteFn = func(*ExecutionContext) (interface{}, error)
-
-// GetFunctionFn represents the function type of ImportMethodsFromWASM argument
-type GetFunctionFn = func(string) (wasmer.NativeFunction, error)
 
 // ExecutionContextPool represents object pool of a contexts (wasmer instances)
 type ExecutionContextPool struct {
@@ -45,62 +30,109 @@ type ExecutionContextPool struct {
 	contexts chan *ExecutionContext
 }
 
-// TraitFactory represents the trait factory which is responsible for trait creation
-type TraitFactory interface {
-	// CreateTrait creates the new trait and returns it
-	CreateTrait(ec *ExecutionContext) Trait
+// TraitWithExports represents trait which has methods exposed to WASM plugin
+type TraitWithExports interface {
+	// ExportMethodsToWASM exports trait methods to WASM side
+	ExportMethodsToWASM(*Exports)
 }
 
-// Trait represents the set of wasmer and go methods bound to the specific execution context
-type Trait interface {
-	// ExportMethodsToWASM exports trait methods to WASM side
-	ExportMethodsToWASM(*wasmer.Store, *wasmer.ImportObject) error
+// TraitWithImports represents trait which has methods required to be imported from WASM plugin
+type TraitWithImports interface {
 	// ImportMethodsFromWASM imports WASM methods to Go side.
 	// The only parameter is a shortcut to the current instance GetFunction()
-	ImportMethodsFromWASM(fn GetFunctionFn) error
+	ImportMethodsFromWASM(fn GetFunction) error
 }
 
-// ExecutionContextPoolOptions represents instance pool constructor options
+// NativeFunctionWithExecutionContext represents wrapper over wasmer.NativeFunction, which accepts
+// wasmer.Value instead of interfaces. Please note that WASM functions can not return null.
+type NativeFunctionWithExecutionContext = func(*ExecutionContext, ...wasmer.Value) (wasmer.Value, error)
+
+// GetFunction represents the signature of a function which gets method from wasm side
+type GetFunction = func(string) (NativeFunctionWithExecutionContext, error)
+
+// ExecutionContextPoolOptions represents execution context pool options
 type ExecutionContextPoolOptions struct {
-	// Bytes represents wasm binary bytes
-	Bytes []byte
-	// Timeout represents method execution timeout limit. Individual call timeouts can be regulated using standard go contexts.
+	// Log represents logger instance
+	Log logrus.FieldLogger
+	// MemoryInterop represents the interface to WASM instance memory
+	MemoryInterop MemoryInterop
+	// PluginBytes represents wasm binary bytes
+	PluginBytes []byte
+	// Timeout represents max method execution timeout. Individual call timeouts can be set using normal go contexts.
 	Timeout time.Duration
 	// Concurrency represents object pool size
 	Concurrency int
-	// TraitFactories is the array of trait factories needs to be initialized
-	TraitFactories []TraitFactory
+	// Traits represents array of trait objects
+	Traits []interface{}
+}
+
+// Validate validates pool options
+func (o *ExecutionContextPoolOptions) Validate() error {
+	if o.Log == nil {
+		return trace.Errorf(".Log is required for ExecutionContextPoolOptions")
+	}
+
+	if o.MemoryInterop == nil {
+		return trace.Errorf(".MemoryInterop is required for ExecutionContextPoolOptions (specify NewAssemblyScriptMemoryInterop())")
+	}
+
+	if o.Timeout == 0 {
+		return trace.Errorf(".Timeout is required for ExecutionContextPoolOptions")
+	}
+
+	if o.PluginBytes == nil || len(o.PluginBytes) == 0 {
+		return trace.Errorf(".PluginBytes is required for ExecutionContextPoolOptions")
+	}
+
+	if len(o.Traits) == 0 {
+		return trace.Errorf(".[]Traits is empty, please specify any")
+	}
+
+	if o.Concurrency == 0 {
+		o.Concurrency = 1
+	}
+
+	return nil
 }
 
 // NewExecutionContextPool initializes InstancePool structure structure
 func NewExecutionContextPool(options ExecutionContextPoolOptions) (*ExecutionContextPool, error) {
-	config := wasmer.NewConfig().UseCraneliftCompiler()
-	engine := wasmer.NewEngineWithConfig(config)
-	store := wasmer.NewStore(engine)
-
-	module, err := wasmer.NewModule(store, options.Bytes)
+	err := options.Validate()
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	contexts := make(chan *ExecutionContext, options.Concurrency)
+	config := wasmer.NewConfig().UseCraneliftCompiler()
+	engine := wasmer.NewEngineWithConfig(config)
+	store := wasmer.NewStore(engine)
+
+	module, err := wasmer.NewModule(store, options.PluginBytes)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	contexts := make([]*ExecutionContext, options.Concurrency)
 
 	for i := 0; i < options.Concurrency; i++ {
-		ec := &ExecutionContext{}
+		importObject := wasmer.NewImportObject()
 
-		imports := wasmer.NewImportObject()
-
-		traits := make([]Trait, len(options.TraitFactories))
-		for n, t := range options.TraitFactories {
-			tr := t.CreateTrait(ec)
-			err = tr.ExportMethodsToWASM(store, imports)
-			if err != nil {
-				return nil, trace.Wrap(err)
-			}
-			traits[n] = tr
+		ec := &ExecutionContext{
+			Log:           options.Log,
+			MemoryInterop: options.MemoryInterop,
 		}
 
-		instance, err := wasmer.NewInstance(module, imports)
+		for _, tr := range options.Traits {
+			ex, ok := tr.(TraitWithExports)
+			if !ok {
+				continue
+			}
+
+			exports := newExports()
+			ex.ExportMethodsToWASM(exports)
+			exports.appendToImportOjbect(ec, store, importObject)
+		}
+
+		instance, err := wasmer.NewInstance(module, importObject)
 		if err != nil {
 			return nil, trace.Wrap(err)
 		}
@@ -113,24 +145,52 @@ func NewExecutionContextPool(options ExecutionContextPoolOptions) (*ExecutionCon
 		ec.Instance = instance
 		ec.Memory = memory
 
-		for _, t := range traits {
-			err = t.ImportMethodsFromWASM(ec.getFunction)
-			if err != nil {
-				return nil, trace.Wrap(err)
-			}
-		}
+		contexts[i] = ec
+	}
 
-		contexts <- ec
+	for _, t := range options.Traits {
+		err := importMethodsFromWASM(t, contexts)
+		if err != nil {
+			return nil, trace.Wrap(err)
+		}
+	}
+
+	err = importMethodsFromWASM(options.MemoryInterop, contexts)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	contextsCh := make(chan *ExecutionContext, options.Concurrency)
+	for _, ectx := range contexts {
+		contextsCh <- ectx
 	}
 
 	return &ExecutionContextPool{
 		timeout:  options.Timeout,
-		contexts: contexts,
+		contexts: contextsCh,
 	}, nil
 }
 
-// Get fetches next instance from the pool, if any and sets currentContext
-func (p *ExecutionContextPool) Get(ctx context.Context) (*ExecutionContext, error) {
+func importMethodsFromWASM(tr interface{}, contexts []*ExecutionContext) error {
+	t, ok := tr.(TraitWithImports)
+	if !ok {
+		return nil
+	}
+
+	err := t.ImportMethodsFromWASM(
+		func(name string) (NativeFunctionWithExecutionContext, error) {
+			return newExportFnResolver(contexts, name)
+		},
+	)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	return nil
+}
+
+// Fetch fetches next instance from the pool, if any and sets currentContext
+func (p *ExecutionContextPool) Fetch(ctx context.Context) (*ExecutionContext, error) {
 	select {
 	case ec := <-p.contexts:
 		return ec, nil
@@ -139,8 +199,8 @@ func (p *ExecutionContextPool) Get(ctx context.Context) (*ExecutionContext, erro
 	}
 }
 
-// Put returns instance to the pool
-func (p *ExecutionContextPool) Put(ctx context.Context, ec *ExecutionContext) error {
+// Return returns instance to the pool
+func (p *ExecutionContextPool) Return(ctx context.Context, ec *ExecutionContext) error {
 	select {
 	case p.contexts <- ec:
 		return nil
@@ -151,14 +211,14 @@ func (p *ExecutionContextPool) Put(ctx context.Context, ec *ExecutionContext) er
 
 // Execute executes obtains context, executes passed function, puts the context back to the pool and returns the result
 func (p *ExecutionContextPool) Execute(ctx context.Context, fn ExecuteFn) (interface{}, error) {
-	ectx, err := p.Get(ctx)
+	ectx, err := p.Fetch(ctx)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
 	res, fnErr := ectx.wait(ctx, p.timeout, fn)
 
-	err = p.Put(ctx, ectx)
+	err = p.Return(ctx, ectx)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -169,56 +229,4 @@ func (p *ExecutionContextPool) Execute(ctx context.Context, fn ExecuteFn) (inter
 // Close closes instance pool
 func (i *ExecutionContextPool) Close() {
 	close(i.contexts)
-}
-
-// GetFunction gets function by name
-func (i *ExecutionContext) getFunction(name string) (wasmer.NativeFunction, error) {
-	fn, err := i.Instance.Exports.GetFunction(name)
-	if fn == nil {
-		return nil, trace.BadParameter("Function `%v` is not a function", name)
-	}
-	if err != nil {
-		return nil, trace.NotImplemented("Function `%v` can not be loaded from WASM module: %v", name, err)
-	}
-
-	return fn, nil
-}
-
-// wait executes WASM function with timeout
-func (i *ExecutionContext) wait(ctx context.Context, timeout time.Duration, fn ExecuteFn) (interface{}, error) {
-	var fnErr error
-	var fnResult interface{}
-
-	i.CurrentContext = ctx
-
-	errCh := make(chan error, 1)
-	defer close(errCh)
-	resultCh := make(chan interface{}, 1)
-	defer close(resultCh)
-
-	go func() {
-		result, err := fn(i)
-		if err != nil {
-			errCh <- err
-		}
-
-		resultCh <- result
-	}()
-
-	select {
-	case fnResult = <-resultCh:
-		break
-	case fnErr = <-errCh:
-		break
-	case <-time.After(1 * time.Second):
-		fnErr = trace.LimitExceeded("WASM method execution timeout")
-		break
-	case <-i.CurrentContext.Done():
-		fnErr = trace.Wrap(ctx.Err())
-		break
-	}
-
-	i.CurrentContext = nil
-
-	return fnResult, fnErr
 }

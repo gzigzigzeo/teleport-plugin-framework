@@ -18,51 +18,25 @@ package wasm
 import (
 	"github.com/gravitational/teleport-plugin-framework/lib/wasm/plugin"
 	"github.com/gravitational/trace"
-	wasmer "github.com/wasmerio/wasmer-go/wasmer"
 )
 
-// RewriteHeaders represents collection of traits
+// RewriteHeaders represents rewriteHeader trait
 type RewriteHeaders struct {
 	fnName          string
-	traits          []*RewriteHeadersTrait
 	protobufInterop *ProtobufInterop
-}
-
-// RewriteHeadersTrait represents rewriteHeader trait
-type RewriteHeadersTrait struct {
-	ectx           *ExecutionContext
-	collection     *RewriteHeaders
-	rewriteHeaders wasmer.NativeFunction
+	rewriteHeaders  NativeFunctionWithExecutionContext
 }
 
 // NewRewriteHeaders creates new RewriteHeaders trait collection
 func NewRewriteHeaders(fnName string, protobufInterop *ProtobufInterop) *RewriteHeaders {
-	return &RewriteHeaders{traits: make([]*RewriteHeadersTrait, 0), fnName: fnName, protobufInterop: protobufInterop}
-}
-
-// CreateTrait creates trait and binds it to the ExecutionContext
-func (e *RewriteHeaders) CreateTrait(ectx *ExecutionContext) Trait {
-	t := &RewriteHeadersTrait{ectx: ectx, collection: e}
-	e.traits = append(e.traits, t)
-	return t
-}
-
-// For returns trait bound to the specific execution context
-func (e *RewriteHeaders) For(ec *ExecutionContext) (*RewriteHeadersTrait, error) {
-	for _, t := range e.traits {
-		if t.ectx == ec {
-			return t, nil
-		}
-	}
-
-	return nil, trace.Errorf("RewriteHeadersTrait bound to execution context %v not found", ec)
+	return &RewriteHeaders{fnName: fnName, protobufInterop: protobufInterop}
 }
 
 // ImportMethodsFromWASM imports WASM methods to go side
-func (e *RewriteHeadersTrait) ImportMethodsFromWASM(getFunction GetFunctionFn) error {
+func (e *RewriteHeaders) ImportMethodsFromWASM(getFunction GetFunction) error {
 	var err error
 
-	e.rewriteHeaders, err = getFunction(e.collection.fnName)
+	e.rewriteHeaders, err = getFunction(e.fnName)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -70,27 +44,16 @@ func (e *RewriteHeadersTrait) ImportMethodsFromWASM(getFunction GetFunctionFn) e
 	return nil
 }
 
-// ExportMethodsToWASM exports go methods to WASM
-func (e *RewriteHeadersTrait) ExportMethodsToWASM(store *wasmer.Store, importObject *wasmer.ImportObject) error {
-	return nil
-}
-
 // RewriteHeaders wraps RewriteHeaders call to proto def
-func (e *RewriteHeadersTrait) RewriteHeaders(headers map[string]string) (*plugin.RewriteHeadersResponse, error) {
+func (e *RewriteHeaders) RewriteHeaders(ectx *ExecutionContext, headers map[string]string) (*plugin.RewriteHeadersResponse, error) {
 	request := &plugin.RewriteHeadersRequest{
 		Headers: headers,
 	}
 
 	result := &plugin.RewriteHeadersResponse{}
 
-	// Send teleport event to WASM side
-	pb, err := e.collection.protobufInterop.For(e.ectx)
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
 	// Execute RewriteHeaders method
-	err = pb.ExecuteProtobufMethod(request, e.rewriteHeaders, e.collection.fnName, result)
+	err := e.protobufInterop.ExecuteProtobufMethod(ectx, request, e.rewriteHeaders, result)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}

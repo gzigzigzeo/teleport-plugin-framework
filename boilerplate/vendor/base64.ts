@@ -6,7 +6,7 @@ export function encodeString(value: string): string {
     return encode(Uint8Array.wrap(String.UTF8.encode(value)))
 }
 
-// decodes string value from base64
+// decodes value from base64 as string
 export function decodeString(value: string): string {
     return String.UTF8.decode(decode(value))
 }

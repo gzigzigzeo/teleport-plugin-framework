@@ -25,69 +25,44 @@ import (
 
 	"github.com/gravitational/teleport/api/types/events"
 	"github.com/gravitational/trace"
-	logrus "github.com/sirupsen/logrus/hooks/test"
+	logrus_hooks "github.com/sirupsen/logrus/hooks/test"
 	"github.com/wasmerio/wasmer-go/wasmer"
 
 	"github.com/stretchr/testify/require"
 )
 
-// testTraitFactory represents trait factory for tests
-type testTraitFactory struct {
-	traits []*testTrait
-}
-
 // testTrait represents test trait
 type testTrait struct {
-	ectx               *ExecutionContext
-	OK                 wasmer.NativeFunction
-	Fail               wasmer.NativeFunction
-	Infinite           wasmer.NativeFunction
-	Delay100ms         wasmer.NativeFunction
-	GetEventIndex      wasmer.NativeFunction
-	GoMethodEntryPoint wasmer.NativeFunction
+	OK                    NativeFunctionWithExecutionContext
+	ThrowError            NativeFunctionWithExecutionContext
+	GetStringReturnString NativeFunctionWithExecutionContext
+	InfiniteLoop          NativeFunctionWithExecutionContext
+	Delay100ms            NativeFunctionWithExecutionContext
+	GetEventIndex         NativeFunctionWithExecutionContext
+	GoMethodEntryPoint    NativeFunctionWithExecutionContext
+	GetSecret             NativeFunctionWithExecutionContext
 }
 
-// newTestTraitFactory creates new test trait factory
-func newTestTraitFactory() *testTraitFactory {
-	return &testTraitFactory{traits: make([]*testTrait, 0)}
+func newTestTrait() *testTrait {
+	return &testTrait{}
 }
 
-// CreateTrait creates new test trait and returns it
-func (e *testTraitFactory) CreateTrait(ectx *ExecutionContext) Trait {
-	t := &testTrait{ectx: ectx}
-	e.traits = append(e.traits, t)
-	return t
-}
-
-// For returns test trait bound to the specific execution context or error
-func (e *testTraitFactory) For(ec *ExecutionContext) (*testTrait, error) {
-	for _, t := range e.traits {
-		if t.ectx == ec {
-			return t, nil
-		}
-	}
-
-	return nil, trace.Errorf("testTrait not found for ExecutionContext %v", ec)
-}
-
-// ExportMethodsToWasm exports methods from go side to WASM side
-func (e *testTrait) ExportMethodsToWASM(store *wasmer.Store, imports *wasmer.ImportObject) error {
-	imports.Register(
+func (e *testTrait) ExportMethodsToWASM(exports *Exports) {
+	exports.Define(
 		"lib_wasm_test",
-		map[string]wasmer.IntoExtern{
-			"goMethod": wasmer.NewFunction(store, wasmer.NewFunctionType(
-				wasmer.NewValueTypes(), // void
-				wasmer.NewValueTypes(), // void
-			), e.goMethod),
+		map[string]Export{
+			"goMethod": {
+				wasmer.NewValueTypes(),
+				wasmer.NewValueTypes(),
+				e.goMethod,
+			},
 		},
 	)
-
-	return nil
 }
 
 // goMethod is the example go method, which could be called from WASM side and, in turn, calls infinite loop on WASM side
-func (e *testTrait) goMethod(args []wasmer.Value) ([]wasmer.Value, error) {
-	_, err := e.Infinite()
+func (e *testTrait) goMethod(ectx *ExecutionContext, args []wasmer.Value) ([]wasmer.Value, error) {
+	_, err := e.InfiniteLoop(ectx)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -95,7 +70,7 @@ func (e *testTrait) goMethod(args []wasmer.Value) ([]wasmer.Value, error) {
 }
 
 // ImportMethodsFromWASM reads WASM methods references to the current trait context
-func (e *testTrait) ImportMethodsFromWASM(getFunction GetFunctionFn) error {
+func (e *testTrait) ImportMethodsFromWASM(getFunction GetFunction) error {
 	var err error
 
 	e.OK, err = getFunction("ok")
@@ -103,12 +78,12 @@ func (e *testTrait) ImportMethodsFromWASM(getFunction GetFunctionFn) error {
 		return trace.Wrap(err)
 	}
 
-	e.Fail, err = getFunction("fail")
+	e.ThrowError, err = getFunction("throwError")
 	if err != nil {
 		return trace.Wrap(err)
 	}
 
-	e.Infinite, err = getFunction("infinite")
+	e.InfiniteLoop, err = getFunction("infiniteLoop")
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -128,39 +103,58 @@ func (e *testTrait) ImportMethodsFromWASM(getFunction GetFunctionFn) error {
 		return trace.Wrap(err)
 	}
 
+	e.GetStringReturnString, err = getFunction("getStringReturnString")
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	e.GetSecret, err = getFunction("getSecret")
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
 	return nil
+}
+
+func newSecretManager(t *testing.T) *AWSSecretsManager {
+	m, err := NewAWSSecretsManager(NewMockSecretsCache(map[string]string{"foo": "bar"}))
+	require.NoError(t, err)
+	return m
 }
 
 func TestPool(t *testing.T) {
 	ctx := context.Background()
-	log, _ := logrus.NewNullLogger()
+	log, _ := logrus_hooks.NewNullLogger()
 
 	bytes, err := os.ReadFile("test.wasm")
 	require.NoError(t, err)
 
 	p, err := NewExecutionContextPool(ExecutionContextPoolOptions{
-		Bytes:       bytes,
-		Timeout:     time.Second,
-		Concurrency: 2,
-		TraitFactories: []TraitFactory{
-			NewAssemblyScriptEnv(log),
-			newTestTraitFactory(),
+		Log:           log,
+		PluginBytes:   bytes,
+		Timeout:       time.Second,
+		Concurrency:   2,
+		MemoryInterop: NewAssemblyScriptMemoryInterop(),
+		Traits: []interface{}{
+			NewAssemblyScriptEnv(),
+			newTestTrait(),
+			newSecretManager(t),
 		},
 	})
 	require.NoError(t, err)
 
-	ectx1, err := p.Get(ctx)
+	ectx1, err := p.Fetch(ctx)
 	require.NoError(t, err)
 	require.NotNil(t, ectx1)
 	require.Len(t, p.contexts, 1)
 
-	ectx2, err := p.Get(ctx)
+	ectx2, err := p.Fetch(ctx)
 	require.NoError(t, err)
 	require.NotNil(t, ectx2)
 	require.Len(t, p.contexts, 0)
 	require.NotEqual(t, ectx1, ectx2)
 
-	err = p.Put(ctx, ectx1)
+	err = p.Return(ctx, ectx1)
 	require.NoError(t, err)
 
 	require.Len(t, p.contexts, 1)
@@ -170,34 +164,48 @@ func TestRegularMethods(t *testing.T) {
 	b, err := os.ReadFile("test.wasm")
 	require.NoError(t, err)
 
-	log, hook := logrus.NewNullLogger()
-	testTraitFactory := newTestTraitFactory()
+	log, hook := logrus_hooks.NewNullLogger()
+	testTrait := newTestTrait()
 
 	p, err := NewExecutionContextPool(ExecutionContextPoolOptions{
-		Bytes:       b,
-		Timeout:     time.Second,
-		Concurrency: 2,
-		TraitFactories: []TraitFactory{
-			NewAssemblyScriptEnv(log),
-			testTraitFactory,
+		Log:           log,
+		MemoryInterop: NewAssemblyScriptMemoryInterop(),
+		PluginBytes:   b,
+		Timeout:       time.Second,
+		Concurrency:   1,
+		Traits: []interface{}{
+			NewAssemblyScriptEnv(),
+			testTrait,
+			newSecretManager(t),
 		},
 	})
 	require.NoError(t, err)
 
 	_, err = p.Execute(context.Background(), func(ectx *ExecutionContext) (interface{}, error) {
-		tt, err := testTraitFactory.For(ectx)
+		r, err := testTrait.OK(ectx)
 		require.NoError(t, err)
-		require.NotNil(t, tt)
+		require.Equal(t, r.I32(), int32(1))
 
-		r, err := tt.OK()
-		require.NoError(t, err)
-		require.Equal(t, r, int32(1))
-
-		_, err = tt.Fail()
+		_, err = testTrait.ThrowError(ectx)
 		require.Error(t, err, "unreachable")
 		require.Contains(t, hook.LastEntry().Message, "Failure")
 
-		_, err = tt.Infinite()
+		foo, err := ectx.MemoryInterop.PutString(ectx, "foo")
+		require.NoError(t, err)
+
+		bar, err := testTrait.GetStringReturnString(ectx, foo)
+		require.NoError(t, err)
+
+		s := ectx.MemoryInterop.GetString(ectx, bar)
+		require.Equal(t, s, "bar")
+
+		return nil, nil
+	})
+
+	require.NoError(t, err)
+
+	_, err = p.Execute(context.Background(), func(ectx *ExecutionContext) (interface{}, error) {
+		_, err = testTrait.InfiniteLoop(ectx)
 		require.NoError(t, err)
 
 		return nil, nil
@@ -205,38 +213,36 @@ func TestRegularMethods(t *testing.T) {
 
 	require.Error(t, err, "execution timeout")
 
-	_, err = p.Execute(context.Background(), func(ctx *ExecutionContext) (interface{}, error) {
-		tt, err := testTraitFactory.For(ctx)
-		require.NoError(t, err)
-		require.NotNil(t, tt)
-
-		_, err = tt.GoMethodEntryPoint()
+	_, err = p.Execute(context.Background(), func(ectx *ExecutionContext) (interface{}, error) {
+		_, err = testTrait.GoMethodEntryPoint(ectx)
 		require.NoError(t, err)
 
 		return nil, nil
 	})
 
 	require.Error(t, err, "execution timeout")
-
 }
 
 // TestParallelExecution the purpose of this test is to ensure that there would be no crashes
 func TestParallelExecution(t *testing.T) {
 	ctx := context.Background()
-	log, _ := logrus.NewNullLogger()
+	log, _ := logrus_hooks.NewNullLogger()
 
 	b, err := os.ReadFile("test.wasm")
 	require.NoError(t, err)
 
-	testTraitFactory := newTestTraitFactory()
+	testTrait := newTestTrait()
 
 	p, err := NewExecutionContextPool(ExecutionContextPoolOptions{
-		Bytes:       b,
-		Timeout:     time.Second,
-		Concurrency: 5,
-		TraitFactories: []TraitFactory{
-			NewAssemblyScriptEnv(log),
-			testTraitFactory,
+		Log:           log,
+		PluginBytes:   b,
+		MemoryInterop: NewAssemblyScriptMemoryInterop(),
+		Timeout:       time.Second,
+		Concurrency:   5,
+		Traits: []interface{}{
+			NewAssemblyScriptEnv(),
+			testTrait,
+			newSecretManager(t),
 		},
 	})
 	require.NoError(t, err)
@@ -249,11 +255,7 @@ func TestParallelExecution(t *testing.T) {
 	for i := 0; i < count; i++ {
 		go func(n int) {
 			_, err := p.Execute(ctx, func(ectx *ExecutionContext) (interface{}, error) {
-				tt, err := testTraitFactory.For(ectx)
-				require.NoError(t, err)
-				require.NotNil(t, tt)
-
-				_, err = tt.Delay100ms()
+				_, err = testTrait.Delay100ms(ectx)
 				require.NoError(t, err)
 
 				return nil, nil
@@ -270,22 +272,25 @@ func TestParallelExecution(t *testing.T) {
 
 func TestParallelProtobufInteropExecution(t *testing.T) {
 	ctx := context.Background()
-	log, hook := logrus.NewNullLogger()
+	log, hook := logrus_hooks.NewNullLogger()
 
 	b, err := os.ReadFile("test.wasm")
 	require.NoError(t, err)
 
 	protobufInterop := NewProtobufInterop()
-	testTraitFactory := newTestTraitFactory()
+	testTrait := newTestTrait()
 
 	p, err := NewExecutionContextPool(ExecutionContextPoolOptions{
-		Bytes:       b,
-		Timeout:     time.Second,
-		Concurrency: 32,
-		TraitFactories: []TraitFactory{
-			NewAssemblyScriptEnv(log),
+		Log:           log,
+		PluginBytes:   b,
+		Timeout:       time.Second,
+		Concurrency:   32,
+		MemoryInterop: NewAssemblyScriptMemoryInterop(),
+		Traits: []interface{}{
+			NewAssemblyScriptEnv(),
 			protobufInterop,
-			testTraitFactory,
+			testTrait,
+			newSecretManager(t),
 		},
 	})
 	require.NoError(t, err)
@@ -304,23 +309,16 @@ func TestParallelProtobufInteropExecution(t *testing.T) {
 					},
 				})
 
-				protobufInteropTrait, err := protobufInterop.For(ectx)
-				require.NoError(t, err)
-				require.NotNil(t, ectx)
-
-				dataView, err := protobufInteropTrait.SendMessage(oneof)
+				dataView, err := protobufInterop.SendMessage(ectx, oneof)
 				require.NoError(t, err)
 
 				if len(hook.AllEntries()) > 0 {
 					fmt.Println(hook.LastEntry())
 				}
 
-				tr, err := testTraitFactory.For(ectx)
+				result, err := testTrait.GetEventIndex(ectx, dataView)
 				require.NoError(t, err)
-
-				result, err := tr.GetEventIndex(dataView)
-				require.NoError(t, err)
-				require.Equal(t, result, int64(i))
+				require.Equal(t, result.I64(), int64(i))
 
 				wg.Done()
 
@@ -336,33 +334,33 @@ func TestParallelProtobufInteropExecution(t *testing.T) {
 
 func TestHandleEvent(t *testing.T) {
 	ctx := context.Background()
-	log, _ := logrus.NewNullLogger()
+	log, _ := logrus_hooks.NewNullLogger()
 
 	b, err := os.ReadFile("test.wasm")
 	require.NoError(t, err)
 
 	protobufInterop := NewProtobufInterop()
 	handleEvent := NewHandleEvent("handleEvent", protobufInterop)
-	testTraitFactory := newTestTraitFactory()
+	testTraitFactory := newTestTrait()
 
 	p, err := NewExecutionContextPool(ExecutionContextPoolOptions{
-		Bytes:       b,
-		Timeout:     time.Second,
-		Concurrency: 32,
-		TraitFactories: []TraitFactory{
-			NewAssemblyScriptEnv(log),
+		Log:           log,
+		PluginBytes:   b,
+		Timeout:       time.Second,
+		Concurrency:   32,
+		MemoryInterop: NewAssemblyScriptMemoryInterop(),
+		Traits: []interface{}{
+			NewAssemblyScriptEnv(),
 			protobufInterop,
 			handleEvent,
 			testTraitFactory,
+			newSecretManager(t),
 		},
 	})
 	require.NoError(t, err)
 
 	_, err = p.Execute(ctx, func(ectx *ExecutionContext) (interface{}, error) {
-		h, err := handleEvent.For(ectx)
-		require.NoError(t, err)
-
-		r, err := h.HandleEvent(&events.UserCreate{
+		r, err := handleEvent.HandleEvent(ectx, &events.UserCreate{
 			Metadata: events.Metadata{
 				Index: int64(0),
 			},
@@ -371,7 +369,7 @@ func TestHandleEvent(t *testing.T) {
 		require.False(t, r.Success)
 		require.Equal(t, r.Error, "UserCreate event is not allowed")
 
-		r, err = h.HandleEvent(&events.UserLogin{
+		r, err = handleEvent.HandleEvent(ectx, &events.UserLogin{
 			Metadata: events.Metadata{
 				Index: int64(1),
 			},
@@ -380,7 +378,7 @@ func TestHandleEvent(t *testing.T) {
 		require.True(t, r.Success)
 		require.Equal(t, r.Event.GetUserLogin().Metadata.Index, int64(999))
 
-		r, err = h.HandleEvent(&events.UserDelete{
+		r, err = handleEvent.HandleEvent(ectx, &events.UserDelete{
 			Metadata: events.Metadata{
 				Index: int64(1),
 			},
@@ -388,6 +386,50 @@ func TestHandleEvent(t *testing.T) {
 		require.NoError(t, err)
 		require.True(t, r.Success)
 		require.Nil(t, r.Event)
+
+		return nil, nil
+	})
+
+	require.NoError(t, err)
+}
+
+func TestAWSSecretsManager(t *testing.T) {
+	ctx := context.Background()
+	log, _ := logrus_hooks.NewNullLogger()
+
+	b, err := os.ReadFile("test.wasm")
+	require.NoError(t, err)
+
+	testTrait := newTestTrait()
+	awsSecretsManager := newSecretManager(t)
+
+	p, err := NewExecutionContextPool(ExecutionContextPoolOptions{
+		Log:           log,
+		PluginBytes:   b,
+		Timeout:       time.Second,
+		Concurrency:   32,
+		MemoryInterop: NewAssemblyScriptMemoryInterop(),
+		Traits: []interface{}{
+			NewAssemblyScriptEnv(),
+			awsSecretsManager,
+			testTrait,
+		},
+	})
+	require.NoError(t, err)
+
+	_, err = p.Execute(ctx, func(ectx *ExecutionContext) (interface{}, error) {
+		fooS, err := ectx.MemoryInterop.PutString(ectx, "foo")
+		require.NoError(t, err)
+
+		r, err := testTrait.GetSecret(ectx, fooS)
+		require.NoError(t, err)
+		require.Equal(t, ectx.MemoryInterop.GetString(ectx, r), "bar")
+
+		emptyS, err := ectx.MemoryInterop.PutString(ectx, "-")
+		require.NoError(t, err)
+
+		_, err = testTrait.GetSecret(ectx, emptyS)
+		require.Error(t, err)
 
 		return nil, nil
 	})

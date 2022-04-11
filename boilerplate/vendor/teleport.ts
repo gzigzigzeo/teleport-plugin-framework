@@ -478,38 +478,6 @@ namespace __proto {
         }
     }
 }
-/**
- * Allocates and returns the DataView for a protobuf binary message.
- * @param length Message size
- * @returns (DataView addr << 32) | Buffer addr
- */
-export function __protobuf_alloc(length: i32): u64 {
-    const view = new DataView(new ArrayBuffer(length));
-    return (
-        (u64(changetype<usize>(view)) << 32) |
-        (changetype<usize>(view.buffer) + view.byteOffset)
-    );
-}
-
-/**
- * Returns the length of the DataView.
- * @param data DataView instance
- * @returns Length
- */
-export function __protobuf_getLength(view: DataView): u32 {
-    return view.byteLength;
-}
-
-/**
- * Returns address of the DataView, accessible via WASM memory.
- *
- * @param data DataView instance
- * @returns Memory address
- */
-export function __protobuf_getAddr(view: DataView): usize {
-    return changetype<usize>(view.buffer) + view.byteOffset;
-}
-
 export namespace google {
     export namespace protobuf {
         /**
@@ -621,12 +589,12 @@ export namespace google {
             public nanos: i32;
 
             // Decodes Timestamp from an ArrayBuffer
-            static decodeArrayBuffer(buf: ArrayBuffer): Timestamp {
-                return Timestamp.decode(new DataView(buf));
+            static decode(buf: ArrayBuffer): Timestamp {
+                return Timestamp.decodeDataView(new DataView(buf));
             }
 
             // Decodes Timestamp from a DataView
-            static decode(view: DataView): Timestamp {
+            static decodeDataView(view: DataView): Timestamp {
                 const decoder = new __proto.Decoder(view);
                 const obj = new Timestamp();
 
@@ -665,14 +633,11 @@ export namespace google {
                 return size;
             }
 
-            // Encodes Timestamp to the DataView
-            encode(): DataView {
-                const source = this.encodeU8Array();
-                const view = new DataView(new ArrayBuffer(source.length));
-                for (let i: i32 = 0; i < source.length; i++) {
-                    view.setUint8(i, source.at(i));
-                }
-                return view;
+            // Encodes Timestamp to the ArrayBuffer
+            encode(): ArrayBuffer {
+                return changetype<ArrayBuffer>(
+                    StaticArray.fromArray<u8>(this.encodeU8Array())
+                );
             }
 
             // Encodes Timestamp to the Array<u8>
@@ -722,12 +687,12 @@ export namespace google {
             >();
 
             // Decodes Struct from an ArrayBuffer
-            static decodeArrayBuffer(buf: ArrayBuffer): Struct {
-                return Struct.decode(new DataView(buf));
+            static decode(buf: ArrayBuffer): Struct {
+                return Struct.decodeDataView(new DataView(buf));
             }
 
             // Decodes Struct from a DataView
-            static decode(view: DataView): Struct {
+            static decodeDataView(view: DataView): Struct {
                 const decoder = new __proto.Decoder(view);
                 const obj = new Struct();
 
@@ -780,14 +745,11 @@ export namespace google {
                 return size;
             }
 
-            // Encodes Struct to the DataView
-            encode(): DataView {
-                const source = this.encodeU8Array();
-                const view = new DataView(new ArrayBuffer(source.length));
-                for (let i: i32 = 0; i < source.length; i++) {
-                    view.setUint8(i, source.at(i));
-                }
-                return view;
+            // Encodes Struct to the ArrayBuffer
+            encode(): ArrayBuffer {
+                return changetype<ArrayBuffer>(
+                    StaticArray.fromArray<u8>(this.encodeU8Array())
+                );
             }
 
             // Encodes Struct to the Array<u8>
@@ -854,12 +816,12 @@ export namespace google {
             public list_value: google.protobuf.ListValue | null;
 
             // Decodes Value from an ArrayBuffer
-            static decodeArrayBuffer(buf: ArrayBuffer): Value {
-                return Value.decode(new DataView(buf));
+            static decode(buf: ArrayBuffer): Value {
+                return Value.decodeDataView(new DataView(buf));
             }
 
             // Decodes Value from a DataView
-            static decode(view: DataView): Value {
+            static decodeDataView(view: DataView): Value {
                 const decoder = new __proto.Decoder(view);
                 const obj = new Value();
 
@@ -890,13 +852,14 @@ export namespace google {
                         }
                         case 5: {
                             const length = decoder.uint32();
-                            obj.struct_value = google.protobuf.Struct.decode(
-                                new DataView(
-                                    decoder.view.buffer,
-                                    decoder.pos + decoder.view.byteOffset,
-                                    length
-                                )
-                            );
+                            obj.struct_value =
+                                google.protobuf.Struct.decodeDataView(
+                                    new DataView(
+                                        decoder.view.buffer,
+                                        decoder.pos + decoder.view.byteOffset,
+                                        length
+                                    )
+                                );
                             decoder.skip(length);
 
                             obj.__oneOf_kind = "struct_value";
@@ -904,13 +867,14 @@ export namespace google {
                         }
                         case 6: {
                             const length = decoder.uint32();
-                            obj.list_value = google.protobuf.ListValue.decode(
-                                new DataView(
-                                    decoder.view.buffer,
-                                    decoder.pos + decoder.view.byteOffset,
-                                    length
-                                )
-                            );
+                            obj.list_value =
+                                google.protobuf.ListValue.decodeDataView(
+                                    new DataView(
+                                        decoder.view.buffer,
+                                        decoder.pos + decoder.view.byteOffset,
+                                        length
+                                    )
+                                );
                             decoder.skip(length);
 
                             obj.__oneOf_kind = "list_value";
@@ -970,14 +934,11 @@ export namespace google {
                 return size;
             }
 
-            // Encodes Value to the DataView
-            encode(): DataView {
-                const source = this.encodeU8Array();
-                const view = new DataView(new ArrayBuffer(source.length));
-                for (let i: i32 = 0; i < source.length; i++) {
-                    view.setUint8(i, source.at(i));
-                }
-                return view;
+            // Encodes Value to the ArrayBuffer
+            encode(): ArrayBuffer {
+                return changetype<ArrayBuffer>(
+                    StaticArray.fromArray<u8>(this.encodeU8Array())
+                );
             }
 
             // Encodes Value to the Array<u8>
@@ -1043,12 +1004,12 @@ export namespace google {
                 new Array<google.protobuf.Value>();
 
             // Decodes ListValue from an ArrayBuffer
-            static decodeArrayBuffer(buf: ArrayBuffer): ListValue {
-                return ListValue.decode(new DataView(buf));
+            static decode(buf: ArrayBuffer): ListValue {
+                return ListValue.decodeDataView(new DataView(buf));
             }
 
             // Decodes ListValue from a DataView
-            static decode(view: DataView): ListValue {
+            static decodeDataView(view: DataView): ListValue {
                 const decoder = new __proto.Decoder(view);
                 const obj = new ListValue();
 
@@ -1060,7 +1021,7 @@ export namespace google {
                         case 1: {
                             const length = decoder.uint32();
                             obj.values.push(
-                                google.protobuf.Value.decode(
+                                google.protobuf.Value.decodeDataView(
                                     new DataView(
                                         decoder.view.buffer,
                                         decoder.pos + decoder.view.byteOffset,
@@ -1098,14 +1059,11 @@ export namespace google {
                 return size;
             }
 
-            // Encodes ListValue to the DataView
-            encode(): DataView {
-                const source = this.encodeU8Array();
-                const view = new DataView(new ArrayBuffer(source.length));
-                for (let i: i32 = 0; i < source.length; i++) {
-                    view.setUint8(i, source.at(i));
-                }
-                return view;
+            // Encodes ListValue to the ArrayBuffer
+            encode(): ArrayBuffer {
+                return changetype<ArrayBuffer>(
+                    StaticArray.fromArray<u8>(this.encodeU8Array())
+                );
             }
 
             // Encodes ListValue to the Array<u8>
@@ -1135,12 +1093,12 @@ export namespace wrappers {
         public Values: Array<string> = new Array<string>();
 
         // Decodes StringValues from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): StringValues {
-            return StringValues.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): StringValues {
+            return StringValues.decodeDataView(new DataView(buf));
         }
 
         // Decodes StringValues from a DataView
-        static decode(view: DataView): StringValues {
+        static decodeDataView(view: DataView): StringValues {
             const decoder = new __proto.Decoder(view);
             const obj = new StringValues();
 
@@ -1170,14 +1128,11 @@ export namespace wrappers {
             return size;
         }
 
-        // Encodes StringValues to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes StringValues to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes StringValues to the Array<u8>
@@ -1210,12 +1165,12 @@ export namespace wrappers {
         >();
 
         // Decodes LabelValues from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): LabelValues {
-            return LabelValues.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): LabelValues {
+            return LabelValues.decodeDataView(new DataView(buf));
         }
 
         // Decodes LabelValues from a DataView
-        static decode(view: DataView): LabelValues {
+        static decodeDataView(view: DataView): LabelValues {
             const decoder = new __proto.Decoder(view);
             const obj = new LabelValues();
 
@@ -1264,14 +1219,11 @@ export namespace wrappers {
             return size;
         }
 
-        // Encodes LabelValues to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes LabelValues to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes LabelValues to the Array<u8>
@@ -1433,12 +1385,12 @@ export namespace types {
         public HostID: string = "";
 
         // Decodes KeepAlive from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): KeepAlive {
-            return KeepAlive.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): KeepAlive {
+            return KeepAlive.decodeDataView(new DataView(buf));
         }
 
         // Decodes KeepAlive from a DataView
-        static decode(view: DataView): KeepAlive {
+        static decodeDataView(view: DataView): KeepAlive {
             const decoder = new __proto.Decoder(view);
             const obj = new KeepAlive();
 
@@ -1461,7 +1413,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Expires = google.protobuf.Timestamp.decode(
+                        obj.Expires = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -1529,14 +1481,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes KeepAlive to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes KeepAlive to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes KeepAlive to the Array<u8>
@@ -1624,12 +1573,12 @@ export namespace types {
         public ID: i64;
 
         // Decodes Metadata from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): Metadata {
-            return Metadata.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): Metadata {
+            return Metadata.decodeDataView(new DataView(buf));
         }
 
         // Decodes Metadata from a DataView
-        static decode(view: DataView): Metadata {
+        static decodeDataView(view: DataView): Metadata {
             const decoder = new __proto.Decoder(view);
             const obj = new Metadata();
 
@@ -1659,7 +1608,7 @@ export namespace types {
                     }
                     case 6: {
                         const length = decoder.uint32();
-                        obj.Expires = google.protobuf.Timestamp.decode(
+                        obj.Expires = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -1734,14 +1683,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes Metadata to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes Metadata to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes Metadata to the Array<u8>
@@ -1847,12 +1793,12 @@ export namespace types {
         public Schedule: types.RotationSchedule = new types.RotationSchedule();
 
         // Decodes Rotation from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): Rotation {
-            return Rotation.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): Rotation {
+            return Rotation.decodeDataView(new DataView(buf));
         }
 
         // Decodes Rotation from a DataView
-        static decode(view: DataView): Rotation {
+        static decodeDataView(view: DataView): Rotation {
             const decoder = new __proto.Decoder(view);
             const obj = new Rotation();
 
@@ -1879,7 +1825,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Started = google.protobuf.Timestamp.decode(
+                        obj.Started = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -1896,20 +1842,21 @@ export namespace types {
                     }
                     case 7: {
                         const length = decoder.uint32();
-                        obj.LastRotated = google.protobuf.Timestamp.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.LastRotated =
+                            google.protobuf.Timestamp.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
                     }
                     case 8: {
                         const length = decoder.uint32();
-                        obj.Schedule = types.RotationSchedule.decode(
+                        obj.Schedule = types.RotationSchedule.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -1998,14 +1945,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes Rotation to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes Rotation to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes Rotation to the Array<u8>
@@ -2093,12 +2037,12 @@ export namespace types {
             new google.protobuf.Timestamp();
 
         // Decodes RotationSchedule from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): RotationSchedule {
-            return RotationSchedule.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): RotationSchedule {
+            return RotationSchedule.decodeDataView(new DataView(buf));
         }
 
         // Decodes RotationSchedule from a DataView
-        static decode(view: DataView): RotationSchedule {
+        static decodeDataView(view: DataView): RotationSchedule {
             const decoder = new __proto.Decoder(view);
             const obj = new RotationSchedule();
 
@@ -2109,33 +2053,35 @@ export namespace types {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.UpdateClients = google.protobuf.Timestamp.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.UpdateClients =
+                            google.protobuf.Timestamp.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.UpdateServers = google.protobuf.Timestamp.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.UpdateServers =
+                            google.protobuf.Timestamp.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Standby = google.protobuf.Timestamp.decode(
+                        obj.Standby = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -2194,14 +2140,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes RotationSchedule to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes RotationSchedule to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes RotationSchedule to the Array<u8>
@@ -2265,12 +2208,12 @@ export namespace types {
         public Metadata: types.Metadata = new types.Metadata();
 
         // Decodes ResourceHeader from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ResourceHeader {
-            return ResourceHeader.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ResourceHeader {
+            return ResourceHeader.decodeDataView(new DataView(buf));
         }
 
         // Decodes ResourceHeader from a DataView
-        static decode(view: DataView): ResourceHeader {
+        static decodeDataView(view: DataView): ResourceHeader {
             const decoder = new __proto.Decoder(view);
             const obj = new ResourceHeader();
 
@@ -2293,7 +2236,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -2348,14 +2291,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ResourceHeader to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ResourceHeader to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ResourceHeader to the Array<u8>
@@ -2411,12 +2351,12 @@ export namespace types {
             new types.DatabaseServerSpecV3();
 
         // Decodes DatabaseServerV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): DatabaseServerV3 {
-            return DatabaseServerV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): DatabaseServerV3 {
+            return DatabaseServerV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes DatabaseServerV3 from a DataView
-        static decode(view: DataView): DatabaseServerV3 {
+        static decodeDataView(view: DataView): DatabaseServerV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new DatabaseServerV3();
 
@@ -2439,7 +2379,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -2452,7 +2392,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.DatabaseServerSpecV3.decode(
+                        obj.Spec = types.DatabaseServerSpecV3.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -2518,14 +2458,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes DatabaseServerV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes DatabaseServerV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes DatabaseServerV3 to the Array<u8>
@@ -2637,12 +2574,12 @@ export namespace types {
         public Database: types.DatabaseV3 = new types.DatabaseV3();
 
         // Decodes DatabaseServerSpecV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): DatabaseServerSpecV3 {
-            return DatabaseServerSpecV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): DatabaseServerSpecV3 {
+            return DatabaseServerSpecV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes DatabaseServerSpecV3 from a DataView
-        static decode(view: DataView): DatabaseServerSpecV3 {
+        static decodeDataView(view: DataView): DatabaseServerSpecV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new DatabaseServerSpecV3();
 
@@ -2669,7 +2606,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.AWS = types.AWS.decode(
+                        obj.AWS = types.AWS.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -2705,7 +2642,7 @@ export namespace types {
                     }
                     case 10: {
                         const length = decoder.uint32();
-                        obj.Rotation = types.Rotation.decode(
+                        obj.Rotation = types.Rotation.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -2718,7 +2655,7 @@ export namespace types {
                     }
                     case 11: {
                         const length = decoder.uint32();
-                        obj.GCP = types.GCPCloudSQL.decode(
+                        obj.GCP = types.GCPCloudSQL.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -2731,7 +2668,7 @@ export namespace types {
                     }
                     case 12: {
                         const length = decoder.uint32();
-                        obj.Database = types.DatabaseV3.decode(
+                        obj.Database = types.DatabaseV3.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -2857,14 +2794,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes DatabaseServerSpecV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes DatabaseServerSpecV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes DatabaseServerSpecV3 to the Array<u8>
@@ -2998,12 +2932,12 @@ export namespace types {
             new Array<types.DatabaseV3>();
 
         // Decodes DatabaseV3List from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): DatabaseV3List {
-            return DatabaseV3List.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): DatabaseV3List {
+            return DatabaseV3List.decodeDataView(new DataView(buf));
         }
 
         // Decodes DatabaseV3List from a DataView
-        static decode(view: DataView): DatabaseV3List {
+        static decodeDataView(view: DataView): DatabaseV3List {
             const decoder = new __proto.Decoder(view);
             const obj = new DatabaseV3List();
 
@@ -3015,7 +2949,7 @@ export namespace types {
                     case 1: {
                         const length = decoder.uint32();
                         obj.Databases.push(
-                            types.DatabaseV3.decode(
+                            types.DatabaseV3.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -3051,14 +2985,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes DatabaseV3List to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes DatabaseV3List to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes DatabaseV3List to the Array<u8>
@@ -3100,12 +3031,12 @@ export namespace types {
         public Status: types.DatabaseStatusV3 = new types.DatabaseStatusV3();
 
         // Decodes DatabaseV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): DatabaseV3 {
-            return DatabaseV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): DatabaseV3 {
+            return DatabaseV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes DatabaseV3 from a DataView
-        static decode(view: DataView): DatabaseV3 {
+        static decodeDataView(view: DataView): DatabaseV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new DatabaseV3();
 
@@ -3128,7 +3059,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -3141,7 +3072,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.DatabaseSpecV3.decode(
+                        obj.Spec = types.DatabaseSpecV3.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -3154,7 +3085,7 @@ export namespace types {
                     }
                     case 6: {
                         const length = decoder.uint32();
-                        obj.Status = types.DatabaseStatusV3.decode(
+                        obj.Status = types.DatabaseStatusV3.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -3231,14 +3162,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes DatabaseV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes DatabaseV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes DatabaseV3 to the Array<u8>
@@ -3335,12 +3263,12 @@ export namespace types {
         public AD: types.AD = new types.AD();
 
         // Decodes DatabaseSpecV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): DatabaseSpecV3 {
-            return DatabaseSpecV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): DatabaseSpecV3 {
+            return DatabaseSpecV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes DatabaseSpecV3 from a DataView
-        static decode(view: DataView): DatabaseSpecV3 {
+        static decodeDataView(view: DataView): DatabaseSpecV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new DatabaseSpecV3();
 
@@ -3374,7 +3302,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.AWS = types.AWS.decode(
+                        obj.AWS = types.AWS.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -3387,7 +3315,7 @@ export namespace types {
                     }
                     case 6: {
                         const length = decoder.uint32();
-                        obj.GCP = types.GCPCloudSQL.decode(
+                        obj.GCP = types.GCPCloudSQL.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -3400,7 +3328,7 @@ export namespace types {
                     }
                     case 7: {
                         const length = decoder.uint32();
-                        obj.Azure = types.Azure.decode(
+                        obj.Azure = types.Azure.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -3413,7 +3341,7 @@ export namespace types {
                     }
                     case 8: {
                         const length = decoder.uint32();
-                        obj.TLS = types.DatabaseTLS.decode(
+                        obj.TLS = types.DatabaseTLS.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -3426,7 +3354,7 @@ export namespace types {
                     }
                     case 9: {
                         const length = decoder.uint32();
-                        obj.AD = types.AD.decode(
+                        obj.AD = types.AD.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -3537,14 +3465,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes DatabaseSpecV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes DatabaseSpecV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes DatabaseSpecV3 to the Array<u8>
@@ -3670,12 +3595,12 @@ export namespace types {
         public AWS: types.AWS = new types.AWS();
 
         // Decodes DatabaseStatusV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): DatabaseStatusV3 {
-            return DatabaseStatusV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): DatabaseStatusV3 {
+            return DatabaseStatusV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes DatabaseStatusV3 from a DataView
-        static decode(view: DataView): DatabaseStatusV3 {
+        static decodeDataView(view: DataView): DatabaseStatusV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new DatabaseStatusV3();
 
@@ -3690,7 +3615,7 @@ export namespace types {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.AWS = types.AWS.decode(
+                        obj.AWS = types.AWS.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -3733,14 +3658,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes DatabaseStatusV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes DatabaseStatusV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes DatabaseStatusV3 to the Array<u8>
@@ -3787,12 +3709,12 @@ export namespace types {
         public AccountID: string = "";
 
         // Decodes AWS from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AWS {
-            return AWS.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AWS {
+            return AWS.decodeDataView(new DataView(buf));
         }
 
         // Decodes AWS from a DataView
-        static decode(view: DataView): AWS {
+        static decodeDataView(view: DataView): AWS {
             const decoder = new __proto.Decoder(view);
             const obj = new AWS();
 
@@ -3807,7 +3729,7 @@ export namespace types {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Redshift = types.Redshift.decode(
+                        obj.Redshift = types.Redshift.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -3820,7 +3742,7 @@ export namespace types {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.RDS = types.RDS.decode(
+                        obj.RDS = types.RDS.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -3884,14 +3806,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes AWS to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AWS to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AWS to the Array<u8>
@@ -3946,12 +3865,12 @@ export namespace types {
         public ClusterID: string = "";
 
         // Decodes Redshift from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): Redshift {
-            return Redshift.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): Redshift {
+            return Redshift.decodeDataView(new DataView(buf));
         }
 
         // Decodes Redshift from a DataView
-        static decode(view: DataView): Redshift {
+        static decodeDataView(view: DataView): Redshift {
             const decoder = new __proto.Decoder(view);
             const obj = new Redshift();
 
@@ -3986,14 +3905,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes Redshift to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes Redshift to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes Redshift to the Array<u8>
@@ -4024,12 +3940,12 @@ export namespace types {
         public IAMAuth: bool;
 
         // Decodes RDS from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): RDS {
-            return RDS.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): RDS {
+            return RDS.decodeDataView(new DataView(buf));
         }
 
         // Decodes RDS from a DataView
-        static decode(view: DataView): RDS {
+        static decodeDataView(view: DataView): RDS {
             const decoder = new __proto.Decoder(view);
             const obj = new RDS();
 
@@ -4089,14 +4005,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes RDS to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes RDS to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes RDS to the Array<u8>
@@ -4137,12 +4050,12 @@ export namespace types {
         public InstanceID: string = "";
 
         // Decodes GCPCloudSQL from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): GCPCloudSQL {
-            return GCPCloudSQL.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): GCPCloudSQL {
+            return GCPCloudSQL.decodeDataView(new DataView(buf));
         }
 
         // Decodes GCPCloudSQL from a DataView
-        static decode(view: DataView): GCPCloudSQL {
+        static decodeDataView(view: DataView): GCPCloudSQL {
             const decoder = new __proto.Decoder(view);
             const obj = new GCPCloudSQL();
 
@@ -4187,14 +4100,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes GCPCloudSQL to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes GCPCloudSQL to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes GCPCloudSQL to the Array<u8>
@@ -4227,12 +4137,12 @@ export namespace types {
         public Name: string = "";
 
         // Decodes Azure from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): Azure {
-            return Azure.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): Azure {
+            return Azure.decodeDataView(new DataView(buf));
         }
 
         // Decodes Azure from a DataView
-        static decode(view: DataView): Azure {
+        static decodeDataView(view: DataView): Azure {
             const decoder = new __proto.Decoder(view);
             const obj = new Azure();
 
@@ -4267,14 +4177,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes Azure to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes Azure to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes Azure to the Array<u8>
@@ -4305,12 +4212,12 @@ export namespace types {
         public SPN: string = "";
 
         // Decodes AD from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AD {
-            return AD.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AD {
+            return AD.decodeDataView(new DataView(buf));
         }
 
         // Decodes AD from a DataView
-        static decode(view: DataView): AD {
+        static decodeDataView(view: DataView): AD {
             const decoder = new __proto.Decoder(view);
             const obj = new AD();
 
@@ -4375,14 +4282,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes AD to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AD to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AD to the Array<u8>
@@ -4432,12 +4336,12 @@ export namespace types {
         public ServerName: string = "";
 
         // Decodes DatabaseTLS from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): DatabaseTLS {
-            return DatabaseTLS.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): DatabaseTLS {
+            return DatabaseTLS.decodeDataView(new DataView(buf));
         }
 
         // Decodes DatabaseTLS from a DataView
-        static decode(view: DataView): DatabaseTLS {
+        static decodeDataView(view: DataView): DatabaseTLS {
             const decoder = new __proto.Decoder(view);
             const obj = new DatabaseTLS();
 
@@ -4487,14 +4391,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes DatabaseTLS to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes DatabaseTLS to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes DatabaseTLS to the Array<u8>
@@ -4536,12 +4437,12 @@ export namespace types {
         public Spec: types.ServerSpecV2 = new types.ServerSpecV2();
 
         // Decodes ServerV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ServerV2 {
-            return ServerV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ServerV2 {
+            return ServerV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes ServerV2 from a DataView
-        static decode(view: DataView): ServerV2 {
+        static decodeDataView(view: DataView): ServerV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new ServerV2();
 
@@ -4564,7 +4465,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -4577,7 +4478,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.ServerSpecV2.decode(
+                        obj.Spec = types.ServerSpecV2.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -4642,14 +4543,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ServerV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ServerV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ServerV2 to the Array<u8>
@@ -4711,12 +4609,12 @@ export namespace types {
         public Servers: Array<types.ServerV2> = new Array<types.ServerV2>();
 
         // Decodes ServerV2List from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ServerV2List {
-            return ServerV2List.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ServerV2List {
+            return ServerV2List.decodeDataView(new DataView(buf));
         }
 
         // Decodes ServerV2List from a DataView
-        static decode(view: DataView): ServerV2List {
+        static decodeDataView(view: DataView): ServerV2List {
             const decoder = new __proto.Decoder(view);
             const obj = new ServerV2List();
 
@@ -4728,7 +4626,7 @@ export namespace types {
                     case 1: {
                         const length = decoder.uint32();
                         obj.Servers.push(
-                            types.ServerV2.decode(
+                            types.ServerV2.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -4764,14 +4662,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ServerV2List to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ServerV2List to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ServerV2List to the Array<u8>
@@ -4834,12 +4729,12 @@ export namespace types {
             new Array<types.KubernetesCluster>();
 
         // Decodes ServerSpecV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ServerSpecV2 {
-            return ServerSpecV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ServerSpecV2 {
+            return ServerSpecV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes ServerSpecV2 from a DataView
-        static decode(view: DataView): ServerSpecV2 {
+        static decodeDataView(view: DataView): ServerSpecV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new ServerSpecV2();
 
@@ -4873,7 +4768,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Rotation = types.Rotation.decode(
+                        obj.Rotation = types.Rotation.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -4895,7 +4790,7 @@ export namespace types {
                     case 9: {
                         const length = decoder.uint32();
                         obj.Apps.push(
-                            types.App.decode(
+                            types.App.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -4910,7 +4805,7 @@ export namespace types {
                     case 10: {
                         const length = decoder.uint32();
                         obj.KubernetesClusters.push(
-                            types.KubernetesCluster.decode(
+                            types.KubernetesCluster.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -5008,14 +4903,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ServerSpecV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ServerSpecV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ServerSpecV2 to the Array<u8>
@@ -5129,12 +5021,12 @@ export namespace types {
         public Spec: types.AppServerSpecV3 = new types.AppServerSpecV3();
 
         // Decodes AppServerV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AppServerV3 {
-            return AppServerV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AppServerV3 {
+            return AppServerV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes AppServerV3 from a DataView
-        static decode(view: DataView): AppServerV3 {
+        static decodeDataView(view: DataView): AppServerV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new AppServerV3();
 
@@ -5157,7 +5049,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -5170,7 +5062,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.AppServerSpecV3.decode(
+                        obj.Spec = types.AppServerSpecV3.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -5236,14 +5128,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes AppServerV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AppServerV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AppServerV3 to the Array<u8>
@@ -5310,12 +5199,12 @@ export namespace types {
         public App: types.AppV3 = new types.AppV3();
 
         // Decodes AppServerSpecV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AppServerSpecV3 {
-            return AppServerSpecV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AppServerSpecV3 {
+            return AppServerSpecV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes AppServerSpecV3 from a DataView
-        static decode(view: DataView): AppServerSpecV3 {
+        static decodeDataView(view: DataView): AppServerSpecV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new AppServerSpecV3();
 
@@ -5338,7 +5227,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Rotation = types.Rotation.decode(
+                        obj.Rotation = types.Rotation.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -5351,7 +5240,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.App = types.AppV3.decode(
+                        obj.App = types.AppV3.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -5416,14 +5305,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes AppServerSpecV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AppServerSpecV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AppServerSpecV3 to the Array<u8>
@@ -5482,12 +5368,12 @@ export namespace types {
         public Apps: Array<types.AppV3> = new Array<types.AppV3>();
 
         // Decodes AppV3List from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AppV3List {
-            return AppV3List.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AppV3List {
+            return AppV3List.decodeDataView(new DataView(buf));
         }
 
         // Decodes AppV3List from a DataView
-        static decode(view: DataView): AppV3List {
+        static decodeDataView(view: DataView): AppV3List {
             const decoder = new __proto.Decoder(view);
             const obj = new AppV3List();
 
@@ -5499,7 +5385,7 @@ export namespace types {
                     case 1: {
                         const length = decoder.uint32();
                         obj.Apps.push(
-                            types.AppV3.decode(
+                            types.AppV3.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -5535,14 +5421,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes AppV3List to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AppV3List to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AppV3List to the Array<u8>
@@ -5579,12 +5462,12 @@ export namespace types {
         public Spec: types.AppSpecV3 = new types.AppSpecV3();
 
         // Decodes AppV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AppV3 {
-            return AppV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AppV3 {
+            return AppV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes AppV3 from a DataView
-        static decode(view: DataView): AppV3 {
+        static decodeDataView(view: DataView): AppV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new AppV3();
 
@@ -5607,7 +5490,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -5620,7 +5503,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.AppSpecV3.decode(
+                        obj.Spec = types.AppSpecV3.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -5685,14 +5568,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes AppV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AppV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AppV3 to the Array<u8>
@@ -5762,12 +5642,12 @@ export namespace types {
         public Rewrite: types.Rewrite = new types.Rewrite();
 
         // Decodes AppSpecV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AppSpecV3 {
-            return AppSpecV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AppSpecV3 {
+            return AppSpecV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes AppSpecV3 from a DataView
-        static decode(view: DataView): AppSpecV3 {
+        static decodeDataView(view: DataView): AppSpecV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new AppSpecV3();
 
@@ -5801,7 +5681,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Rewrite = types.Rewrite.decode(
+                        obj.Rewrite = types.Rewrite.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -5868,14 +5748,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes AppSpecV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AppSpecV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AppSpecV3 to the Array<u8>
@@ -5978,12 +5855,12 @@ export namespace types {
         public Description: string = "";
 
         // Decodes App from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): App {
-            return App.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): App {
+            return App.decodeDataView(new DataView(buf));
         }
 
         // Decodes App from a DataView
-        static decode(view: DataView): App {
+        static decodeDataView(view: DataView): App {
             const decoder = new __proto.Decoder(view);
             const obj = new App();
 
@@ -6032,7 +5909,7 @@ export namespace types {
                     }
                     case 7: {
                         const length = decoder.uint32();
-                        obj.Rewrite = types.Rewrite.decode(
+                        obj.Rewrite = types.Rewrite.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -6129,14 +6006,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes App to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes App to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes App to the Array<u8>
@@ -6254,12 +6128,12 @@ export namespace types {
         public Headers: Array<types.Header> = new Array<types.Header>();
 
         // Decodes Rewrite from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): Rewrite {
-            return Rewrite.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): Rewrite {
+            return Rewrite.decodeDataView(new DataView(buf));
         }
 
         // Decodes Rewrite from a DataView
-        static decode(view: DataView): Rewrite {
+        static decodeDataView(view: DataView): Rewrite {
             const decoder = new __proto.Decoder(view);
             const obj = new Rewrite();
 
@@ -6275,7 +6149,7 @@ export namespace types {
                     case 2: {
                         const length = decoder.uint32();
                         obj.Headers.push(
-                            types.Header.decode(
+                            types.Header.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -6313,14 +6187,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes Rewrite to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes Rewrite to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes Rewrite to the Array<u8>
@@ -6359,12 +6230,12 @@ export namespace types {
         public Value: string = "";
 
         // Decodes Header from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): Header {
-            return Header.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): Header {
+            return Header.decodeDataView(new DataView(buf));
         }
 
         // Decodes Header from a DataView
-        static decode(view: DataView): Header {
+        static decodeDataView(view: DataView): Header {
             const decoder = new __proto.Decoder(view);
             const obj = new Header();
 
@@ -6409,14 +6280,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes Header to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes Header to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes Header to the Array<u8>
@@ -6453,12 +6321,12 @@ export namespace types {
         public Result: string = "";
 
         // Decodes CommandLabelV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): CommandLabelV2 {
-            return CommandLabelV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): CommandLabelV2 {
+            return CommandLabelV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes CommandLabelV2 from a DataView
-        static decode(view: DataView): CommandLabelV2 {
+        static decodeDataView(view: DataView): CommandLabelV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new CommandLabelV2();
 
@@ -6505,14 +6373,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes CommandLabelV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes CommandLabelV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes CommandLabelV2 to the Array<u8>
@@ -6554,12 +6419,12 @@ export namespace types {
         public PrivateKeyType: u32;
 
         // Decodes SSHKeyPair from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SSHKeyPair {
-            return SSHKeyPair.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SSHKeyPair {
+            return SSHKeyPair.decodeDataView(new DataView(buf));
         }
 
         // Decodes SSHKeyPair from a DataView
-        static decode(view: DataView): SSHKeyPair {
+        static decodeDataView(view: DataView): SSHKeyPair {
             const decoder = new __proto.Decoder(view);
             const obj = new SSHKeyPair();
 
@@ -6612,14 +6477,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes SSHKeyPair to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SSHKeyPair to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SSHKeyPair to the Array<u8>
@@ -6657,12 +6519,12 @@ export namespace types {
         public KeyType: u32;
 
         // Decodes TLSKeyPair from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): TLSKeyPair {
-            return TLSKeyPair.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): TLSKeyPair {
+            return TLSKeyPair.decodeDataView(new DataView(buf));
         }
 
         // Decodes TLSKeyPair from a DataView
-        static decode(view: DataView): TLSKeyPair {
+        static decodeDataView(view: DataView): TLSKeyPair {
             const decoder = new __proto.Decoder(view);
             const obj = new TLSKeyPair();
 
@@ -6713,14 +6575,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes TLSKeyPair to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes TLSKeyPair to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes TLSKeyPair to the Array<u8>
@@ -6758,12 +6617,12 @@ export namespace types {
         public PrivateKeyType: u32;
 
         // Decodes JWTKeyPair from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): JWTKeyPair {
-            return JWTKeyPair.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): JWTKeyPair {
+            return JWTKeyPair.decodeDataView(new DataView(buf));
         }
 
         // Decodes JWTKeyPair from a DataView
-        static decode(view: DataView): JWTKeyPair {
+        static decodeDataView(view: DataView): JWTKeyPair {
             const decoder = new __proto.Decoder(view);
             const obj = new JWTKeyPair();
 
@@ -6816,14 +6675,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes JWTKeyPair to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes JWTKeyPair to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes JWTKeyPair to the Array<u8>
@@ -6866,12 +6722,12 @@ export namespace types {
             new types.CertAuthoritySpecV2();
 
         // Decodes CertAuthorityV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): CertAuthorityV2 {
-            return CertAuthorityV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): CertAuthorityV2 {
+            return CertAuthorityV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes CertAuthorityV2 from a DataView
-        static decode(view: DataView): CertAuthorityV2 {
+        static decodeDataView(view: DataView): CertAuthorityV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new CertAuthorityV2();
 
@@ -6894,7 +6750,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -6907,7 +6763,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.CertAuthoritySpecV2.decode(
+                        obj.Spec = types.CertAuthoritySpecV2.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -6973,14 +6829,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes CertAuthorityV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes CertAuthorityV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes CertAuthorityV2 to the Array<u8>
@@ -7094,12 +6947,12 @@ export namespace types {
         public AdditionalTrustedKeys: types.CAKeySet = new types.CAKeySet();
 
         // Decodes CertAuthoritySpecV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): CertAuthoritySpecV2 {
-            return CertAuthoritySpecV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): CertAuthoritySpecV2 {
+            return CertAuthoritySpecV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes CertAuthoritySpecV2 from a DataView
-        static decode(view: DataView): CertAuthoritySpecV2 {
+        static decodeDataView(view: DataView): CertAuthoritySpecV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new CertAuthoritySpecV2();
 
@@ -7131,7 +6984,7 @@ export namespace types {
                     case 6: {
                         const length = decoder.uint32();
                         obj.RoleMap.push(
-                            types.RoleMapping.decode(
+                            types.RoleMapping.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -7146,7 +6999,7 @@ export namespace types {
                     case 7: {
                         const length = decoder.uint32();
                         obj.TLSKeyPairs.push(
-                            types.TLSKeyPair.decode(
+                            types.TLSKeyPair.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -7160,7 +7013,7 @@ export namespace types {
                     }
                     case 8: {
                         const length = decoder.uint32();
-                        obj.Rotation = types.Rotation.decode(
+                        obj.Rotation = types.Rotation.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -7178,7 +7031,7 @@ export namespace types {
                     case 10: {
                         const length = decoder.uint32();
                         obj.JWTKeyPairs.push(
-                            types.JWTKeyPair.decode(
+                            types.JWTKeyPair.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -7192,7 +7045,7 @@ export namespace types {
                     }
                     case 11: {
                         const length = decoder.uint32();
-                        obj.ActiveKeys = types.CAKeySet.decode(
+                        obj.ActiveKeys = types.CAKeySet.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -7205,13 +7058,14 @@ export namespace types {
                     }
                     case 12: {
                         const length = decoder.uint32();
-                        obj.AdditionalTrustedKeys = types.CAKeySet.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.AdditionalTrustedKeys =
+                            types.CAKeySet.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -7313,14 +7167,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes CertAuthoritySpecV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes CertAuthoritySpecV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes CertAuthoritySpecV2 to the Array<u8>
@@ -7459,12 +7310,12 @@ export namespace types {
         public JWT: Array<types.JWTKeyPair> = new Array<types.JWTKeyPair>();
 
         // Decodes CAKeySet from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): CAKeySet {
-            return CAKeySet.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): CAKeySet {
+            return CAKeySet.decodeDataView(new DataView(buf));
         }
 
         // Decodes CAKeySet from a DataView
-        static decode(view: DataView): CAKeySet {
+        static decodeDataView(view: DataView): CAKeySet {
             const decoder = new __proto.Decoder(view);
             const obj = new CAKeySet();
 
@@ -7476,7 +7327,7 @@ export namespace types {
                     case 1: {
                         const length = decoder.uint32();
                         obj.SSH.push(
-                            types.SSHKeyPair.decode(
+                            types.SSHKeyPair.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -7491,7 +7342,7 @@ export namespace types {
                     case 2: {
                         const length = decoder.uint32();
                         obj.TLS.push(
-                            types.TLSKeyPair.decode(
+                            types.TLSKeyPair.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -7506,7 +7357,7 @@ export namespace types {
                     case 3: {
                         const length = decoder.uint32();
                         obj.JWT.push(
-                            types.JWTKeyPair.decode(
+                            types.JWTKeyPair.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -7560,14 +7411,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes CAKeySet to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes CAKeySet to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes CAKeySet to the Array<u8>
@@ -7621,12 +7469,12 @@ export namespace types {
         public Local: Array<string> = new Array<string>();
 
         // Decodes RoleMapping from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): RoleMapping {
-            return RoleMapping.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): RoleMapping {
+            return RoleMapping.decodeDataView(new DataView(buf));
         }
 
         // Decodes RoleMapping from a DataView
-        static decode(view: DataView): RoleMapping {
+        static decodeDataView(view: DataView): RoleMapping {
             const decoder = new __proto.Decoder(view);
             const obj = new RoleMapping();
 
@@ -7667,14 +7515,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes RoleMapping to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes RoleMapping to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes RoleMapping to the Array<u8>
@@ -7719,12 +7564,12 @@ export namespace types {
         public Token: string = "";
 
         // Decodes ProvisionTokenV1 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ProvisionTokenV1 {
-            return ProvisionTokenV1.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ProvisionTokenV1 {
+            return ProvisionTokenV1.decodeDataView(new DataView(buf));
         }
 
         // Decodes ProvisionTokenV1 from a DataView
-        static decode(view: DataView): ProvisionTokenV1 {
+        static decodeDataView(view: DataView): ProvisionTokenV1 {
             const decoder = new __proto.Decoder(view);
             const obj = new ProvisionTokenV1();
 
@@ -7739,7 +7584,7 @@ export namespace types {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Expires = google.protobuf.Timestamp.decode(
+                        obj.Expires = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -7789,14 +7634,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ProvisionTokenV1 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ProvisionTokenV1 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ProvisionTokenV1 to the Array<u8>
@@ -7850,12 +7692,12 @@ export namespace types {
             new types.ProvisionTokenSpecV2();
 
         // Decodes ProvisionTokenV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ProvisionTokenV2 {
-            return ProvisionTokenV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ProvisionTokenV2 {
+            return ProvisionTokenV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes ProvisionTokenV2 from a DataView
-        static decode(view: DataView): ProvisionTokenV2 {
+        static decodeDataView(view: DataView): ProvisionTokenV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new ProvisionTokenV2();
 
@@ -7878,7 +7720,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -7891,7 +7733,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.ProvisionTokenSpecV2.decode(
+                        obj.Spec = types.ProvisionTokenSpecV2.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -7957,14 +7799,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ProvisionTokenV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ProvisionTokenV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ProvisionTokenV2 to the Array<u8>
@@ -8024,12 +7863,12 @@ export namespace types {
             new Array<types.ProvisionTokenV2>();
 
         // Decodes ProvisionTokenV2List from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ProvisionTokenV2List {
-            return ProvisionTokenV2List.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ProvisionTokenV2List {
+            return ProvisionTokenV2List.decodeDataView(new DataView(buf));
         }
 
         // Decodes ProvisionTokenV2List from a DataView
-        static decode(view: DataView): ProvisionTokenV2List {
+        static decodeDataView(view: DataView): ProvisionTokenV2List {
             const decoder = new __proto.Decoder(view);
             const obj = new ProvisionTokenV2List();
 
@@ -8041,7 +7880,7 @@ export namespace types {
                     case 1: {
                         const length = decoder.uint32();
                         obj.ProvisionTokens.push(
-                            types.ProvisionTokenV2.decode(
+                            types.ProvisionTokenV2.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -8077,14 +7916,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ProvisionTokenV2List to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ProvisionTokenV2List to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ProvisionTokenV2List to the Array<u8>
@@ -8131,12 +7967,12 @@ export namespace types {
         public AWSARN: string = "";
 
         // Decodes TokenRule from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): TokenRule {
-            return TokenRule.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): TokenRule {
+            return TokenRule.decodeDataView(new DataView(buf));
         }
 
         // Decodes TokenRule from a DataView
-        static decode(view: DataView): TokenRule {
+        static decodeDataView(view: DataView): TokenRule {
             const decoder = new __proto.Decoder(view);
             const obj = new TokenRule();
 
@@ -8198,14 +8034,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes TokenRule to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes TokenRule to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes TokenRule to the Array<u8>
@@ -8270,12 +8103,12 @@ export namespace types {
         public BotName: string = "";
 
         // Decodes ProvisionTokenSpecV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ProvisionTokenSpecV2 {
-            return ProvisionTokenSpecV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ProvisionTokenSpecV2 {
+            return ProvisionTokenSpecV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes ProvisionTokenSpecV2 from a DataView
-        static decode(view: DataView): ProvisionTokenSpecV2 {
+        static decodeDataView(view: DataView): ProvisionTokenSpecV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new ProvisionTokenSpecV2();
 
@@ -8291,7 +8124,7 @@ export namespace types {
                     case 2: {
                         const length = decoder.uint32();
                         obj.Allow.push(
-                            types.TokenRule.decode(
+                            types.TokenRule.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -8358,14 +8191,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ProvisionTokenSpecV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ProvisionTokenSpecV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ProvisionTokenSpecV2 to the Array<u8>
@@ -8425,12 +8255,12 @@ export namespace types {
         public Spec: types.StaticTokensSpecV2 = new types.StaticTokensSpecV2();
 
         // Decodes StaticTokensV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): StaticTokensV2 {
-            return StaticTokensV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): StaticTokensV2 {
+            return StaticTokensV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes StaticTokensV2 from a DataView
-        static decode(view: DataView): StaticTokensV2 {
+        static decodeDataView(view: DataView): StaticTokensV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new StaticTokensV2();
 
@@ -8453,7 +8283,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -8466,7 +8296,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.StaticTokensSpecV2.decode(
+                        obj.Spec = types.StaticTokensSpecV2.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -8532,14 +8362,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes StaticTokensV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes StaticTokensV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes StaticTokensV2 to the Array<u8>
@@ -8602,12 +8429,12 @@ export namespace types {
             new Array<types.ProvisionTokenV1>();
 
         // Decodes StaticTokensSpecV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): StaticTokensSpecV2 {
-            return StaticTokensSpecV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): StaticTokensSpecV2 {
+            return StaticTokensSpecV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes StaticTokensSpecV2 from a DataView
-        static decode(view: DataView): StaticTokensSpecV2 {
+        static decodeDataView(view: DataView): StaticTokensSpecV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new StaticTokensSpecV2();
 
@@ -8619,7 +8446,7 @@ export namespace types {
                     case 1: {
                         const length = decoder.uint32();
                         obj.StaticTokens.push(
-                            types.ProvisionTokenV1.decode(
+                            types.ProvisionTokenV1.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -8655,14 +8482,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes StaticTokensSpecV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes StaticTokensSpecV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes StaticTokensSpecV2 to the Array<u8>
@@ -8699,12 +8523,12 @@ export namespace types {
         public Spec: types.ClusterNameSpecV2 = new types.ClusterNameSpecV2();
 
         // Decodes ClusterNameV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ClusterNameV2 {
-            return ClusterNameV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ClusterNameV2 {
+            return ClusterNameV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes ClusterNameV2 from a DataView
-        static decode(view: DataView): ClusterNameV2 {
+        static decodeDataView(view: DataView): ClusterNameV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new ClusterNameV2();
 
@@ -8727,7 +8551,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -8740,7 +8564,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.ClusterNameSpecV2.decode(
+                        obj.Spec = types.ClusterNameSpecV2.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -8806,14 +8630,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ClusterNameV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ClusterNameV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ClusterNameV2 to the Array<u8>
@@ -8880,12 +8701,12 @@ export namespace types {
         public ClusterID: string = "";
 
         // Decodes ClusterNameSpecV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ClusterNameSpecV2 {
-            return ClusterNameSpecV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ClusterNameSpecV2 {
+            return ClusterNameSpecV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes ClusterNameSpecV2 from a DataView
-        static decode(view: DataView): ClusterNameSpecV2 {
+        static decodeDataView(view: DataView): ClusterNameSpecV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new ClusterNameSpecV2();
 
@@ -8930,14 +8751,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ClusterNameSpecV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ClusterNameSpecV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ClusterNameSpecV2 to the Array<u8>
@@ -8976,12 +8794,12 @@ export namespace types {
             new types.ClusterAuditConfigSpecV2();
 
         // Decodes ClusterAuditConfigV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ClusterAuditConfigV2 {
-            return ClusterAuditConfigV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ClusterAuditConfigV2 {
+            return ClusterAuditConfigV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes ClusterAuditConfigV2 from a DataView
-        static decode(view: DataView): ClusterAuditConfigV2 {
+        static decodeDataView(view: DataView): ClusterAuditConfigV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new ClusterAuditConfigV2();
 
@@ -9004,7 +8822,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -9017,13 +8835,14 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.ClusterAuditConfigSpecV2.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Spec =
+                            types.ClusterAuditConfigSpecV2.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -9083,14 +8902,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ClusterAuditConfigV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ClusterAuditConfigV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ClusterAuditConfigV2 to the Array<u8>
@@ -9180,12 +8996,12 @@ export namespace types {
         public RetentionPeriod: i64;
 
         // Decodes ClusterAuditConfigSpecV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ClusterAuditConfigSpecV2 {
-            return ClusterAuditConfigSpecV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ClusterAuditConfigSpecV2 {
+            return ClusterAuditConfigSpecV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes ClusterAuditConfigSpecV2 from a DataView
-        static decode(view: DataView): ClusterAuditConfigSpecV2 {
+        static decodeDataView(view: DataView): ClusterAuditConfigSpecV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new ClusterAuditConfigSpecV2();
 
@@ -9208,13 +9024,14 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.AuditEventsURI = wrappers.StringValues.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.AuditEventsURI =
+                            wrappers.StringValues.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -9325,14 +9142,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ClusterAuditConfigSpecV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ClusterAuditConfigSpecV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ClusterAuditConfigSpecV2 to the Array<u8>
@@ -9425,12 +9239,12 @@ export namespace types {
             new types.ClusterNetworkingConfigSpecV2();
 
         // Decodes ClusterNetworkingConfigV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ClusterNetworkingConfigV2 {
-            return ClusterNetworkingConfigV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ClusterNetworkingConfigV2 {
+            return ClusterNetworkingConfigV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes ClusterNetworkingConfigV2 from a DataView
-        static decode(view: DataView): ClusterNetworkingConfigV2 {
+        static decodeDataView(view: DataView): ClusterNetworkingConfigV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new ClusterNetworkingConfigV2();
 
@@ -9453,7 +9267,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -9466,13 +9280,14 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.ClusterNetworkingConfigSpecV2.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Spec =
+                            types.ClusterNetworkingConfigSpecV2.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -9532,14 +9347,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ClusterNetworkingConfigV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ClusterNetworkingConfigV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ClusterNetworkingConfigV2 to the Array<u8>
@@ -9631,14 +9443,14 @@ export namespace types {
         public RoutingStrategy: u32;
 
         // Decodes ClusterNetworkingConfigSpecV2 from an ArrayBuffer
-        static decodeArrayBuffer(
-            buf: ArrayBuffer
-        ): ClusterNetworkingConfigSpecV2 {
-            return ClusterNetworkingConfigSpecV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ClusterNetworkingConfigSpecV2 {
+            return ClusterNetworkingConfigSpecV2.decodeDataView(
+                new DataView(buf)
+            );
         }
 
         // Decodes ClusterNetworkingConfigSpecV2 from a DataView
-        static decode(view: DataView): ClusterNetworkingConfigSpecV2 {
+        static decodeDataView(view: DataView): ClusterNetworkingConfigSpecV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new ClusterNetworkingConfigSpecV2();
 
@@ -9731,14 +9543,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ClusterNetworkingConfigSpecV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ClusterNetworkingConfigSpecV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ClusterNetworkingConfigSpecV2 to the Array<u8>
@@ -9800,12 +9609,12 @@ export namespace types {
             new types.SessionRecordingConfigSpecV2();
 
         // Decodes SessionRecordingConfigV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SessionRecordingConfigV2 {
-            return SessionRecordingConfigV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SessionRecordingConfigV2 {
+            return SessionRecordingConfigV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes SessionRecordingConfigV2 from a DataView
-        static decode(view: DataView): SessionRecordingConfigV2 {
+        static decodeDataView(view: DataView): SessionRecordingConfigV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new SessionRecordingConfigV2();
 
@@ -9828,7 +9637,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -9841,13 +9650,14 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.SessionRecordingConfigSpecV2.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Spec =
+                            types.SessionRecordingConfigSpecV2.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -9907,14 +9717,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes SessionRecordingConfigV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SessionRecordingConfigV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SessionRecordingConfigV2 to the Array<u8>
@@ -9981,14 +9788,14 @@ export namespace types {
         public ProxyChecksHostKeys: types.BoolValue = new types.BoolValue();
 
         // Decodes SessionRecordingConfigSpecV2 from an ArrayBuffer
-        static decodeArrayBuffer(
-            buf: ArrayBuffer
-        ): SessionRecordingConfigSpecV2 {
-            return SessionRecordingConfigSpecV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SessionRecordingConfigSpecV2 {
+            return SessionRecordingConfigSpecV2.decodeDataView(
+                new DataView(buf)
+            );
         }
 
         // Decodes SessionRecordingConfigSpecV2 from a DataView
-        static decode(view: DataView): SessionRecordingConfigSpecV2 {
+        static decodeDataView(view: DataView): SessionRecordingConfigSpecV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new SessionRecordingConfigSpecV2();
 
@@ -10003,13 +9810,14 @@ export namespace types {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.ProxyChecksHostKeys = types.BoolValue.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.ProxyChecksHostKeys =
+                            types.BoolValue.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -10047,14 +9855,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes SessionRecordingConfigSpecV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SessionRecordingConfigSpecV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SessionRecordingConfigSpecV2 to the Array<u8>
@@ -10100,12 +9905,12 @@ export namespace types {
             new types.AuthPreferenceSpecV2();
 
         // Decodes AuthPreferenceV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AuthPreferenceV2 {
-            return AuthPreferenceV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AuthPreferenceV2 {
+            return AuthPreferenceV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes AuthPreferenceV2 from a DataView
-        static decode(view: DataView): AuthPreferenceV2 {
+        static decodeDataView(view: DataView): AuthPreferenceV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new AuthPreferenceV2();
 
@@ -10128,7 +9933,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -10141,7 +9946,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.AuthPreferenceSpecV2.decode(
+                        obj.Spec = types.AuthPreferenceSpecV2.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -10207,14 +10012,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes AuthPreferenceV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AuthPreferenceV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AuthPreferenceV2 to the Array<u8>
@@ -10299,12 +10101,12 @@ export namespace types {
         public Webauthn: types.Webauthn = new types.Webauthn();
 
         // Decodes AuthPreferenceSpecV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AuthPreferenceSpecV2 {
-            return AuthPreferenceSpecV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AuthPreferenceSpecV2 {
+            return AuthPreferenceSpecV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes AuthPreferenceSpecV2 from a DataView
-        static decode(view: DataView): AuthPreferenceSpecV2 {
+        static decodeDataView(view: DataView): AuthPreferenceSpecV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new AuthPreferenceSpecV2();
 
@@ -10327,7 +10129,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.U2F = types.U2F.decode(
+                        obj.U2F = types.U2F.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -10344,20 +10146,21 @@ export namespace types {
                     }
                     case 6: {
                         const length = decoder.uint32();
-                        obj.DisconnectExpiredCert = types.BoolValue.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.DisconnectExpiredCert =
+                            types.BoolValue.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
                     }
                     case 7: {
                         const length = decoder.uint32();
-                        obj.AllowLocalAuth = types.BoolValue.decode(
+                        obj.AllowLocalAuth = types.BoolValue.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -10378,7 +10181,7 @@ export namespace types {
                     }
                     case 10: {
                         const length = decoder.uint32();
-                        obj.Webauthn = types.Webauthn.decode(
+                        obj.Webauthn = types.Webauthn.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -10480,14 +10283,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes AuthPreferenceSpecV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AuthPreferenceSpecV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AuthPreferenceSpecV2 to the Array<u8>
@@ -10597,12 +10397,12 @@ export namespace types {
         public DeviceAttestationCAs: Array<string> = new Array<string>();
 
         // Decodes U2F from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): U2F {
-            return U2F.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): U2F {
+            return U2F.decodeDataView(new DataView(buf));
         }
 
         // Decodes U2F from a DataView
-        static decode(view: DataView): U2F {
+        static decodeDataView(view: DataView): U2F {
             const decoder = new __proto.Decoder(view);
             const obj = new U2F();
 
@@ -10649,14 +10449,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes U2F to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes U2F to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes U2F to the Array<u8>
@@ -10735,12 +10532,12 @@ export namespace types {
         public AttestationDeniedCAs: Array<string> = new Array<string>();
 
         // Decodes Webauthn from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): Webauthn {
-            return Webauthn.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): Webauthn {
+            return Webauthn.decodeDataView(new DataView(buf));
         }
 
         // Decodes Webauthn from a DataView
-        static decode(view: DataView): Webauthn {
+        static decodeDataView(view: DataView): Webauthn {
             const decoder = new __proto.Decoder(view);
             const obj = new Webauthn();
 
@@ -10787,14 +10584,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes Webauthn to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes Webauthn to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes Webauthn to the Array<u8>
@@ -10851,12 +10645,12 @@ export namespace types {
         public Spec: types.NamespaceSpec = new types.NamespaceSpec();
 
         // Decodes Namespace from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): Namespace {
-            return Namespace.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): Namespace {
+            return Namespace.decodeDataView(new DataView(buf));
         }
 
         // Decodes Namespace from a DataView
-        static decode(view: DataView): Namespace {
+        static decodeDataView(view: DataView): Namespace {
             const decoder = new __proto.Decoder(view);
             const obj = new Namespace();
 
@@ -10879,7 +10673,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -10892,7 +10686,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.NamespaceSpec.decode(
+                        obj.Spec = types.NamespaceSpec.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -10957,14 +10751,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes Namespace to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes Namespace to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes Namespace to the Array<u8>
@@ -11020,12 +10811,12 @@ export namespace types {
     // NamespaceSpec is a namespace specificateion
     export class NamespaceSpec {
         // Decodes NamespaceSpec from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): NamespaceSpec {
-            return NamespaceSpec.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): NamespaceSpec {
+            return NamespaceSpec.decodeDataView(new DataView(buf));
         }
 
         // Decodes NamespaceSpec from a DataView
-        static decode(view: DataView): NamespaceSpec {
+        static decodeDataView(view: DataView): NamespaceSpec {
             const decoder = new __proto.Decoder(view);
             const obj = new NamespaceSpec();
 
@@ -11048,14 +10839,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes NamespaceSpec to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes NamespaceSpec to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes NamespaceSpec to the Array<u8>
@@ -11081,12 +10869,12 @@ export namespace types {
         public Spec: types.UserTokenSpecV3 = new types.UserTokenSpecV3();
 
         // Decodes UserTokenV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): UserTokenV3 {
-            return UserTokenV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): UserTokenV3 {
+            return UserTokenV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes UserTokenV3 from a DataView
-        static decode(view: DataView): UserTokenV3 {
+        static decodeDataView(view: DataView): UserTokenV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new UserTokenV3();
 
@@ -11109,7 +10897,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -11122,7 +10910,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.UserTokenSpecV3.decode(
+                        obj.Spec = types.UserTokenSpecV3.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -11188,14 +10976,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes UserTokenV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes UserTokenV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes UserTokenV3 to the Array<u8>
@@ -11260,12 +11045,12 @@ export namespace types {
             new google.protobuf.Timestamp();
 
         // Decodes UserTokenSpecV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): UserTokenSpecV3 {
-            return UserTokenSpecV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): UserTokenSpecV3 {
+            return UserTokenSpecV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes UserTokenSpecV3 from a DataView
-        static decode(view: DataView): UserTokenSpecV3 {
+        static decodeDataView(view: DataView): UserTokenSpecV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new UserTokenSpecV3();
 
@@ -11288,7 +11073,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Created = google.protobuf.Timestamp.decode(
+                        obj.Created = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -11339,14 +11124,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes UserTokenSpecV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes UserTokenSpecV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes UserTokenSpecV3 to the Array<u8>
@@ -11400,12 +11182,12 @@ export namespace types {
             new types.UserTokenSecretsSpecV3();
 
         // Decodes UserTokenSecretsV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): UserTokenSecretsV3 {
-            return UserTokenSecretsV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): UserTokenSecretsV3 {
+            return UserTokenSecretsV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes UserTokenSecretsV3 from a DataView
-        static decode(view: DataView): UserTokenSecretsV3 {
+        static decodeDataView(view: DataView): UserTokenSecretsV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new UserTokenSecretsV3();
 
@@ -11428,7 +11210,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -11441,7 +11223,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.UserTokenSecretsSpecV3.decode(
+                        obj.Spec = types.UserTokenSecretsSpecV3.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -11507,14 +11289,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes UserTokenSecretsV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes UserTokenSecretsV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes UserTokenSecretsV3 to the Array<u8>
@@ -11577,12 +11356,12 @@ export namespace types {
             new google.protobuf.Timestamp();
 
         // Decodes UserTokenSecretsSpecV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): UserTokenSecretsSpecV3 {
-            return UserTokenSecretsSpecV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): UserTokenSecretsSpecV3 {
+            return UserTokenSecretsSpecV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes UserTokenSecretsSpecV3 from a DataView
-        static decode(view: DataView): UserTokenSecretsSpecV3 {
+        static decodeDataView(view: DataView): UserTokenSecretsSpecV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new UserTokenSecretsSpecV3();
 
@@ -11601,7 +11380,7 @@ export namespace types {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Created = google.protobuf.Timestamp.decode(
+                        obj.Created = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -11651,14 +11430,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes UserTokenSecretsSpecV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes UserTokenSecretsSpecV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes UserTokenSecretsSpecV3 to the Array<u8>
@@ -11709,12 +11485,12 @@ export namespace types {
             new types.AccessRequestSpecV3();
 
         // Decodes AccessRequestV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AccessRequestV3 {
-            return AccessRequestV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AccessRequestV3 {
+            return AccessRequestV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes AccessRequestV3 from a DataView
-        static decode(view: DataView): AccessRequestV3 {
+        static decodeDataView(view: DataView): AccessRequestV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new AccessRequestV3();
 
@@ -11737,7 +11513,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -11750,7 +11526,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.AccessRequestSpecV3.decode(
+                        obj.Spec = types.AccessRequestSpecV3.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -11816,14 +11592,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes AccessRequestV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AccessRequestV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AccessRequestV3 to the Array<u8>
@@ -11896,12 +11669,12 @@ export namespace types {
         public Deny: u32;
 
         // Decodes AccessReviewThreshold from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AccessReviewThreshold {
-            return AccessReviewThreshold.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AccessReviewThreshold {
+            return AccessReviewThreshold.decodeDataView(new DataView(buf));
         }
 
         // Decodes AccessReviewThreshold from a DataView
-        static decode(view: DataView): AccessReviewThreshold {
+        static decodeDataView(view: DataView): AccessReviewThreshold {
             const decoder = new __proto.Decoder(view);
             const obj = new AccessReviewThreshold();
 
@@ -11957,14 +11730,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes AccessReviewThreshold to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AccessReviewThreshold to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AccessReviewThreshold to the Array<u8>
@@ -12021,12 +11791,12 @@ export namespace types {
         public ThresholdIndexes: Array<u32> = new Array<u32>();
 
         // Decodes AccessReview from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AccessReview {
-            return AccessReview.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AccessReview {
+            return AccessReview.decodeDataView(new DataView(buf));
         }
 
         // Decodes AccessReview from a DataView
-        static decode(view: DataView): AccessReview {
+        static decodeDataView(view: DataView): AccessReview {
             const decoder = new __proto.Decoder(view);
             const obj = new AccessReview();
 
@@ -12053,7 +11823,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Created = google.protobuf.Timestamp.decode(
+                        obj.Created = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -12066,7 +11836,7 @@ export namespace types {
                     }
                     case 6: {
                         const length = decoder.uint32();
-                        obj.Annotations = wrappers.LabelValues.decode(
+                        obj.Annotations = wrappers.LabelValues.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -12140,14 +11910,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes AccessReview to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AccessReview to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AccessReview to the Array<u8>
@@ -12226,12 +11993,12 @@ export namespace types {
         public Review: types.AccessReview = new types.AccessReview();
 
         // Decodes AccessReviewSubmission from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AccessReviewSubmission {
-            return AccessReviewSubmission.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AccessReviewSubmission {
+            return AccessReviewSubmission.decodeDataView(new DataView(buf));
         }
 
         // Decodes AccessReviewSubmission from a DataView
-        static decode(view: DataView): AccessReviewSubmission {
+        static decodeDataView(view: DataView): AccessReviewSubmission {
             const decoder = new __proto.Decoder(view);
             const obj = new AccessReviewSubmission();
 
@@ -12246,7 +12013,7 @@ export namespace types {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Review = types.AccessReview.decode(
+                        obj.Review = types.AccessReview.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -12289,14 +12056,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes AccessReviewSubmission to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AccessReviewSubmission to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AccessReviewSubmission to the Array<u8>
@@ -12336,12 +12100,12 @@ export namespace types {
         public Indexes: Array<u32> = new Array<u32>();
 
         // Decodes ThresholdIndexSet from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ThresholdIndexSet {
-            return ThresholdIndexSet.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ThresholdIndexSet {
+            return ThresholdIndexSet.decodeDataView(new DataView(buf));
         }
 
         // Decodes ThresholdIndexSet from a DataView
-        static decode(view: DataView): ThresholdIndexSet {
+        static decodeDataView(view: DataView): ThresholdIndexSet {
             const decoder = new __proto.Decoder(view);
             const obj = new ThresholdIndexSet();
 
@@ -12371,14 +12135,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ThresholdIndexSet to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ThresholdIndexSet to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ThresholdIndexSet to the Array<u8>
@@ -12408,12 +12169,12 @@ export namespace types {
             new Array<types.ThresholdIndexSet>();
 
         // Decodes ThresholdIndexSets from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ThresholdIndexSets {
-            return ThresholdIndexSets.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ThresholdIndexSets {
+            return ThresholdIndexSets.decodeDataView(new DataView(buf));
         }
 
         // Decodes ThresholdIndexSets from a DataView
-        static decode(view: DataView): ThresholdIndexSets {
+        static decodeDataView(view: DataView): ThresholdIndexSets {
             const decoder = new __proto.Decoder(view);
             const obj = new ThresholdIndexSets();
 
@@ -12425,7 +12186,7 @@ export namespace types {
                     case 1: {
                         const length = decoder.uint32();
                         obj.Sets.push(
-                            types.ThresholdIndexSet.decode(
+                            types.ThresholdIndexSet.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -12461,14 +12222,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ThresholdIndexSets to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ThresholdIndexSets to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ThresholdIndexSets to the Array<u8>
@@ -12563,12 +12321,12 @@ export namespace types {
         public SuggestedReviewers: Array<string> = new Array<string>();
 
         // Decodes AccessRequestSpecV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AccessRequestSpecV3 {
-            return AccessRequestSpecV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AccessRequestSpecV3 {
+            return AccessRequestSpecV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes AccessRequestSpecV3 from a DataView
-        static decode(view: DataView): AccessRequestSpecV3 {
+        static decodeDataView(view: DataView): AccessRequestSpecV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new AccessRequestSpecV3();
 
@@ -12591,7 +12349,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Created = google.protobuf.Timestamp.decode(
+                        obj.Created = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -12604,7 +12362,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Expires = google.protobuf.Timestamp.decode(
+                        obj.Expires = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -12625,26 +12383,28 @@ export namespace types {
                     }
                     case 8: {
                         const length = decoder.uint32();
-                        obj.ResolveAnnotations = wrappers.LabelValues.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.ResolveAnnotations =
+                            wrappers.LabelValues.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
                     }
                     case 9: {
                         const length = decoder.uint32();
-                        obj.SystemAnnotations = wrappers.LabelValues.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.SystemAnnotations =
+                            wrappers.LabelValues.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -12652,7 +12412,7 @@ export namespace types {
                     case 10: {
                         const length = decoder.uint32();
                         obj.Thresholds.push(
-                            types.AccessReviewThreshold.decode(
+                            types.AccessReviewThreshold.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -12678,7 +12438,7 @@ export namespace types {
                     case 12: {
                         const length = decoder.uint32();
                         obj.Reviews.push(
-                            types.AccessReview.decode(
+                            types.AccessReview.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -12814,14 +12574,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes AccessRequestSpecV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AccessRequestSpecV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AccessRequestSpecV3 to the Array<u8>
@@ -12979,12 +12736,12 @@ export namespace types {
         public State: u32;
 
         // Decodes AccessRequestFilter from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AccessRequestFilter {
-            return AccessRequestFilter.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AccessRequestFilter {
+            return AccessRequestFilter.decodeDataView(new DataView(buf));
         }
 
         // Decodes AccessRequestFilter from a DataView
-        static decode(view: DataView): AccessRequestFilter {
+        static decodeDataView(view: DataView): AccessRequestFilter {
             const decoder = new __proto.Decoder(view);
             const obj = new AccessRequestFilter();
 
@@ -13034,14 +12791,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes AccessRequestFilter to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AccessRequestFilter to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AccessRequestFilter to the Array<u8>
@@ -13081,12 +12835,12 @@ export namespace types {
         public SuggestedReviewers: Array<string> = new Array<string>();
 
         // Decodes AccessCapabilities from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AccessCapabilities {
-            return AccessCapabilities.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AccessCapabilities {
+            return AccessCapabilities.decodeDataView(new DataView(buf));
         }
 
         // Decodes AccessCapabilities from a DataView
-        static decode(view: DataView): AccessCapabilities {
+        static decodeDataView(view: DataView): AccessCapabilities {
             const decoder = new __proto.Decoder(view);
             const obj = new AccessCapabilities();
 
@@ -13122,14 +12876,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes AccessCapabilities to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AccessCapabilities to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AccessCapabilities to the Array<u8>
@@ -13177,12 +12928,12 @@ export namespace types {
         public SuggestedReviewers: bool;
 
         // Decodes AccessCapabilitiesRequest from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AccessCapabilitiesRequest {
-            return AccessCapabilitiesRequest.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AccessCapabilitiesRequest {
+            return AccessCapabilitiesRequest.decodeDataView(new DataView(buf));
         }
 
         // Decodes AccessCapabilitiesRequest from a DataView
-        static decode(view: DataView): AccessCapabilitiesRequest {
+        static decodeDataView(view: DataView): AccessCapabilitiesRequest {
             const decoder = new __proto.Decoder(view);
             const obj = new AccessCapabilitiesRequest();
 
@@ -13227,14 +12978,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes AccessCapabilitiesRequest to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AccessCapabilitiesRequest to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AccessCapabilitiesRequest to the Array<u8>
@@ -13275,12 +13023,12 @@ export namespace types {
         public Spec: types.PluginDataSpecV3 = new types.PluginDataSpecV3();
 
         // Decodes PluginDataV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): PluginDataV3 {
-            return PluginDataV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): PluginDataV3 {
+            return PluginDataV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes PluginDataV3 from a DataView
-        static decode(view: DataView): PluginDataV3 {
+        static decodeDataView(view: DataView): PluginDataV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new PluginDataV3();
 
@@ -13303,7 +13051,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -13316,7 +13064,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.PluginDataSpecV3.decode(
+                        obj.Spec = types.PluginDataSpecV3.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -13382,14 +13130,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes PluginDataV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes PluginDataV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes PluginDataV3 to the Array<u8>
@@ -13451,12 +13196,12 @@ export namespace types {
         public Data: Map<string, string> = new Map<string, string>();
 
         // Decodes PluginDataEntry from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): PluginDataEntry {
-            return PluginDataEntry.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): PluginDataEntry {
+            return PluginDataEntry.decodeDataView(new DataView(buf));
         }
 
         // Decodes PluginDataEntry from a DataView
-        static decode(view: DataView): PluginDataEntry {
+        static decodeDataView(view: DataView): PluginDataEntry {
             const decoder = new __proto.Decoder(view);
             const obj = new PluginDataEntry();
 
@@ -13500,14 +13245,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes PluginDataEntry to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes PluginDataEntry to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes PluginDataEntry to the Array<u8>
@@ -13552,12 +13294,12 @@ export namespace types {
         >();
 
         // Decodes PluginDataSpecV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): PluginDataSpecV3 {
-            return PluginDataSpecV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): PluginDataSpecV3 {
+            return PluginDataSpecV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes PluginDataSpecV3 from a DataView
-        static decode(view: DataView): PluginDataSpecV3 {
+        static decodeDataView(view: DataView): PluginDataSpecV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new PluginDataSpecV3();
 
@@ -13606,14 +13348,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes PluginDataSpecV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes PluginDataSpecV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes PluginDataSpecV3 to the Array<u8>
@@ -13674,12 +13413,12 @@ export namespace types {
         public Plugin: string = "";
 
         // Decodes PluginDataFilter from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): PluginDataFilter {
-            return PluginDataFilter.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): PluginDataFilter {
+            return PluginDataFilter.decodeDataView(new DataView(buf));
         }
 
         // Decodes PluginDataFilter from a DataView
-        static decode(view: DataView): PluginDataFilter {
+        static decodeDataView(view: DataView): PluginDataFilter {
             const decoder = new __proto.Decoder(view);
             const obj = new PluginDataFilter();
 
@@ -13734,14 +13473,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes PluginDataFilter to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes PluginDataFilter to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes PluginDataFilter to the Array<u8>
@@ -13787,12 +13523,12 @@ export namespace types {
         public Expect: Map<string, string> = new Map<string, string>();
 
         // Decodes PluginDataUpdateParams from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): PluginDataUpdateParams {
-            return PluginDataUpdateParams.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): PluginDataUpdateParams {
+            return PluginDataUpdateParams.decodeDataView(new DataView(buf));
         }
 
         // Decodes PluginDataUpdateParams from a DataView
-        static decode(view: DataView): PluginDataUpdateParams {
+        static decodeDataView(view: DataView): PluginDataUpdateParams {
             const decoder = new __proto.Decoder(view);
             const obj = new PluginDataUpdateParams();
 
@@ -13887,14 +13623,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes PluginDataUpdateParams to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes PluginDataUpdateParams to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes PluginDataUpdateParams to the Array<u8>
@@ -13983,12 +13716,12 @@ export namespace types {
         public Spec: types.RoleSpecV5 = new types.RoleSpecV5();
 
         // Decodes RoleV5 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): RoleV5 {
-            return RoleV5.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): RoleV5 {
+            return RoleV5.decodeDataView(new DataView(buf));
         }
 
         // Decodes RoleV5 from a DataView
-        static decode(view: DataView): RoleV5 {
+        static decodeDataView(view: DataView): RoleV5 {
             const decoder = new __proto.Decoder(view);
             const obj = new RoleV5();
 
@@ -14011,7 +13744,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -14024,7 +13757,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.RoleSpecV5.decode(
+                        obj.Spec = types.RoleSpecV5.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -14089,14 +13822,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes RoleV5 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes RoleV5 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes RoleV5 to the Array<u8>
@@ -14162,12 +13892,12 @@ export namespace types {
         public Deny: types.RoleConditions = new types.RoleConditions();
 
         // Decodes RoleSpecV5 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): RoleSpecV5 {
-            return RoleSpecV5.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): RoleSpecV5 {
+            return RoleSpecV5.decodeDataView(new DataView(buf));
         }
 
         // Decodes RoleSpecV5 from a DataView
-        static decode(view: DataView): RoleSpecV5 {
+        static decodeDataView(view: DataView): RoleSpecV5 {
             const decoder = new __proto.Decoder(view);
             const obj = new RoleSpecV5();
 
@@ -14178,7 +13908,7 @@ export namespace types {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Options = types.RoleOptions.decode(
+                        obj.Options = types.RoleOptions.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -14191,7 +13921,7 @@ export namespace types {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Allow = types.RoleConditions.decode(
+                        obj.Allow = types.RoleConditions.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -14204,7 +13934,7 @@ export namespace types {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Deny = types.RoleConditions.decode(
+                        obj.Deny = types.RoleConditions.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -14262,14 +13992,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes RoleSpecV5 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes RoleSpecV5 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes RoleSpecV5 to the Array<u8>
@@ -14391,12 +14118,12 @@ export namespace types {
             new Array<types.CertExtension>();
 
         // Decodes RoleOptions from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): RoleOptions {
-            return RoleOptions.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): RoleOptions {
+            return RoleOptions.decodeDataView(new DataView(buf));
         }
 
         // Decodes RoleOptions from a DataView
-        static decode(view: DataView): RoleOptions {
+        static decodeDataView(view: DataView): RoleOptions {
             const decoder = new __proto.Decoder(view);
             const obj = new RoleOptions();
 
@@ -14415,7 +14142,7 @@ export namespace types {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.PortForwarding = types.BoolValue.decode(
+                        obj.PortForwarding = types.BoolValue.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -14472,7 +14199,7 @@ export namespace types {
                     }
                     case 15: {
                         const length = decoder.uint32();
-                        obj.RecordSession = types.RecordSession.decode(
+                        obj.RecordSession = types.RecordSession.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -14485,7 +14212,7 @@ export namespace types {
                     }
                     case 16: {
                         const length = decoder.uint32();
-                        obj.DesktopClipboard = types.BoolValue.decode(
+                        obj.DesktopClipboard = types.BoolValue.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -14499,7 +14226,7 @@ export namespace types {
                     case 17: {
                         const length = decoder.uint32();
                         obj.CertExtensions.push(
-                            types.CertExtension.decode(
+                            types.CertExtension.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -14617,14 +14344,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes RoleOptions to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes RoleOptions to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes RoleOptions to the Array<u8>
@@ -14754,12 +14478,12 @@ export namespace types {
         public Desktop: types.BoolValue = new types.BoolValue();
 
         // Decodes RecordSession from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): RecordSession {
-            return RecordSession.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): RecordSession {
+            return RecordSession.decodeDataView(new DataView(buf));
         }
 
         // Decodes RecordSession from a DataView
-        static decode(view: DataView): RecordSession {
+        static decodeDataView(view: DataView): RecordSession {
             const decoder = new __proto.Decoder(view);
             const obj = new RecordSession();
 
@@ -14770,7 +14494,7 @@ export namespace types {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Desktop = types.BoolValue.decode(
+                        obj.Desktop = types.BoolValue.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -14806,14 +14530,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes RecordSession to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes RecordSession to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes RecordSession to the Array<u8>
@@ -14856,12 +14577,12 @@ export namespace types {
         public Value: string = "";
 
         // Decodes CertExtension from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): CertExtension {
-            return CertExtension.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): CertExtension {
+            return CertExtension.decodeDataView(new DataView(buf));
         }
 
         // Decodes CertExtension from a DataView
-        static decode(view: DataView): CertExtension {
+        static decodeDataView(view: DataView): CertExtension {
             const decoder = new __proto.Decoder(view);
             const obj = new CertExtension();
 
@@ -14916,14 +14637,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes CertExtension to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes CertExtension to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes CertExtension to the Array<u8>
@@ -15024,12 +14742,12 @@ export namespace types {
             new Array<types.SessionJoinPolicy>();
 
         // Decodes RoleConditions from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): RoleConditions {
-            return RoleConditions.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): RoleConditions {
+            return RoleConditions.decodeDataView(new DataView(buf));
         }
 
         // Decodes RoleConditions from a DataView
-        static decode(view: DataView): RoleConditions {
+        static decodeDataView(view: DataView): RoleConditions {
             const decoder = new __proto.Decoder(view);
             const obj = new RoleConditions();
 
@@ -15048,7 +14766,7 @@ export namespace types {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.NodeLabels = wrappers.LabelValues.decode(
+                        obj.NodeLabels = wrappers.LabelValues.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -15062,7 +14780,7 @@ export namespace types {
                     case 4: {
                         const length = decoder.uint32();
                         obj.Rules.push(
-                            types.Rule.decode(
+                            types.Rule.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -15080,13 +14798,14 @@ export namespace types {
                     }
                     case 6: {
                         const length = decoder.uint32();
-                        obj.Request = types.AccessRequestConditions.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Request =
+                            types.AccessRequestConditions.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -15097,7 +14816,7 @@ export namespace types {
                     }
                     case 8: {
                         const length = decoder.uint32();
-                        obj.AppLabels = wrappers.LabelValues.decode(
+                        obj.AppLabels = wrappers.LabelValues.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -15110,7 +14829,7 @@ export namespace types {
                     }
                     case 9: {
                         const length = decoder.uint32();
-                        obj.ClusterLabels = wrappers.LabelValues.decode(
+                        obj.ClusterLabels = wrappers.LabelValues.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -15123,26 +14842,28 @@ export namespace types {
                     }
                     case 10: {
                         const length = decoder.uint32();
-                        obj.KubernetesLabels = wrappers.LabelValues.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.KubernetesLabels =
+                            wrappers.LabelValues.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
                     }
                     case 11: {
                         const length = decoder.uint32();
-                        obj.DatabaseLabels = wrappers.LabelValues.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.DatabaseLabels =
+                            wrappers.LabelValues.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -15157,13 +14878,14 @@ export namespace types {
                     }
                     case 14: {
                         const length = decoder.uint32();
-                        obj.Impersonate = types.ImpersonateConditions.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Impersonate =
+                            types.ImpersonateConditions.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -15171,7 +14893,7 @@ export namespace types {
                     case 15: {
                         const length = decoder.uint32();
                         obj.ReviewRequests =
-                            types.AccessReviewConditions.decode(
+                            types.AccessReviewConditions.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -15192,13 +14914,14 @@ export namespace types {
                     }
                     case 18: {
                         const length = decoder.uint32();
-                        obj.WindowsDesktopLabels = wrappers.LabelValues.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.WindowsDesktopLabels =
+                            wrappers.LabelValues.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -15206,7 +14929,7 @@ export namespace types {
                     case 19: {
                         const length = decoder.uint32();
                         obj.RequireSessionJoin.push(
-                            types.SessionRequirePolicy.decode(
+                            types.SessionRequirePolicy.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -15221,7 +14944,7 @@ export namespace types {
                     case 20: {
                         const length = decoder.uint32();
                         obj.JoinSessions.push(
-                            types.SessionJoinPolicy.decode(
+                            types.SessionJoinPolicy.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -15390,14 +15113,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes RoleConditions to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes RoleConditions to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes RoleConditions to the Array<u8>
@@ -15635,12 +15355,12 @@ export namespace types {
         public OnLeave: string = "";
 
         // Decodes SessionRequirePolicy from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SessionRequirePolicy {
-            return SessionRequirePolicy.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SessionRequirePolicy {
+            return SessionRequirePolicy.decodeDataView(new DataView(buf));
         }
 
         // Decodes SessionRequirePolicy from a DataView
-        static decode(view: DataView): SessionRequirePolicy {
+        static decodeDataView(view: DataView): SessionRequirePolicy {
             const decoder = new __proto.Decoder(view);
             const obj = new SessionRequirePolicy();
 
@@ -15714,14 +15434,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes SessionRequirePolicy to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SessionRequirePolicy to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SessionRequirePolicy to the Array<u8>
@@ -15784,12 +15501,12 @@ export namespace types {
         public Modes: Array<string> = new Array<string>();
 
         // Decodes SessionJoinPolicy from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SessionJoinPolicy {
-            return SessionJoinPolicy.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SessionJoinPolicy {
+            return SessionJoinPolicy.decodeDataView(new DataView(buf));
         }
 
         // Decodes SessionJoinPolicy from a DataView
-        static decode(view: DataView): SessionJoinPolicy {
+        static decodeDataView(view: DataView): SessionJoinPolicy {
             const decoder = new __proto.Decoder(view);
             const obj = new SessionJoinPolicy();
 
@@ -15842,14 +15559,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes SessionJoinPolicy to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SessionJoinPolicy to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SessionJoinPolicy to the Array<u8>
@@ -15926,12 +15640,12 @@ export namespace types {
         public SuggestedReviewers: Array<string> = new Array<string>();
 
         // Decodes AccessRequestConditions from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AccessRequestConditions {
-            return AccessRequestConditions.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AccessRequestConditions {
+            return AccessRequestConditions.decodeDataView(new DataView(buf));
         }
 
         // Decodes AccessRequestConditions from a DataView
-        static decode(view: DataView): AccessRequestConditions {
+        static decodeDataView(view: DataView): AccessRequestConditions {
             const decoder = new __proto.Decoder(view);
             const obj = new AccessRequestConditions();
 
@@ -15947,7 +15661,7 @@ export namespace types {
                     case 2: {
                         const length = decoder.uint32();
                         obj.ClaimsToRoles.push(
-                            types.ClaimMapping.decode(
+                            types.ClaimMapping.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -15961,7 +15675,7 @@ export namespace types {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Annotations = wrappers.LabelValues.decode(
+                        obj.Annotations = wrappers.LabelValues.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -15975,7 +15689,7 @@ export namespace types {
                     case 4: {
                         const length = decoder.uint32();
                         obj.Thresholds.push(
-                            types.AccessReviewThreshold.decode(
+                            types.AccessReviewThreshold.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -16039,14 +15753,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes AccessRequestConditions to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AccessRequestConditions to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AccessRequestConditions to the Array<u8>
@@ -16124,12 +15835,12 @@ export namespace types {
         public Where: string = "";
 
         // Decodes AccessReviewConditions from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AccessReviewConditions {
-            return AccessReviewConditions.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AccessReviewConditions {
+            return AccessReviewConditions.decodeDataView(new DataView(buf));
         }
 
         // Decodes AccessReviewConditions from a DataView
-        static decode(view: DataView): AccessReviewConditions {
+        static decodeDataView(view: DataView): AccessReviewConditions {
             const decoder = new __proto.Decoder(view);
             const obj = new AccessReviewConditions();
 
@@ -16145,7 +15856,7 @@ export namespace types {
                     case 2: {
                         const length = decoder.uint32();
                         obj.ClaimsToRoles.push(
-                            types.ClaimMapping.decode(
+                            types.ClaimMapping.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -16194,14 +15905,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes AccessReviewConditions to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AccessReviewConditions to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AccessReviewConditions to the Array<u8>
@@ -16248,12 +15956,12 @@ export namespace types {
         public Roles: Array<string> = new Array<string>();
 
         // Decodes ClaimMapping from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ClaimMapping {
-            return ClaimMapping.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ClaimMapping {
+            return ClaimMapping.decodeDataView(new DataView(buf));
         }
 
         // Decodes ClaimMapping from a DataView
-        static decode(view: DataView): ClaimMapping {
+        static decodeDataView(view: DataView): ClaimMapping {
             const decoder = new __proto.Decoder(view);
             const obj = new ClaimMapping();
 
@@ -16304,14 +16012,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ClaimMapping to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ClaimMapping to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ClaimMapping to the Array<u8>
@@ -16358,12 +16063,12 @@ export namespace types {
         public Actions: Array<string> = new Array<string>();
 
         // Decodes Rule from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): Rule {
-            return Rule.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): Rule {
+            return Rule.decodeDataView(new DataView(buf));
         }
 
         // Decodes Rule from a DataView
-        static decode(view: DataView): Rule {
+        static decodeDataView(view: DataView): Rule {
             const decoder = new __proto.Decoder(view);
             const obj = new Rule();
 
@@ -16416,14 +16121,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes Rule to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes Rule to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes Rule to the Array<u8>
@@ -16482,12 +16184,12 @@ export namespace types {
         public Where: string = "";
 
         // Decodes ImpersonateConditions from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ImpersonateConditions {
-            return ImpersonateConditions.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ImpersonateConditions {
+            return ImpersonateConditions.decodeDataView(new DataView(buf));
         }
 
         // Decodes ImpersonateConditions from a DataView
-        static decode(view: DataView): ImpersonateConditions {
+        static decodeDataView(view: DataView): ImpersonateConditions {
             const decoder = new __proto.Decoder(view);
             const obj = new ImpersonateConditions();
 
@@ -16534,14 +16236,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ImpersonateConditions to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ImpersonateConditions to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ImpersonateConditions to the Array<u8>
@@ -16584,12 +16283,12 @@ export namespace types {
         public Value: bool;
 
         // Decodes BoolValue from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): BoolValue {
-            return BoolValue.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): BoolValue {
+            return BoolValue.decodeDataView(new DataView(buf));
         }
 
         // Decodes BoolValue from a DataView
-        static decode(view: DataView): BoolValue {
+        static decodeDataView(view: DataView): BoolValue {
             const decoder = new __proto.Decoder(view);
             const obj = new BoolValue();
 
@@ -16619,14 +16318,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes BoolValue to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes BoolValue to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes BoolValue to the Array<u8>
@@ -16658,12 +16354,12 @@ export namespace types {
         public Spec: types.UserSpecV2 = new types.UserSpecV2();
 
         // Decodes UserV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): UserV2 {
-            return UserV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): UserV2 {
+            return UserV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes UserV2 from a DataView
-        static decode(view: DataView): UserV2 {
+        static decodeDataView(view: DataView): UserV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new UserV2();
 
@@ -16686,7 +16382,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -16699,7 +16395,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.UserSpecV2.decode(
+                        obj.Spec = types.UserSpecV2.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -16764,14 +16460,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes UserV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes UserV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes UserV2 to the Array<u8>
@@ -16866,12 +16559,12 @@ export namespace types {
         public LocalAuth: types.LocalAuthSecrets = new types.LocalAuthSecrets();
 
         // Decodes UserSpecV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): UserSpecV2 {
-            return UserSpecV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): UserSpecV2 {
+            return UserSpecV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes UserSpecV2 from a DataView
-        static decode(view: DataView): UserSpecV2 {
+        static decodeDataView(view: DataView): UserSpecV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new UserSpecV2();
 
@@ -16883,7 +16576,7 @@ export namespace types {
                     case 1: {
                         const length = decoder.uint32();
                         obj.OIDCIdentities.push(
-                            types.ExternalIdentity.decode(
+                            types.ExternalIdentity.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -16898,7 +16591,7 @@ export namespace types {
                     case 2: {
                         const length = decoder.uint32();
                         obj.SAMLIdentities.push(
-                            types.ExternalIdentity.decode(
+                            types.ExternalIdentity.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -16913,7 +16606,7 @@ export namespace types {
                     case 3: {
                         const length = decoder.uint32();
                         obj.GithubIdentities.push(
-                            types.ExternalIdentity.decode(
+                            types.ExternalIdentity.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -16931,7 +16624,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Traits = wrappers.LabelValues.decode(
+                        obj.Traits = wrappers.LabelValues.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -16944,7 +16637,7 @@ export namespace types {
                     }
                     case 6: {
                         const length = decoder.uint32();
-                        obj.Status = types.LoginStatus.decode(
+                        obj.Status = types.LoginStatus.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -16957,7 +16650,7 @@ export namespace types {
                     }
                     case 7: {
                         const length = decoder.uint32();
-                        obj.Expires = google.protobuf.Timestamp.decode(
+                        obj.Expires = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -16970,7 +16663,7 @@ export namespace types {
                     }
                     case 8: {
                         const length = decoder.uint32();
-                        obj.CreatedBy = types.CreatedBy.decode(
+                        obj.CreatedBy = types.CreatedBy.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -16983,7 +16676,7 @@ export namespace types {
                     }
                     case 9: {
                         const length = decoder.uint32();
-                        obj.LocalAuth = types.LocalAuthSecrets.decode(
+                        obj.LocalAuth = types.LocalAuthSecrets.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -17091,14 +16784,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes UserSpecV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes UserSpecV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes UserSpecV2 to the Array<u8>
@@ -17221,12 +16911,12 @@ export namespace types {
         public Username: string = "";
 
         // Decodes ExternalIdentity from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ExternalIdentity {
-            return ExternalIdentity.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ExternalIdentity {
+            return ExternalIdentity.decodeDataView(new DataView(buf));
         }
 
         // Decodes ExternalIdentity from a DataView
-        static decode(view: DataView): ExternalIdentity {
+        static decodeDataView(view: DataView): ExternalIdentity {
             const decoder = new __proto.Decoder(view);
             const obj = new ExternalIdentity();
 
@@ -17271,14 +16961,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ExternalIdentity to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ExternalIdentity to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ExternalIdentity to the Array<u8>
@@ -17323,12 +17010,12 @@ export namespace types {
             new google.protobuf.Timestamp();
 
         // Decodes LoginStatus from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): LoginStatus {
-            return LoginStatus.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): LoginStatus {
+            return LoginStatus.decodeDataView(new DataView(buf));
         }
 
         // Decodes LoginStatus from a DataView
-        static decode(view: DataView): LoginStatus {
+        static decodeDataView(view: DataView): LoginStatus {
             const decoder = new __proto.Decoder(view);
             const obj = new LoginStatus();
 
@@ -17347,26 +17034,28 @@ export namespace types {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.LockedTime = google.protobuf.Timestamp.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.LockedTime =
+                            google.protobuf.Timestamp.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.LockExpires = google.protobuf.Timestamp.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.LockExpires =
+                            google.protobuf.Timestamp.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -17374,7 +17063,7 @@ export namespace types {
                     case 5: {
                         const length = decoder.uint32();
                         obj.RecoveryAttemptLockExpires =
-                            google.protobuf.Timestamp.decode(
+                            google.protobuf.Timestamp.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -17441,14 +17130,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes LoginStatus to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes LoginStatus to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes LoginStatus to the Array<u8>
@@ -17519,12 +17205,12 @@ export namespace types {
         public User: types.UserRef = new types.UserRef();
 
         // Decodes CreatedBy from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): CreatedBy {
-            return CreatedBy.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): CreatedBy {
+            return CreatedBy.decodeDataView(new DataView(buf));
         }
 
         // Decodes CreatedBy from a DataView
-        static decode(view: DataView): CreatedBy {
+        static decodeDataView(view: DataView): CreatedBy {
             const decoder = new __proto.Decoder(view);
             const obj = new CreatedBy();
 
@@ -17535,7 +17221,7 @@ export namespace types {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Connector = types.ConnectorRef.decode(
+                        obj.Connector = types.ConnectorRef.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -17548,7 +17234,7 @@ export namespace types {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Time = google.protobuf.Timestamp.decode(
+                        obj.Time = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -17561,7 +17247,7 @@ export namespace types {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.User = types.UserRef.decode(
+                        obj.User = types.UserRef.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -17619,14 +17305,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes CreatedBy to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes CreatedBy to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes CreatedBy to the Array<u8>
@@ -17691,12 +17374,12 @@ export namespace types {
             new types.WebauthnLocalAuth();
 
         // Decodes LocalAuthSecrets from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): LocalAuthSecrets {
-            return LocalAuthSecrets.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): LocalAuthSecrets {
+            return LocalAuthSecrets.decodeDataView(new DataView(buf));
         }
 
         // Decodes LocalAuthSecrets from a DataView
-        static decode(view: DataView): LocalAuthSecrets {
+        static decodeDataView(view: DataView): LocalAuthSecrets {
             const decoder = new __proto.Decoder(view);
             const obj = new LocalAuthSecrets();
 
@@ -17716,7 +17399,7 @@ export namespace types {
                     case 5: {
                         const length = decoder.uint32();
                         obj.MFA.push(
-                            types.MFADevice.decode(
+                            types.MFADevice.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -17730,7 +17413,7 @@ export namespace types {
                     }
                     case 6: {
                         const length = decoder.uint32();
-                        obj.Webauthn = types.WebauthnLocalAuth.decode(
+                        obj.Webauthn = types.WebauthnLocalAuth.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -17789,14 +17472,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes LocalAuthSecrets to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes LocalAuthSecrets to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes LocalAuthSecrets to the Array<u8>
@@ -17864,12 +17544,12 @@ export namespace types {
         public webauthn: types.WebauthnDevice | null;
 
         // Decodes MFADevice from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): MFADevice {
-            return MFADevice.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): MFADevice {
+            return MFADevice.decodeDataView(new DataView(buf));
         }
 
         // Decodes MFADevice from a DataView
-        static decode(view: DataView): MFADevice {
+        static decodeDataView(view: DataView): MFADevice {
             const decoder = new __proto.Decoder(view);
             const obj = new MFADevice();
 
@@ -17892,7 +17572,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.metadata = types.Metadata.decode(
+                        obj.metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -17909,7 +17589,7 @@ export namespace types {
                     }
                     case 6: {
                         const length = decoder.uint32();
-                        obj.added_at = google.protobuf.Timestamp.decode(
+                        obj.added_at = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -17922,20 +17602,21 @@ export namespace types {
                     }
                     case 7: {
                         const length = decoder.uint32();
-                        obj.last_used = google.protobuf.Timestamp.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.last_used =
+                            google.protobuf.Timestamp.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
                     }
                     case 8: {
                         const length = decoder.uint32();
-                        obj.totp = types.TOTPDevice.decode(
+                        obj.totp = types.TOTPDevice.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -17949,7 +17630,7 @@ export namespace types {
                     }
                     case 9: {
                         const length = decoder.uint32();
-                        obj.u2f = types.U2FDevice.decode(
+                        obj.u2f = types.U2FDevice.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -17963,7 +17644,7 @@ export namespace types {
                     }
                     case 10: {
                         const length = decoder.uint32();
-                        obj.webauthn = types.WebauthnDevice.decode(
+                        obj.webauthn = types.WebauthnDevice.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -18079,14 +17760,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes MFADevice to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes MFADevice to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes MFADevice to the Array<u8>
@@ -18198,12 +17876,12 @@ export namespace types {
         public key: string = "";
 
         // Decodes TOTPDevice from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): TOTPDevice {
-            return TOTPDevice.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): TOTPDevice {
+            return TOTPDevice.decodeDataView(new DataView(buf));
         }
 
         // Decodes TOTPDevice from a DataView
-        static decode(view: DataView): TOTPDevice {
+        static decodeDataView(view: DataView): TOTPDevice {
             const decoder = new __proto.Decoder(view);
             const obj = new TOTPDevice();
 
@@ -18238,14 +17916,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes TOTPDevice to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes TOTPDevice to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes TOTPDevice to the Array<u8>
@@ -18274,12 +17949,12 @@ export namespace types {
         public counter: u32;
 
         // Decodes U2FDevice from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): U2FDevice {
-            return U2FDevice.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): U2FDevice {
+            return U2FDevice.decodeDataView(new DataView(buf));
         }
 
         // Decodes U2FDevice from a DataView
-        static decode(view: DataView): U2FDevice {
+        static decodeDataView(view: DataView): U2FDevice {
             const decoder = new __proto.Decoder(view);
             const obj = new U2FDevice();
 
@@ -18330,14 +18005,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes U2FDevice to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes U2FDevice to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes U2FDevice to the Array<u8>
@@ -18406,12 +18078,12 @@ export namespace types {
         public resident_key: bool;
 
         // Decodes WebauthnDevice from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): WebauthnDevice {
-            return WebauthnDevice.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): WebauthnDevice {
+            return WebauthnDevice.decodeDataView(new DataView(buf));
         }
 
         // Decodes WebauthnDevice from a DataView
-        static decode(view: DataView): WebauthnDevice {
+        static decodeDataView(view: DataView): WebauthnDevice {
             const decoder = new __proto.Decoder(view);
             const obj = new WebauthnDevice();
 
@@ -18499,14 +18171,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes WebauthnDevice to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes WebauthnDevice to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes WebauthnDevice to the Array<u8>
@@ -18562,12 +18231,12 @@ export namespace types {
         public UserID: Array<u8> = new Array<u8>();
 
         // Decodes WebauthnLocalAuth from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): WebauthnLocalAuth {
-            return WebauthnLocalAuth.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): WebauthnLocalAuth {
+            return WebauthnLocalAuth.decodeDataView(new DataView(buf));
         }
 
         // Decodes WebauthnLocalAuth from a DataView
-        static decode(view: DataView): WebauthnLocalAuth {
+        static decodeDataView(view: DataView): WebauthnLocalAuth {
             const decoder = new __proto.Decoder(view);
             const obj = new WebauthnLocalAuth();
 
@@ -18602,14 +18271,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes WebauthnLocalAuth to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes WebauthnLocalAuth to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes WebauthnLocalAuth to the Array<u8>
@@ -18638,12 +18304,12 @@ export namespace types {
         public Identity: string = "";
 
         // Decodes ConnectorRef from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ConnectorRef {
-            return ConnectorRef.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ConnectorRef {
+            return ConnectorRef.decodeDataView(new DataView(buf));
         }
 
         // Decodes ConnectorRef from a DataView
-        static decode(view: DataView): ConnectorRef {
+        static decodeDataView(view: DataView): ConnectorRef {
             const decoder = new __proto.Decoder(view);
             const obj = new ConnectorRef();
 
@@ -18698,14 +18364,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ConnectorRef to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ConnectorRef to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ConnectorRef to the Array<u8>
@@ -18740,12 +18403,12 @@ export namespace types {
         public Name: string = "";
 
         // Decodes UserRef from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): UserRef {
-            return UserRef.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): UserRef {
+            return UserRef.decodeDataView(new DataView(buf));
         }
 
         // Decodes UserRef from a DataView
-        static decode(view: DataView): UserRef {
+        static decodeDataView(view: DataView): UserRef {
             const decoder = new __proto.Decoder(view);
             const obj = new UserRef();
 
@@ -18780,14 +18443,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes UserRef to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes UserRef to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes UserRef to the Array<u8>
@@ -18821,12 +18481,12 @@ export namespace types {
             new types.ReverseTunnelSpecV2();
 
         // Decodes ReverseTunnelV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ReverseTunnelV2 {
-            return ReverseTunnelV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ReverseTunnelV2 {
+            return ReverseTunnelV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes ReverseTunnelV2 from a DataView
-        static decode(view: DataView): ReverseTunnelV2 {
+        static decodeDataView(view: DataView): ReverseTunnelV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new ReverseTunnelV2();
 
@@ -18849,7 +18509,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -18862,7 +18522,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.ReverseTunnelSpecV2.decode(
+                        obj.Spec = types.ReverseTunnelSpecV2.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -18928,14 +18588,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ReverseTunnelV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ReverseTunnelV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ReverseTunnelV2 to the Array<u8>
@@ -19001,12 +18658,12 @@ export namespace types {
         public Type: string = "";
 
         // Decodes ReverseTunnelSpecV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ReverseTunnelSpecV2 {
-            return ReverseTunnelSpecV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ReverseTunnelSpecV2 {
+            return ReverseTunnelSpecV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes ReverseTunnelSpecV2 from a DataView
-        static decode(view: DataView): ReverseTunnelSpecV2 {
+        static decodeDataView(view: DataView): ReverseTunnelSpecV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new ReverseTunnelSpecV2();
 
@@ -19058,14 +18715,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ReverseTunnelSpecV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ReverseTunnelSpecV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ReverseTunnelSpecV2 to the Array<u8>
@@ -19113,12 +18767,12 @@ export namespace types {
             new types.TunnelConnectionSpecV2();
 
         // Decodes TunnelConnectionV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): TunnelConnectionV2 {
-            return TunnelConnectionV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): TunnelConnectionV2 {
+            return TunnelConnectionV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes TunnelConnectionV2 from a DataView
-        static decode(view: DataView): TunnelConnectionV2 {
+        static decodeDataView(view: DataView): TunnelConnectionV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new TunnelConnectionV2();
 
@@ -19141,7 +18795,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -19154,7 +18808,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.TunnelConnectionSpecV2.decode(
+                        obj.Spec = types.TunnelConnectionSpecV2.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -19220,14 +18874,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes TunnelConnectionV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes TunnelConnectionV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes TunnelConnectionV2 to the Array<u8>
@@ -19293,12 +18944,12 @@ export namespace types {
         public Type: string = "";
 
         // Decodes TunnelConnectionSpecV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): TunnelConnectionSpecV2 {
-            return TunnelConnectionSpecV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): TunnelConnectionSpecV2 {
+            return TunnelConnectionSpecV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes TunnelConnectionSpecV2 from a DataView
-        static decode(view: DataView): TunnelConnectionSpecV2 {
+        static decodeDataView(view: DataView): TunnelConnectionSpecV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new TunnelConnectionSpecV2();
 
@@ -19317,13 +18968,14 @@ export namespace types {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.LastHeartbeat = google.protobuf.Timestamp.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.LastHeartbeat =
+                            google.protobuf.Timestamp.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -19378,14 +19030,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes TunnelConnectionSpecV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes TunnelConnectionSpecV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes TunnelConnectionSpecV2 to the Array<u8>
@@ -19441,12 +19090,12 @@ export namespace types {
         public SemaphoreName: string = "";
 
         // Decodes SemaphoreFilter from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SemaphoreFilter {
-            return SemaphoreFilter.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SemaphoreFilter {
+            return SemaphoreFilter.decodeDataView(new DataView(buf));
         }
 
         // Decodes SemaphoreFilter from a DataView
-        static decode(view: DataView): SemaphoreFilter {
+        static decodeDataView(view: DataView): SemaphoreFilter {
             const decoder = new __proto.Decoder(view);
             const obj = new SemaphoreFilter();
 
@@ -19491,14 +19140,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes SemaphoreFilter to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SemaphoreFilter to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SemaphoreFilter to the Array<u8>
@@ -19540,12 +19186,12 @@ export namespace types {
         public Holder: string = "";
 
         // Decodes AcquireSemaphoreRequest from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AcquireSemaphoreRequest {
-            return AcquireSemaphoreRequest.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AcquireSemaphoreRequest {
+            return AcquireSemaphoreRequest.decodeDataView(new DataView(buf));
         }
 
         // Decodes AcquireSemaphoreRequest from a DataView
-        static decode(view: DataView): AcquireSemaphoreRequest {
+        static decodeDataView(view: DataView): AcquireSemaphoreRequest {
             const decoder = new __proto.Decoder(view);
             const obj = new AcquireSemaphoreRequest();
 
@@ -19568,7 +19214,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Expires = google.protobuf.Timestamp.decode(
+                        obj.Expires = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -19633,14 +19279,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes AcquireSemaphoreRequest to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AcquireSemaphoreRequest to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AcquireSemaphoreRequest to the Array<u8>
@@ -19699,12 +19342,12 @@ export namespace types {
             new google.protobuf.Timestamp();
 
         // Decodes SemaphoreLease from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SemaphoreLease {
-            return SemaphoreLease.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SemaphoreLease {
+            return SemaphoreLease.decodeDataView(new DataView(buf));
         }
 
         // Decodes SemaphoreLease from a DataView
-        static decode(view: DataView): SemaphoreLease {
+        static decodeDataView(view: DataView): SemaphoreLease {
             const decoder = new __proto.Decoder(view);
             const obj = new SemaphoreLease();
 
@@ -19727,7 +19370,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Expires = google.protobuf.Timestamp.decode(
+                        obj.Expires = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -19783,14 +19426,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes SemaphoreLease to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SemaphoreLease to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SemaphoreLease to the Array<u8>
@@ -19842,12 +19482,12 @@ export namespace types {
         public Holder: string = "";
 
         // Decodes SemaphoreLeaseRef from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SemaphoreLeaseRef {
-            return SemaphoreLeaseRef.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SemaphoreLeaseRef {
+            return SemaphoreLeaseRef.decodeDataView(new DataView(buf));
         }
 
         // Decodes SemaphoreLeaseRef from a DataView
-        static decode(view: DataView): SemaphoreLeaseRef {
+        static decodeDataView(view: DataView): SemaphoreLeaseRef {
             const decoder = new __proto.Decoder(view);
             const obj = new SemaphoreLeaseRef();
 
@@ -19862,7 +19502,7 @@ export namespace types {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Expires = google.protobuf.Timestamp.decode(
+                        obj.Expires = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -19917,14 +19557,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes SemaphoreLeaseRef to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SemaphoreLeaseRef to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SemaphoreLeaseRef to the Array<u8>
@@ -19975,12 +19612,12 @@ export namespace types {
         public Spec: types.SemaphoreSpecV3 = new types.SemaphoreSpecV3();
 
         // Decodes SemaphoreV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SemaphoreV3 {
-            return SemaphoreV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SemaphoreV3 {
+            return SemaphoreV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes SemaphoreV3 from a DataView
-        static decode(view: DataView): SemaphoreV3 {
+        static decodeDataView(view: DataView): SemaphoreV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new SemaphoreV3();
 
@@ -20003,7 +19640,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -20016,7 +19653,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.SemaphoreSpecV3.decode(
+                        obj.Spec = types.SemaphoreSpecV3.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -20082,14 +19719,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes SemaphoreV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SemaphoreV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SemaphoreV3 to the Array<u8>
@@ -20149,12 +19783,12 @@ export namespace types {
             new Array<types.SemaphoreLeaseRef>();
 
         // Decodes SemaphoreSpecV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SemaphoreSpecV3 {
-            return SemaphoreSpecV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SemaphoreSpecV3 {
+            return SemaphoreSpecV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes SemaphoreSpecV3 from a DataView
-        static decode(view: DataView): SemaphoreSpecV3 {
+        static decodeDataView(view: DataView): SemaphoreSpecV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new SemaphoreSpecV3();
 
@@ -20166,7 +19800,7 @@ export namespace types {
                     case 1: {
                         const length = decoder.uint32();
                         obj.Leases.push(
-                            types.SemaphoreLeaseRef.decode(
+                            types.SemaphoreLeaseRef.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -20202,14 +19836,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes SemaphoreSpecV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SemaphoreSpecV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SemaphoreSpecV3 to the Array<u8>
@@ -20246,12 +19877,12 @@ export namespace types {
         public Spec: types.WebSessionSpecV2 = new types.WebSessionSpecV2();
 
         // Decodes WebSessionV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): WebSessionV2 {
-            return WebSessionV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): WebSessionV2 {
+            return WebSessionV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes WebSessionV2 from a DataView
-        static decode(view: DataView): WebSessionV2 {
+        static decodeDataView(view: DataView): WebSessionV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new WebSessionV2();
 
@@ -20274,7 +19905,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -20287,7 +19918,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.WebSessionSpecV2.decode(
+                        obj.Spec = types.WebSessionSpecV2.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -20353,14 +19984,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes WebSessionV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes WebSessionV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes WebSessionV2 to the Array<u8>
@@ -20443,12 +20071,12 @@ export namespace types {
         public IdleTimeout: i64;
 
         // Decodes WebSessionSpecV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): WebSessionSpecV2 {
-            return WebSessionSpecV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): WebSessionSpecV2 {
+            return WebSessionSpecV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes WebSessionSpecV2 from a DataView
-        static decode(view: DataView): WebSessionSpecV2 {
+        static decodeDataView(view: DataView): WebSessionSpecV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new WebSessionSpecV2();
 
@@ -20480,7 +20108,7 @@ export namespace types {
                     case 6: {
                         const length = decoder.uint32();
                         obj.BearerTokenExpires =
-                            google.protobuf.Timestamp.decode(
+                            google.protobuf.Timestamp.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -20493,7 +20121,7 @@ export namespace types {
                     }
                     case 7: {
                         const length = decoder.uint32();
-                        obj.Expires = google.protobuf.Timestamp.decode(
+                        obj.Expires = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -20506,13 +20134,14 @@ export namespace types {
                     }
                     case 8: {
                         const length = decoder.uint32();
-                        obj.LoginTime = google.protobuf.Timestamp.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.LoginTime =
+                            google.protobuf.Timestamp.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -20605,14 +20234,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes WebSessionSpecV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes WebSessionSpecV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes WebSessionSpecV2 to the Array<u8>
@@ -20698,12 +20324,12 @@ export namespace types {
         public User: string = "";
 
         // Decodes WebSessionFilter from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): WebSessionFilter {
-            return WebSessionFilter.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): WebSessionFilter {
+            return WebSessionFilter.decodeDataView(new DataView(buf));
         }
 
         // Decodes WebSessionFilter from a DataView
-        static decode(view: DataView): WebSessionFilter {
+        static decodeDataView(view: DataView): WebSessionFilter {
             const decoder = new __proto.Decoder(view);
             const obj = new WebSessionFilter();
 
@@ -20738,14 +20364,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes WebSessionFilter to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes WebSessionFilter to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes WebSessionFilter to the Array<u8>
@@ -20779,12 +20402,12 @@ export namespace types {
             new types.RemoteClusterStatusV3();
 
         // Decodes RemoteClusterV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): RemoteClusterV3 {
-            return RemoteClusterV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): RemoteClusterV3 {
+            return RemoteClusterV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes RemoteClusterV3 from a DataView
-        static decode(view: DataView): RemoteClusterV3 {
+        static decodeDataView(view: DataView): RemoteClusterV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new RemoteClusterV3();
 
@@ -20807,7 +20430,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -20820,7 +20443,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Status = types.RemoteClusterStatusV3.decode(
+                        obj.Status = types.RemoteClusterStatusV3.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -20886,14 +20509,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes RemoteClusterV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes RemoteClusterV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes RemoteClusterV3 to the Array<u8>
@@ -20955,12 +20575,12 @@ export namespace types {
             new google.protobuf.Timestamp();
 
         // Decodes RemoteClusterStatusV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): RemoteClusterStatusV3 {
-            return RemoteClusterStatusV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): RemoteClusterStatusV3 {
+            return RemoteClusterStatusV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes RemoteClusterStatusV3 from a DataView
-        static decode(view: DataView): RemoteClusterStatusV3 {
+        static decodeDataView(view: DataView): RemoteClusterStatusV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new RemoteClusterStatusV3();
 
@@ -20975,13 +20595,14 @@ export namespace types {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.LastHeartbeat = google.protobuf.Timestamp.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.LastHeartbeat =
+                            google.protobuf.Timestamp.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -21019,14 +20640,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes RemoteClusterStatusV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes RemoteClusterStatusV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes RemoteClusterStatusV3 to the Array<u8>
@@ -21080,12 +20698,12 @@ export namespace types {
         >();
 
         // Decodes KubernetesCluster from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): KubernetesCluster {
-            return KubernetesCluster.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): KubernetesCluster {
+            return KubernetesCluster.decodeDataView(new DataView(buf));
         }
 
         // Decodes KubernetesCluster from a DataView
-        static decode(view: DataView): KubernetesCluster {
+        static decodeDataView(view: DataView): KubernetesCluster {
             const decoder = new __proto.Decoder(view);
             const obj = new KubernetesCluster();
 
@@ -21171,14 +20789,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes KubernetesCluster to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes KubernetesCluster to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes KubernetesCluster to the Array<u8>
@@ -21264,12 +20879,12 @@ export namespace types {
             new types.KubernetesClusterSpecV3();
 
         // Decodes KubernetesClusterV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): KubernetesClusterV3 {
-            return KubernetesClusterV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): KubernetesClusterV3 {
+            return KubernetesClusterV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes KubernetesClusterV3 from a DataView
-        static decode(view: DataView): KubernetesClusterV3 {
+        static decodeDataView(view: DataView): KubernetesClusterV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new KubernetesClusterV3();
 
@@ -21292,7 +20907,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -21305,7 +20920,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.KubernetesClusterSpecV3.decode(
+                        obj.Spec = types.KubernetesClusterSpecV3.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -21371,14 +20986,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes KubernetesClusterV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes KubernetesClusterV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes KubernetesClusterV3 to the Array<u8>
@@ -21440,12 +21052,12 @@ export namespace types {
         >();
 
         // Decodes KubernetesClusterSpecV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): KubernetesClusterSpecV3 {
-            return KubernetesClusterSpecV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): KubernetesClusterSpecV3 {
+            return KubernetesClusterSpecV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes KubernetesClusterSpecV3 from a DataView
-        static decode(view: DataView): KubernetesClusterSpecV3 {
+        static decodeDataView(view: DataView): KubernetesClusterSpecV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new KubernetesClusterSpecV3();
 
@@ -21496,14 +21108,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes KubernetesClusterSpecV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes KubernetesClusterSpecV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes KubernetesClusterSpecV3 to the Array<u8>
@@ -21564,12 +21173,12 @@ export namespace types {
         public Spec: types.WebTokenSpecV3 = new types.WebTokenSpecV3();
 
         // Decodes WebTokenV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): WebTokenV3 {
-            return WebTokenV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): WebTokenV3 {
+            return WebTokenV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes WebTokenV3 from a DataView
-        static decode(view: DataView): WebTokenV3 {
+        static decodeDataView(view: DataView): WebTokenV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new WebTokenV3();
 
@@ -21592,7 +21201,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -21605,7 +21214,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.WebTokenSpecV3.decode(
+                        obj.Spec = types.WebTokenSpecV3.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -21671,14 +21280,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes WebTokenV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes WebTokenV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes WebTokenV3 to the Array<u8>
@@ -21739,12 +21345,12 @@ export namespace types {
         public Token: string = "";
 
         // Decodes WebTokenSpecV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): WebTokenSpecV3 {
-            return WebTokenSpecV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): WebTokenSpecV3 {
+            return WebTokenSpecV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes WebTokenSpecV3 from a DataView
-        static decode(view: DataView): WebTokenSpecV3 {
+        static decodeDataView(view: DataView): WebTokenSpecV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new WebTokenSpecV3();
 
@@ -21789,14 +21395,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes WebTokenSpecV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes WebTokenSpecV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes WebTokenSpecV3 to the Array<u8>
@@ -21828,12 +21431,12 @@ export namespace types {
         public SessionID: string = "";
 
         // Decodes GetWebSessionRequest from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): GetWebSessionRequest {
-            return GetWebSessionRequest.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): GetWebSessionRequest {
+            return GetWebSessionRequest.decodeDataView(new DataView(buf));
         }
 
         // Decodes GetWebSessionRequest from a DataView
-        static decode(view: DataView): GetWebSessionRequest {
+        static decodeDataView(view: DataView): GetWebSessionRequest {
             const decoder = new __proto.Decoder(view);
             const obj = new GetWebSessionRequest();
 
@@ -21878,14 +21481,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes GetWebSessionRequest to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes GetWebSessionRequest to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes GetWebSessionRequest to the Array<u8>
@@ -21917,12 +21517,12 @@ export namespace types {
         public SessionID: string = "";
 
         // Decodes DeleteWebSessionRequest from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): DeleteWebSessionRequest {
-            return DeleteWebSessionRequest.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): DeleteWebSessionRequest {
+            return DeleteWebSessionRequest.decodeDataView(new DataView(buf));
         }
 
         // Decodes DeleteWebSessionRequest from a DataView
-        static decode(view: DataView): DeleteWebSessionRequest {
+        static decodeDataView(view: DataView): DeleteWebSessionRequest {
             const decoder = new __proto.Decoder(view);
             const obj = new DeleteWebSessionRequest();
 
@@ -21967,14 +21567,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes DeleteWebSessionRequest to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes DeleteWebSessionRequest to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes DeleteWebSessionRequest to the Array<u8>
@@ -22006,12 +21603,12 @@ export namespace types {
         public Token: string = "";
 
         // Decodes GetWebTokenRequest from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): GetWebTokenRequest {
-            return GetWebTokenRequest.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): GetWebTokenRequest {
+            return GetWebTokenRequest.decodeDataView(new DataView(buf));
         }
 
         // Decodes GetWebTokenRequest from a DataView
-        static decode(view: DataView): GetWebTokenRequest {
+        static decodeDataView(view: DataView): GetWebTokenRequest {
             const decoder = new __proto.Decoder(view);
             const obj = new GetWebTokenRequest();
 
@@ -22056,14 +21653,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes GetWebTokenRequest to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes GetWebTokenRequest to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes GetWebTokenRequest to the Array<u8>
@@ -22095,12 +21689,12 @@ export namespace types {
         public Token: string = "";
 
         // Decodes DeleteWebTokenRequest from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): DeleteWebTokenRequest {
-            return DeleteWebTokenRequest.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): DeleteWebTokenRequest {
+            return DeleteWebTokenRequest.decodeDataView(new DataView(buf));
         }
 
         // Decodes DeleteWebTokenRequest from a DataView
-        static decode(view: DataView): DeleteWebTokenRequest {
+        static decodeDataView(view: DataView): DeleteWebTokenRequest {
             const decoder = new __proto.Decoder(view);
             const obj = new DeleteWebTokenRequest();
 
@@ -22145,14 +21739,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes DeleteWebTokenRequest to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes DeleteWebTokenRequest to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes DeleteWebTokenRequest to the Array<u8>
@@ -22182,12 +21773,12 @@ export namespace types {
         public Name: string = "";
 
         // Decodes ResourceRequest from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ResourceRequest {
-            return ResourceRequest.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ResourceRequest {
+            return ResourceRequest.decodeDataView(new DataView(buf));
         }
 
         // Decodes ResourceRequest from a DataView
-        static decode(view: DataView): ResourceRequest {
+        static decodeDataView(view: DataView): ResourceRequest {
             const decoder = new __proto.Decoder(view);
             const obj = new ResourceRequest();
 
@@ -22222,14 +21813,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ResourceRequest to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ResourceRequest to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ResourceRequest to the Array<u8>
@@ -22256,12 +21844,12 @@ export namespace types {
         public WithSecrets: bool;
 
         // Decodes ResourceWithSecretsRequest from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ResourceWithSecretsRequest {
-            return ResourceWithSecretsRequest.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ResourceWithSecretsRequest {
+            return ResourceWithSecretsRequest.decodeDataView(new DataView(buf));
         }
 
         // Decodes ResourceWithSecretsRequest from a DataView
-        static decode(view: DataView): ResourceWithSecretsRequest {
+        static decodeDataView(view: DataView): ResourceWithSecretsRequest {
             const decoder = new __proto.Decoder(view);
             const obj = new ResourceWithSecretsRequest();
 
@@ -22301,14 +21889,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ResourceWithSecretsRequest to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ResourceWithSecretsRequest to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ResourceWithSecretsRequest to the Array<u8>
@@ -22337,14 +21922,14 @@ export namespace types {
         public WithSecrets: bool;
 
         // Decodes ResourcesWithSecretsRequest from an ArrayBuffer
-        static decodeArrayBuffer(
-            buf: ArrayBuffer
-        ): ResourcesWithSecretsRequest {
-            return ResourcesWithSecretsRequest.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ResourcesWithSecretsRequest {
+            return ResourcesWithSecretsRequest.decodeDataView(
+                new DataView(buf)
+            );
         }
 
         // Decodes ResourcesWithSecretsRequest from a DataView
-        static decode(view: DataView): ResourcesWithSecretsRequest {
+        static decodeDataView(view: DataView): ResourcesWithSecretsRequest {
             const decoder = new __proto.Decoder(view);
             const obj = new ResourcesWithSecretsRequest();
 
@@ -22374,14 +21959,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ResourcesWithSecretsRequest to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ResourcesWithSecretsRequest to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ResourcesWithSecretsRequest to the Array<u8>
@@ -22407,12 +21989,12 @@ export namespace types {
         public Namespace: string = "";
 
         // Decodes ResourceInNamespaceRequest from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ResourceInNamespaceRequest {
-            return ResourceInNamespaceRequest.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ResourceInNamespaceRequest {
+            return ResourceInNamespaceRequest.decodeDataView(new DataView(buf));
         }
 
         // Decodes ResourceInNamespaceRequest from a DataView
-        static decode(view: DataView): ResourceInNamespaceRequest {
+        static decodeDataView(view: DataView): ResourceInNamespaceRequest {
             const decoder = new __proto.Decoder(view);
             const obj = new ResourceInNamespaceRequest();
 
@@ -22457,14 +22039,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ResourceInNamespaceRequest to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ResourceInNamespaceRequest to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ResourceInNamespaceRequest to the Array<u8>
@@ -22494,14 +22073,14 @@ export namespace types {
         public Namespace: string = "";
 
         // Decodes ResourcesInNamespaceRequest from an ArrayBuffer
-        static decodeArrayBuffer(
-            buf: ArrayBuffer
-        ): ResourcesInNamespaceRequest {
-            return ResourcesInNamespaceRequest.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ResourcesInNamespaceRequest {
+            return ResourcesInNamespaceRequest.decodeDataView(
+                new DataView(buf)
+            );
         }
 
         // Decodes ResourcesInNamespaceRequest from a DataView
-        static decode(view: DataView): ResourcesInNamespaceRequest {
+        static decodeDataView(view: DataView): ResourcesInNamespaceRequest {
             const decoder = new __proto.Decoder(view);
             const obj = new ResourcesInNamespaceRequest();
 
@@ -22536,14 +22115,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes ResourcesInNamespaceRequest to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ResourcesInNamespaceRequest to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ResourcesInNamespaceRequest to the Array<u8>
@@ -22577,12 +22153,12 @@ export namespace types {
             new types.OIDCConnectorSpecV3();
 
         // Decodes OIDCConnectorV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): OIDCConnectorV3 {
-            return OIDCConnectorV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): OIDCConnectorV3 {
+            return OIDCConnectorV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes OIDCConnectorV3 from a DataView
-        static decode(view: DataView): OIDCConnectorV3 {
+        static decodeDataView(view: DataView): OIDCConnectorV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new OIDCConnectorV3();
 
@@ -22605,7 +22181,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -22618,7 +22194,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.OIDCConnectorSpecV3.decode(
+                        obj.Spec = types.OIDCConnectorSpecV3.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -22684,14 +22260,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes OIDCConnectorV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes OIDCConnectorV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes OIDCConnectorV3 to the Array<u8>
@@ -22751,12 +22324,12 @@ export namespace types {
             new Array<types.OIDCConnectorV3>();
 
         // Decodes OIDCConnectorV3List from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): OIDCConnectorV3List {
-            return OIDCConnectorV3List.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): OIDCConnectorV3List {
+            return OIDCConnectorV3List.decodeDataView(new DataView(buf));
         }
 
         // Decodes OIDCConnectorV3List from a DataView
-        static decode(view: DataView): OIDCConnectorV3List {
+        static decodeDataView(view: DataView): OIDCConnectorV3List {
             const decoder = new __proto.Decoder(view);
             const obj = new OIDCConnectorV3List();
 
@@ -22768,7 +22341,7 @@ export namespace types {
                     case 1: {
                         const length = decoder.uint32();
                         obj.OIDCConnectors.push(
-                            types.OIDCConnectorV3.decode(
+                            types.OIDCConnectorV3.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -22804,14 +22377,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes OIDCConnectorV3List to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes OIDCConnectorV3List to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes OIDCConnectorV3List to the Array<u8>
@@ -22880,12 +22450,12 @@ export namespace types {
         public GoogleAdminEmail: string = "";
 
         // Decodes OIDCConnectorSpecV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): OIDCConnectorSpecV3 {
-            return OIDCConnectorSpecV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): OIDCConnectorSpecV3 {
+            return OIDCConnectorSpecV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes OIDCConnectorSpecV3 from a DataView
-        static decode(view: DataView): OIDCConnectorSpecV3 {
+        static decodeDataView(view: DataView): OIDCConnectorSpecV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new OIDCConnectorSpecV3();
 
@@ -22933,7 +22503,7 @@ export namespace types {
                     case 10: {
                         const length = decoder.uint32();
                         obj.ClaimsToRoles.push(
-                            types.ClaimMapping.decode(
+                            types.ClaimMapping.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -23054,14 +22624,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes OIDCConnectorSpecV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes OIDCConnectorSpecV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes OIDCConnectorSpecV3 to the Array<u8>
@@ -23165,12 +22732,12 @@ export namespace types {
             new types.SAMLConnectorSpecV2();
 
         // Decodes SAMLConnectorV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SAMLConnectorV2 {
-            return SAMLConnectorV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SAMLConnectorV2 {
+            return SAMLConnectorV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes SAMLConnectorV2 from a DataView
-        static decode(view: DataView): SAMLConnectorV2 {
+        static decodeDataView(view: DataView): SAMLConnectorV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new SAMLConnectorV2();
 
@@ -23193,7 +22760,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -23206,7 +22773,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.SAMLConnectorSpecV2.decode(
+                        obj.Spec = types.SAMLConnectorSpecV2.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -23272,14 +22839,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes SAMLConnectorV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SAMLConnectorV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SAMLConnectorV2 to the Array<u8>
@@ -23339,12 +22903,12 @@ export namespace types {
             new Array<types.SAMLConnectorV2>();
 
         // Decodes SAMLConnectorV2List from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SAMLConnectorV2List {
-            return SAMLConnectorV2List.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SAMLConnectorV2List {
+            return SAMLConnectorV2List.decodeDataView(new DataView(buf));
         }
 
         // Decodes SAMLConnectorV2List from a DataView
-        static decode(view: DataView): SAMLConnectorV2List {
+        static decodeDataView(view: DataView): SAMLConnectorV2List {
             const decoder = new __proto.Decoder(view);
             const obj = new SAMLConnectorV2List();
 
@@ -23356,7 +22920,7 @@ export namespace types {
                     case 1: {
                         const length = decoder.uint32();
                         obj.SAMLConnectors.push(
-                            types.SAMLConnectorV2.decode(
+                            types.SAMLConnectorV2.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -23392,14 +22956,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes SAMLConnectorV2List to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SAMLConnectorV2List to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SAMLConnectorV2List to the Array<u8>
@@ -23464,12 +23025,12 @@ export namespace types {
             new types.AsymmetricKeyPair();
 
         // Decodes SAMLConnectorSpecV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SAMLConnectorSpecV2 {
-            return SAMLConnectorSpecV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SAMLConnectorSpecV2 {
+            return SAMLConnectorSpecV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes SAMLConnectorSpecV2 from a DataView
-        static decode(view: DataView): SAMLConnectorSpecV2 {
+        static decodeDataView(view: DataView): SAMLConnectorSpecV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new SAMLConnectorSpecV2();
 
@@ -23517,7 +23078,7 @@ export namespace types {
                     case 10: {
                         const length = decoder.uint32();
                         obj.AttributesToRoles.push(
-                            types.AttributeMapping.decode(
+                            types.AttributeMapping.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -23531,13 +23092,14 @@ export namespace types {
                     }
                     case 11: {
                         const length = decoder.uint32();
-                        obj.SigningKeyPair = types.AsymmetricKeyPair.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.SigningKeyPair =
+                            types.AsymmetricKeyPair.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -23548,13 +23110,14 @@ export namespace types {
                     }
                     case 13: {
                         const length = decoder.uint32();
-                        obj.EncryptionKeyPair = types.AsymmetricKeyPair.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.EncryptionKeyPair =
+                            types.AsymmetricKeyPair.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -23671,14 +23234,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes SAMLConnectorSpecV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SAMLConnectorSpecV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SAMLConnectorSpecV2 to the Array<u8>
@@ -23787,12 +23347,12 @@ export namespace types {
         public Roles: Array<string> = new Array<string>();
 
         // Decodes AttributeMapping from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AttributeMapping {
-            return AttributeMapping.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AttributeMapping {
+            return AttributeMapping.decodeDataView(new DataView(buf));
         }
 
         // Decodes AttributeMapping from a DataView
-        static decode(view: DataView): AttributeMapping {
+        static decodeDataView(view: DataView): AttributeMapping {
             const decoder = new __proto.Decoder(view);
             const obj = new AttributeMapping();
 
@@ -23843,14 +23403,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes AttributeMapping to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AttributeMapping to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AttributeMapping to the Array<u8>
@@ -23893,12 +23450,12 @@ export namespace types {
         public Cert: string = "";
 
         // Decodes AsymmetricKeyPair from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AsymmetricKeyPair {
-            return AsymmetricKeyPair.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AsymmetricKeyPair {
+            return AsymmetricKeyPair.decodeDataView(new DataView(buf));
         }
 
         // Decodes AsymmetricKeyPair from a DataView
-        static decode(view: DataView): AsymmetricKeyPair {
+        static decodeDataView(view: DataView): AsymmetricKeyPair {
             const decoder = new __proto.Decoder(view);
             const obj = new AsymmetricKeyPair();
 
@@ -23943,14 +23500,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes AsymmetricKeyPair to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AsymmetricKeyPair to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AsymmetricKeyPair to the Array<u8>
@@ -23989,12 +23543,12 @@ export namespace types {
             new types.GithubConnectorSpecV3();
 
         // Decodes GithubConnectorV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): GithubConnectorV3 {
-            return GithubConnectorV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): GithubConnectorV3 {
+            return GithubConnectorV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes GithubConnectorV3 from a DataView
-        static decode(view: DataView): GithubConnectorV3 {
+        static decodeDataView(view: DataView): GithubConnectorV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new GithubConnectorV3();
 
@@ -24017,7 +23571,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -24030,7 +23584,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.GithubConnectorSpecV3.decode(
+                        obj.Spec = types.GithubConnectorSpecV3.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -24096,14 +23650,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes GithubConnectorV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes GithubConnectorV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes GithubConnectorV3 to the Array<u8>
@@ -24163,12 +23714,12 @@ export namespace types {
             new Array<types.GithubConnectorV3>();
 
         // Decodes GithubConnectorV3List from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): GithubConnectorV3List {
-            return GithubConnectorV3List.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): GithubConnectorV3List {
+            return GithubConnectorV3List.decodeDataView(new DataView(buf));
         }
 
         // Decodes GithubConnectorV3List from a DataView
-        static decode(view: DataView): GithubConnectorV3List {
+        static decodeDataView(view: DataView): GithubConnectorV3List {
             const decoder = new __proto.Decoder(view);
             const obj = new GithubConnectorV3List();
 
@@ -24180,7 +23731,7 @@ export namespace types {
                     case 1: {
                         const length = decoder.uint32();
                         obj.GithubConnectors.push(
-                            types.GithubConnectorV3.decode(
+                            types.GithubConnectorV3.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -24216,14 +23767,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes GithubConnectorV3List to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes GithubConnectorV3List to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes GithubConnectorV3List to the Array<u8>
@@ -24261,12 +23809,12 @@ export namespace types {
         public Display: string = "";
 
         // Decodes GithubConnectorSpecV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): GithubConnectorSpecV3 {
-            return GithubConnectorSpecV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): GithubConnectorSpecV3 {
+            return GithubConnectorSpecV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes GithubConnectorSpecV3 from a DataView
-        static decode(view: DataView): GithubConnectorSpecV3 {
+        static decodeDataView(view: DataView): GithubConnectorSpecV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new GithubConnectorSpecV3();
 
@@ -24290,7 +23838,7 @@ export namespace types {
                     case 4: {
                         const length = decoder.uint32();
                         obj.TeamsToLogins.push(
-                            types.TeamMapping.decode(
+                            types.TeamMapping.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -24356,14 +23904,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes GithubConnectorSpecV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes GithubConnectorSpecV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes GithubConnectorSpecV3 to the Array<u8>
@@ -24422,12 +23967,12 @@ export namespace types {
         public KubeUsers: Array<string> = new Array<string>();
 
         // Decodes TeamMapping from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): TeamMapping {
-            return TeamMapping.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): TeamMapping {
+            return TeamMapping.decodeDataView(new DataView(buf));
         }
 
         // Decodes TeamMapping from a DataView
-        static decode(view: DataView): TeamMapping {
+        static decodeDataView(view: DataView): TeamMapping {
             const decoder = new __proto.Decoder(view);
             const obj = new TeamMapping();
 
@@ -24490,14 +24035,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes TeamMapping to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes TeamMapping to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes TeamMapping to the Array<u8>
@@ -24560,12 +24102,12 @@ export namespace types {
             new types.TrustedClusterSpecV2();
 
         // Decodes TrustedClusterV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): TrustedClusterV2 {
-            return TrustedClusterV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): TrustedClusterV2 {
+            return TrustedClusterV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes TrustedClusterV2 from a DataView
-        static decode(view: DataView): TrustedClusterV2 {
+        static decodeDataView(view: DataView): TrustedClusterV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new TrustedClusterV2();
 
@@ -24588,7 +24130,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -24601,7 +24143,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.TrustedClusterSpecV2.decode(
+                        obj.Spec = types.TrustedClusterSpecV2.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -24667,14 +24209,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes TrustedClusterV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes TrustedClusterV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes TrustedClusterV2 to the Array<u8>
@@ -24734,12 +24273,12 @@ export namespace types {
             new Array<types.TrustedClusterV2>();
 
         // Decodes TrustedClusterV2List from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): TrustedClusterV2List {
-            return TrustedClusterV2List.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): TrustedClusterV2List {
+            return TrustedClusterV2List.decodeDataView(new DataView(buf));
         }
 
         // Decodes TrustedClusterV2List from a DataView
-        static decode(view: DataView): TrustedClusterV2List {
+        static decodeDataView(view: DataView): TrustedClusterV2List {
             const decoder = new __proto.Decoder(view);
             const obj = new TrustedClusterV2List();
 
@@ -24751,7 +24290,7 @@ export namespace types {
                     case 1: {
                         const length = decoder.uint32();
                         obj.TrustedClusters.push(
-                            types.TrustedClusterV2.decode(
+                            types.TrustedClusterV2.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -24787,14 +24326,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes TrustedClusterV2List to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes TrustedClusterV2List to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes TrustedClusterV2List to the Array<u8>
@@ -24844,12 +24380,12 @@ export namespace types {
             new Array<types.RoleMapping>();
 
         // Decodes TrustedClusterSpecV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): TrustedClusterSpecV2 {
-            return TrustedClusterSpecV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): TrustedClusterSpecV2 {
+            return TrustedClusterSpecV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes TrustedClusterSpecV2 from a DataView
-        static decode(view: DataView): TrustedClusterSpecV2 {
+        static decodeDataView(view: DataView): TrustedClusterSpecV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new TrustedClusterSpecV2();
 
@@ -24881,7 +24417,7 @@ export namespace types {
                     case 6: {
                         const length = decoder.uint32();
                         obj.RoleMap.push(
-                            types.RoleMapping.decode(
+                            types.RoleMapping.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -24940,14 +24476,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes TrustedClusterSpecV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes TrustedClusterSpecV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes TrustedClusterSpecV2 to the Array<u8>
@@ -25018,12 +24551,12 @@ export namespace types {
         public Spec: types.LockSpecV2 = new types.LockSpecV2();
 
         // Decodes LockV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): LockV2 {
-            return LockV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): LockV2 {
+            return LockV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes LockV2 from a DataView
-        static decode(view: DataView): LockV2 {
+        static decodeDataView(view: DataView): LockV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new LockV2();
 
@@ -25046,7 +24579,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -25059,7 +24592,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.LockSpecV2.decode(
+                        obj.Spec = types.LockSpecV2.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -25124,14 +24657,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes LockV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes LockV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes LockV2 to the Array<u8>
@@ -25195,12 +24725,12 @@ export namespace types {
             new google.protobuf.Timestamp();
 
         // Decodes LockSpecV2 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): LockSpecV2 {
-            return LockSpecV2.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): LockSpecV2 {
+            return LockSpecV2.decodeDataView(new DataView(buf));
         }
 
         // Decodes LockSpecV2 from a DataView
-        static decode(view: DataView): LockSpecV2 {
+        static decodeDataView(view: DataView): LockSpecV2 {
             const decoder = new __proto.Decoder(view);
             const obj = new LockSpecV2();
 
@@ -25211,7 +24741,7 @@ export namespace types {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Target = types.LockTarget.decode(
+                        obj.Target = types.LockTarget.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -25228,7 +24758,7 @@ export namespace types {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Expires = google.protobuf.Timestamp.decode(
+                        obj.Expires = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -25282,14 +24812,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes LockSpecV2 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes LockSpecV2 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes LockSpecV2 to the Array<u8>
@@ -25356,12 +24883,12 @@ export namespace types {
         public AccessRequest: string = "";
 
         // Decodes LockTarget from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): LockTarget {
-            return LockTarget.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): LockTarget {
+            return LockTarget.decodeDataView(new DataView(buf));
         }
 
         // Decodes LockTarget from a DataView
-        static decode(view: DataView): LockTarget {
+        static decodeDataView(view: DataView): LockTarget {
             const decoder = new __proto.Decoder(view);
             const obj = new LockTarget();
 
@@ -25456,14 +24983,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes LockTarget to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes LockTarget to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes LockTarget to the Array<u8>
@@ -25524,12 +25048,12 @@ export namespace types {
         public CIDR: string = "";
 
         // Decodes AddressCondition from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AddressCondition {
-            return AddressCondition.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AddressCondition {
+            return AddressCondition.decodeDataView(new DataView(buf));
         }
 
         // Decodes AddressCondition from a DataView
-        static decode(view: DataView): AddressCondition {
+        static decodeDataView(view: DataView): AddressCondition {
             const decoder = new __proto.Decoder(view);
             const obj = new AddressCondition();
 
@@ -25564,14 +25088,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes AddressCondition to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AddressCondition to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AddressCondition to the Array<u8>
@@ -25599,12 +25120,12 @@ export namespace types {
             new Array<types.AddressCondition>();
 
         // Decodes NetworkRestrictionsSpecV4 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): NetworkRestrictionsSpecV4 {
-            return NetworkRestrictionsSpecV4.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): NetworkRestrictionsSpecV4 {
+            return NetworkRestrictionsSpecV4.decodeDataView(new DataView(buf));
         }
 
         // Decodes NetworkRestrictionsSpecV4 from a DataView
-        static decode(view: DataView): NetworkRestrictionsSpecV4 {
+        static decodeDataView(view: DataView): NetworkRestrictionsSpecV4 {
             const decoder = new __proto.Decoder(view);
             const obj = new NetworkRestrictionsSpecV4();
 
@@ -25616,7 +25137,7 @@ export namespace types {
                     case 1: {
                         const length = decoder.uint32();
                         obj.Allow.push(
-                            types.AddressCondition.decode(
+                            types.AddressCondition.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -25631,7 +25152,7 @@ export namespace types {
                     case 2: {
                         const length = decoder.uint32();
                         obj.Deny.push(
-                            types.AddressCondition.decode(
+                            types.AddressCondition.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -25676,14 +25197,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes NetworkRestrictionsSpecV4 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes NetworkRestrictionsSpecV4 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes NetworkRestrictionsSpecV4 to the Array<u8>
@@ -25736,12 +25254,12 @@ export namespace types {
             new types.NetworkRestrictionsSpecV4();
 
         // Decodes NetworkRestrictionsV4 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): NetworkRestrictionsV4 {
-            return NetworkRestrictionsV4.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): NetworkRestrictionsV4 {
+            return NetworkRestrictionsV4.decodeDataView(new DataView(buf));
         }
 
         // Decodes NetworkRestrictionsV4 from a DataView
-        static decode(view: DataView): NetworkRestrictionsV4 {
+        static decodeDataView(view: DataView): NetworkRestrictionsV4 {
             const decoder = new __proto.Decoder(view);
             const obj = new NetworkRestrictionsV4();
 
@@ -25764,7 +25282,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -25777,13 +25295,14 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.NetworkRestrictionsSpecV4.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Spec =
+                            types.NetworkRestrictionsSpecV4.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -25843,14 +25362,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes NetworkRestrictionsV4 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes NetworkRestrictionsV4 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes NetworkRestrictionsV4 to the Array<u8>
@@ -25912,12 +25428,12 @@ export namespace types {
             new types.WindowsDesktopServiceSpecV3();
 
         // Decodes WindowsDesktopServiceV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): WindowsDesktopServiceV3 {
-            return WindowsDesktopServiceV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): WindowsDesktopServiceV3 {
+            return WindowsDesktopServiceV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes WindowsDesktopServiceV3 from a DataView
-        static decode(view: DataView): WindowsDesktopServiceV3 {
+        static decodeDataView(view: DataView): WindowsDesktopServiceV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new WindowsDesktopServiceV3();
 
@@ -25928,7 +25444,7 @@ export namespace types {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Header = types.ResourceHeader.decode(
+                        obj.Header = types.ResourceHeader.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -25941,13 +25457,14 @@ export namespace types {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Spec = types.WindowsDesktopServiceSpecV3.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Spec =
+                            types.WindowsDesktopServiceSpecV3.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -25989,14 +25506,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes WindowsDesktopServiceV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes WindowsDesktopServiceV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes WindowsDesktopServiceV3 to the Array<u8>
@@ -26043,14 +25557,14 @@ export namespace types {
         public Hostname: string = "";
 
         // Decodes WindowsDesktopServiceSpecV3 from an ArrayBuffer
-        static decodeArrayBuffer(
-            buf: ArrayBuffer
-        ): WindowsDesktopServiceSpecV3 {
-            return WindowsDesktopServiceSpecV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): WindowsDesktopServiceSpecV3 {
+            return WindowsDesktopServiceSpecV3.decodeDataView(
+                new DataView(buf)
+            );
         }
 
         // Decodes WindowsDesktopServiceSpecV3 from a DataView
-        static decode(view: DataView): WindowsDesktopServiceSpecV3 {
+        static decodeDataView(view: DataView): WindowsDesktopServiceSpecV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new WindowsDesktopServiceSpecV3();
 
@@ -26105,14 +25619,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes WindowsDesktopServiceSpecV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes WindowsDesktopServiceSpecV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes WindowsDesktopServiceSpecV3 to the Array<u8>
@@ -26149,12 +25660,12 @@ export namespace types {
         public Name: string = "";
 
         // Decodes WindowsDesktopFilter from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): WindowsDesktopFilter {
-            return WindowsDesktopFilter.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): WindowsDesktopFilter {
+            return WindowsDesktopFilter.decodeDataView(new DataView(buf));
         }
 
         // Decodes WindowsDesktopFilter from a DataView
-        static decode(view: DataView): WindowsDesktopFilter {
+        static decodeDataView(view: DataView): WindowsDesktopFilter {
             const decoder = new __proto.Decoder(view);
             const obj = new WindowsDesktopFilter();
 
@@ -26199,14 +25710,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes WindowsDesktopFilter to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes WindowsDesktopFilter to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes WindowsDesktopFilter to the Array<u8>
@@ -26239,12 +25747,12 @@ export namespace types {
             new types.WindowsDesktopSpecV3();
 
         // Decodes WindowsDesktopV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): WindowsDesktopV3 {
-            return WindowsDesktopV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): WindowsDesktopV3 {
+            return WindowsDesktopV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes WindowsDesktopV3 from a DataView
-        static decode(view: DataView): WindowsDesktopV3 {
+        static decodeDataView(view: DataView): WindowsDesktopV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new WindowsDesktopV3();
 
@@ -26255,7 +25763,7 @@ export namespace types {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Header = types.ResourceHeader.decode(
+                        obj.Header = types.ResourceHeader.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -26268,7 +25776,7 @@ export namespace types {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Spec = types.WindowsDesktopSpecV3.decode(
+                        obj.Spec = types.WindowsDesktopSpecV3.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -26316,14 +25824,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes WindowsDesktopV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes WindowsDesktopV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes WindowsDesktopV3 to the Array<u8>
@@ -26370,12 +25875,12 @@ export namespace types {
         public HostID: string = "";
 
         // Decodes WindowsDesktopSpecV3 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): WindowsDesktopSpecV3 {
-            return WindowsDesktopSpecV3.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): WindowsDesktopSpecV3 {
+            return WindowsDesktopSpecV3.decodeDataView(new DataView(buf));
         }
 
         // Decodes WindowsDesktopSpecV3 from a DataView
-        static decode(view: DataView): WindowsDesktopSpecV3 {
+        static decodeDataView(view: DataView): WindowsDesktopSpecV3 {
             const decoder = new __proto.Decoder(view);
             const obj = new WindowsDesktopSpecV3();
 
@@ -26430,14 +25935,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes WindowsDesktopSpecV3 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes WindowsDesktopSpecV3 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes WindowsDesktopSpecV3 to the Array<u8>
@@ -26506,12 +26008,12 @@ export namespace types {
         public EC2IdentityDocument: Array<u8> = new Array<u8>();
 
         // Decodes RegisterUsingTokenRequest from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): RegisterUsingTokenRequest {
-            return RegisterUsingTokenRequest.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): RegisterUsingTokenRequest {
+            return RegisterUsingTokenRequest.decodeDataView(new DataView(buf));
         }
 
         // Decodes RegisterUsingTokenRequest from a DataView
-        static decode(view: DataView): RegisterUsingTokenRequest {
+        static decodeDataView(view: DataView): RegisterUsingTokenRequest {
             const decoder = new __proto.Decoder(view);
             const obj = new RegisterUsingTokenRequest();
 
@@ -26629,14 +26131,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes RegisterUsingTokenRequest to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes RegisterUsingTokenRequest to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes RegisterUsingTokenRequest to the Array<u8>
@@ -26732,12 +26231,12 @@ export namespace types {
             new types.RecoveryCodesSpecV1();
 
         // Decodes RecoveryCodesV1 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): RecoveryCodesV1 {
-            return RecoveryCodesV1.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): RecoveryCodesV1 {
+            return RecoveryCodesV1.decodeDataView(new DataView(buf));
         }
 
         // Decodes RecoveryCodesV1 from a DataView
-        static decode(view: DataView): RecoveryCodesV1 {
+        static decodeDataView(view: DataView): RecoveryCodesV1 {
             const decoder = new __proto.Decoder(view);
             const obj = new RecoveryCodesV1();
 
@@ -26760,7 +26259,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Metadata = types.Metadata.decode(
+                        obj.Metadata = types.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -26773,7 +26272,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Spec = types.RecoveryCodesSpecV1.decode(
+                        obj.Spec = types.RecoveryCodesSpecV1.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -26839,14 +26338,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes RecoveryCodesV1 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes RecoveryCodesV1 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes RecoveryCodesV1 to the Array<u8>
@@ -26912,12 +26408,12 @@ export namespace types {
             new google.protobuf.Timestamp();
 
         // Decodes RecoveryCodesSpecV1 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): RecoveryCodesSpecV1 {
-            return RecoveryCodesSpecV1.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): RecoveryCodesSpecV1 {
+            return RecoveryCodesSpecV1.decodeDataView(new DataView(buf));
         }
 
         // Decodes RecoveryCodesSpecV1 from a DataView
-        static decode(view: DataView): RecoveryCodesSpecV1 {
+        static decodeDataView(view: DataView): RecoveryCodesSpecV1 {
             const decoder = new __proto.Decoder(view);
             const obj = new RecoveryCodesSpecV1();
 
@@ -26929,7 +26425,7 @@ export namespace types {
                     case 1: {
                         const length = decoder.uint32();
                         obj.Codes.push(
-                            types.RecoveryCode.decode(
+                            types.RecoveryCode.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -26943,7 +26439,7 @@ export namespace types {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Created = google.protobuf.Timestamp.decode(
+                        obj.Created = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -26989,14 +26485,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes RecoveryCodesSpecV1 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes RecoveryCodesSpecV1 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes RecoveryCodesSpecV1 to the Array<u8>
@@ -27039,12 +26532,12 @@ export namespace types {
         public IsUsed: bool;
 
         // Decodes RecoveryCode from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): RecoveryCode {
-            return RecoveryCode.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): RecoveryCode {
+            return RecoveryCode.decodeDataView(new DataView(buf));
         }
 
         // Decodes RecoveryCode from a DataView
-        static decode(view: DataView): RecoveryCode {
+        static decodeDataView(view: DataView): RecoveryCode {
             const decoder = new __proto.Decoder(view);
             const obj = new RecoveryCode();
 
@@ -27084,14 +26577,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes RecoveryCode to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes RecoveryCode to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes RecoveryCode to the Array<u8>
@@ -27123,12 +26613,12 @@ export namespace types {
             new types.SessionTrackerSpecV1();
 
         // Decodes SessionTrackerV1 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SessionTrackerV1 {
-            return SessionTrackerV1.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SessionTrackerV1 {
+            return SessionTrackerV1.decodeDataView(new DataView(buf));
         }
 
         // Decodes SessionTrackerV1 from a DataView
-        static decode(view: DataView): SessionTrackerV1 {
+        static decodeDataView(view: DataView): SessionTrackerV1 {
             const decoder = new __proto.Decoder(view);
             const obj = new SessionTrackerV1();
 
@@ -27139,7 +26629,7 @@ export namespace types {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Header = types.ResourceHeader.decode(
+                        obj.Header = types.ResourceHeader.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -27152,7 +26642,7 @@ export namespace types {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Spec = types.SessionTrackerSpecV1.decode(
+                        obj.Spec = types.SessionTrackerSpecV1.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -27200,14 +26690,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes SessionTrackerV1 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SessionTrackerV1 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SessionTrackerV1 to the Array<u8>
@@ -27304,12 +26791,12 @@ export namespace types {
             new Array<types.SessionTrackerPolicySet>();
 
         // Decodes SessionTrackerSpecV1 from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SessionTrackerSpecV1 {
-            return SessionTrackerSpecV1.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SessionTrackerSpecV1 {
+            return SessionTrackerSpecV1.decodeDataView(new DataView(buf));
         }
 
         // Decodes SessionTrackerSpecV1 from a DataView
-        static decode(view: DataView): SessionTrackerSpecV1 {
+        static decodeDataView(view: DataView): SessionTrackerSpecV1 {
             const decoder = new __proto.Decoder(view);
             const obj = new SessionTrackerSpecV1();
 
@@ -27332,7 +26819,7 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Created = google.protobuf.Timestamp.decode(
+                        obj.Created = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -27345,7 +26832,7 @@ export namespace types {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Expires = google.protobuf.Timestamp.decode(
+                        obj.Expires = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -27387,7 +26874,7 @@ export namespace types {
                     case 13: {
                         const length = decoder.uint32();
                         obj.Participants.push(
-                            types.Participant.decode(
+                            types.Participant.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -27410,7 +26897,7 @@ export namespace types {
                     case 16: {
                         const length = decoder.uint32();
                         obj.HostPolicies.push(
-                            types.SessionTrackerPolicySet.decode(
+                            types.SessionTrackerPolicySet.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -27544,14 +27031,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes SessionTrackerSpecV1 to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SessionTrackerSpecV1 to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SessionTrackerSpecV1 to the Array<u8>
@@ -27688,12 +27172,12 @@ export namespace types {
             new Array<types.SessionRequirePolicy>();
 
         // Decodes SessionTrackerPolicySet from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SessionTrackerPolicySet {
-            return SessionTrackerPolicySet.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SessionTrackerPolicySet {
+            return SessionTrackerPolicySet.decodeDataView(new DataView(buf));
         }
 
         // Decodes SessionTrackerPolicySet from a DataView
-        static decode(view: DataView): SessionTrackerPolicySet {
+        static decodeDataView(view: DataView): SessionTrackerPolicySet {
             const decoder = new __proto.Decoder(view);
             const obj = new SessionTrackerPolicySet();
 
@@ -27713,7 +27197,7 @@ export namespace types {
                     case 3: {
                         const length = decoder.uint32();
                         obj.RequireSessionJoin.push(
-                            types.SessionRequirePolicy.decode(
+                            types.SessionRequirePolicy.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -27762,14 +27246,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes SessionTrackerPolicySet to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SessionTrackerPolicySet to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SessionTrackerPolicySet to the Array<u8>
@@ -27816,12 +27297,12 @@ export namespace types {
             new google.protobuf.Timestamp();
 
         // Decodes Participant from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): Participant {
-            return Participant.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): Participant {
+            return Participant.decodeDataView(new DataView(buf));
         }
 
         // Decodes Participant from a DataView
-        static decode(view: DataView): Participant {
+        static decodeDataView(view: DataView): Participant {
             const decoder = new __proto.Decoder(view);
             const obj = new Participant();
 
@@ -27844,13 +27325,14 @@ export namespace types {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.LastActive = google.protobuf.Timestamp.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.LastActive =
+                            google.protobuf.Timestamp.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -27900,14 +27382,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes Participant to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes Participant to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes Participant to the Array<u8>
@@ -27956,12 +27435,12 @@ export namespace types {
         public Field: string = "";
 
         // Decodes SortBy from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SortBy {
-            return SortBy.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SortBy {
+            return SortBy.decodeDataView(new DataView(buf));
         }
 
         // Decodes SortBy from a DataView
-        static decode(view: DataView): SortBy {
+        static decodeDataView(view: DataView): SortBy {
             const decoder = new __proto.Decoder(view);
             const obj = new SortBy();
 
@@ -28001,14 +27480,11 @@ export namespace types {
             return size;
         }
 
-        // Encodes SortBy to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SortBy to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SortBy to the Array<u8>
@@ -28054,12 +27530,12 @@ export namespace events {
         public ClusterName: string = "";
 
         // Decodes Metadata from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): Metadata {
-            return Metadata.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): Metadata {
+            return Metadata.decodeDataView(new DataView(buf));
         }
 
         // Decodes Metadata from a DataView
-        static decode(view: DataView): Metadata {
+        static decodeDataView(view: DataView): Metadata {
             const decoder = new __proto.Decoder(view);
             const obj = new Metadata();
 
@@ -28086,7 +27562,7 @@ export namespace events {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Time = google.protobuf.Timestamp.decode(
+                        obj.Time = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -28154,14 +27630,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes Metadata to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes Metadata to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes Metadata to the Array<u8>
@@ -28220,12 +27693,12 @@ export namespace events {
         public WithMFA: string = "";
 
         // Decodes SessionMetadata from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SessionMetadata {
-            return SessionMetadata.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SessionMetadata {
+            return SessionMetadata.decodeDataView(new DataView(buf));
         }
 
         // Decodes SessionMetadata from a DataView
-        static decode(view: DataView): SessionMetadata {
+        static decodeDataView(view: DataView): SessionMetadata {
             const decoder = new __proto.Decoder(view);
             const obj = new SessionMetadata();
 
@@ -28270,14 +27743,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes SessionMetadata to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SessionMetadata to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SessionMetadata to the Array<u8>
@@ -28315,12 +27785,12 @@ export namespace events {
         public AccessRequests: Array<string> = new Array<string>();
 
         // Decodes UserMetadata from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): UserMetadata {
-            return UserMetadata.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): UserMetadata {
+            return UserMetadata.decodeDataView(new DataView(buf));
         }
 
         // Decodes UserMetadata from a DataView
-        static decode(view: DataView): UserMetadata {
+        static decodeDataView(view: DataView): UserMetadata {
             const decoder = new __proto.Decoder(view);
             const obj = new UserMetadata();
 
@@ -28391,14 +27861,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes UserMetadata to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes UserMetadata to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes UserMetadata to the Array<u8>
@@ -28457,12 +27924,12 @@ export namespace events {
         public ServerLabels: Map<string, string> = new Map<string, string>();
 
         // Decodes ServerMetadata from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ServerMetadata {
-            return ServerMetadata.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ServerMetadata {
+            return ServerMetadata.decodeDataView(new DataView(buf));
         }
 
         // Decodes ServerMetadata from a DataView
-        static decode(view: DataView): ServerMetadata {
+        static decodeDataView(view: DataView): ServerMetadata {
             const decoder = new __proto.Decoder(view);
             const obj = new ServerMetadata();
 
@@ -28551,14 +28018,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes ServerMetadata to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ServerMetadata to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ServerMetadata to the Array<u8>
@@ -28625,12 +28089,12 @@ export namespace events {
         public Protocol: string = "";
 
         // Decodes ConnectionMetadata from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ConnectionMetadata {
-            return ConnectionMetadata.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ConnectionMetadata {
+            return ConnectionMetadata.decodeDataView(new DataView(buf));
         }
 
         // Decodes ConnectionMetadata from a DataView
-        static decode(view: DataView): ConnectionMetadata {
+        static decodeDataView(view: DataView): ConnectionMetadata {
             const decoder = new __proto.Decoder(view);
             const obj = new ConnectionMetadata();
 
@@ -28685,14 +28149,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes ConnectionMetadata to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ConnectionMetadata to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ConnectionMetadata to the Array<u8>
@@ -28731,12 +28192,12 @@ export namespace events {
         public KubernetesGroups: Array<string> = new Array<string>();
 
         // Decodes KubernetesClusterMetadata from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): KubernetesClusterMetadata {
-            return KubernetesClusterMetadata.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): KubernetesClusterMetadata {
+            return KubernetesClusterMetadata.decodeDataView(new DataView(buf));
         }
 
         // Decodes KubernetesClusterMetadata from a DataView
-        static decode(view: DataView): KubernetesClusterMetadata {
+        static decodeDataView(view: DataView): KubernetesClusterMetadata {
             const decoder = new __proto.Decoder(view);
             const obj = new KubernetesClusterMetadata();
 
@@ -28783,14 +28244,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes KubernetesClusterMetadata to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes KubernetesClusterMetadata to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes KubernetesClusterMetadata to the Array<u8>
@@ -28842,12 +28300,12 @@ export namespace events {
         public KubernetesNodeName: string = "";
 
         // Decodes KubernetesPodMetadata from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): KubernetesPodMetadata {
-            return KubernetesPodMetadata.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): KubernetesPodMetadata {
+            return KubernetesPodMetadata.decodeDataView(new DataView(buf));
         }
 
         // Decodes KubernetesPodMetadata from a DataView
-        static decode(view: DataView): KubernetesPodMetadata {
+        static decodeDataView(view: DataView): KubernetesPodMetadata {
             const decoder = new __proto.Decoder(view);
             const obj = new KubernetesPodMetadata();
 
@@ -28928,14 +28386,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes KubernetesPodMetadata to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes KubernetesPodMetadata to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes KubernetesPodMetadata to the Array<u8>
@@ -29004,12 +28459,12 @@ export namespace events {
         public SessionRecording: string = "";
 
         // Decodes SessionStart from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SessionStart {
-            return SessionStart.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SessionStart {
+            return SessionStart.decodeDataView(new DataView(buf));
         }
 
         // Decodes SessionStart from a DataView
-        static decode(view: DataView): SessionStart {
+        static decodeDataView(view: DataView): SessionStart {
             const decoder = new __proto.Decoder(view);
             const obj = new SessionStart();
 
@@ -29020,7 +28475,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -29033,7 +28488,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -29046,7 +28501,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -29059,7 +28514,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Server = events.ServerMetadata.decode(
+                        obj.Server = events.ServerMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -29072,13 +28527,14 @@ export namespace events {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Connection = events.ConnectionMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Connection =
+                            events.ConnectionMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -29090,7 +28546,7 @@ export namespace events {
                     case 7: {
                         const length = decoder.uint32();
                         obj.KubernetesCluster =
-                            events.KubernetesClusterMetadata.decode(
+                            events.KubernetesClusterMetadata.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -29103,13 +28559,14 @@ export namespace events {
                     }
                     case 8: {
                         const length = decoder.uint32();
-                        obj.KubernetesPod = events.KubernetesPodMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.KubernetesPod =
+                            events.KubernetesPodMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -29228,14 +28685,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes SessionStart to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SessionStart to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SessionStart to the Array<u8>
@@ -29380,12 +28834,12 @@ export namespace events {
             new events.KubernetesClusterMetadata();
 
         // Decodes SessionJoin from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SessionJoin {
-            return SessionJoin.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SessionJoin {
+            return SessionJoin.decodeDataView(new DataView(buf));
         }
 
         // Decodes SessionJoin from a DataView
-        static decode(view: DataView): SessionJoin {
+        static decodeDataView(view: DataView): SessionJoin {
             const decoder = new __proto.Decoder(view);
             const obj = new SessionJoin();
 
@@ -29396,7 +28850,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -29409,7 +28863,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -29422,7 +28876,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -29435,7 +28889,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Server = events.ServerMetadata.decode(
+                        obj.Server = events.ServerMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -29448,13 +28902,14 @@ export namespace events {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Connection = events.ConnectionMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Connection =
+                            events.ConnectionMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -29462,7 +28917,7 @@ export namespace events {
                     case 6: {
                         const length = decoder.uint32();
                         obj.KubernetesCluster =
-                            events.KubernetesClusterMetadata.decode(
+                            events.KubernetesClusterMetadata.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -29552,14 +29007,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes SessionJoin to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SessionJoin to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SessionJoin to the Array<u8>
@@ -29667,12 +29119,12 @@ export namespace events {
         public Offset: i64;
 
         // Decodes SessionPrint from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SessionPrint {
-            return SessionPrint.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SessionPrint {
+            return SessionPrint.decodeDataView(new DataView(buf));
         }
 
         // Decodes SessionPrint from a DataView
-        static decode(view: DataView): SessionPrint {
+        static decodeDataView(view: DataView): SessionPrint {
             const decoder = new __proto.Decoder(view);
             const obj = new SessionPrint();
 
@@ -29683,7 +29135,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -29756,14 +29208,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes SessionPrint to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SessionPrint to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SessionPrint to the Array<u8>
@@ -29828,12 +29277,12 @@ export namespace events {
         public DelayMilliseconds: i64;
 
         // Decodes DesktopRecording from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): DesktopRecording {
-            return DesktopRecording.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): DesktopRecording {
+            return DesktopRecording.decodeDataView(new DataView(buf));
         }
 
         // Decodes DesktopRecording from a DataView
-        static decode(view: DataView): DesktopRecording {
+        static decodeDataView(view: DataView): DesktopRecording {
             const decoder = new __proto.Decoder(view);
             const obj = new DesktopRecording();
 
@@ -29844,7 +29293,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -29899,14 +29348,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes DesktopRecording to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes DesktopRecording to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes DesktopRecording to the Array<u8>
@@ -29961,12 +29407,12 @@ export namespace events {
         public Length: i32;
 
         // Decodes DesktopClipboardReceive from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): DesktopClipboardReceive {
-            return DesktopClipboardReceive.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): DesktopClipboardReceive {
+            return DesktopClipboardReceive.decodeDataView(new DataView(buf));
         }
 
         // Decodes DesktopClipboardReceive from a DataView
-        static decode(view: DataView): DesktopClipboardReceive {
+        static decodeDataView(view: DataView): DesktopClipboardReceive {
             const decoder = new __proto.Decoder(view);
             const obj = new DesktopClipboardReceive();
 
@@ -29977,7 +29423,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -29990,7 +29436,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -30003,7 +29449,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -30016,13 +29462,14 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Connection = events.ConnectionMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Connection =
+                            events.ConnectionMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -30100,14 +29547,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes DesktopClipboardReceive to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes DesktopClipboardReceive to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes DesktopClipboardReceive to the Array<u8>
@@ -30198,12 +29642,12 @@ export namespace events {
         public Length: i32;
 
         // Decodes DesktopClipboardSend from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): DesktopClipboardSend {
-            return DesktopClipboardSend.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): DesktopClipboardSend {
+            return DesktopClipboardSend.decodeDataView(new DataView(buf));
         }
 
         // Decodes DesktopClipboardSend from a DataView
-        static decode(view: DataView): DesktopClipboardSend {
+        static decodeDataView(view: DataView): DesktopClipboardSend {
             const decoder = new __proto.Decoder(view);
             const obj = new DesktopClipboardSend();
 
@@ -30214,7 +29658,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -30227,7 +29671,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -30240,7 +29684,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -30253,13 +29697,14 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Connection = events.ConnectionMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Connection =
+                            events.ConnectionMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -30337,14 +29782,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes DesktopClipboardSend to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes DesktopClipboardSend to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes DesktopClipboardSend to the Array<u8>
@@ -30438,12 +29880,12 @@ export namespace events {
         public Maximum: i64;
 
         // Decodes SessionReject from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SessionReject {
-            return SessionReject.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SessionReject {
+            return SessionReject.decodeDataView(new DataView(buf));
         }
 
         // Decodes SessionReject from a DataView
-        static decode(view: DataView): SessionReject {
+        static decodeDataView(view: DataView): SessionReject {
             const decoder = new __proto.Decoder(view);
             const obj = new SessionReject();
 
@@ -30454,7 +29896,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -30467,7 +29909,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -30480,7 +29922,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Server = events.ServerMetadata.decode(
+                        obj.Server = events.ServerMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -30493,13 +29935,14 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Connection = events.ConnectionMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Connection =
+                            events.ConnectionMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -30578,14 +30021,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes SessionReject to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SessionReject to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SessionReject to the Array<u8>
@@ -30664,12 +30104,12 @@ export namespace events {
             new events.ConnectionMetadata();
 
         // Decodes SessionConnect from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SessionConnect {
-            return SessionConnect.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SessionConnect {
+            return SessionConnect.decodeDataView(new DataView(buf));
         }
 
         // Decodes SessionConnect from a DataView
-        static decode(view: DataView): SessionConnect {
+        static decodeDataView(view: DataView): SessionConnect {
             const decoder = new __proto.Decoder(view);
             const obj = new SessionConnect();
 
@@ -30680,7 +30120,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -30693,7 +30133,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Server = events.ServerMetadata.decode(
+                        obj.Server = events.ServerMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -30706,13 +30146,14 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Connection = events.ConnectionMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Connection =
+                            events.ConnectionMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -30764,14 +30205,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes SessionConnect to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SessionConnect to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SessionConnect to the Array<u8>
@@ -30846,12 +30284,12 @@ export namespace events {
             new events.KubernetesPodMetadata();
 
         // Decodes Resize from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): Resize {
-            return Resize.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): Resize {
+            return Resize.decodeDataView(new DataView(buf));
         }
 
         // Decodes Resize from a DataView
-        static decode(view: DataView): Resize {
+        static decodeDataView(view: DataView): Resize {
             const decoder = new __proto.Decoder(view);
             const obj = new Resize();
 
@@ -30862,7 +30300,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -30875,7 +30313,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -30888,7 +30326,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -30901,20 +30339,21 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Connection = events.ConnectionMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Connection =
+                            events.ConnectionMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Server = events.ServerMetadata.decode(
+                        obj.Server = events.ServerMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -30932,7 +30371,7 @@ export namespace events {
                     case 7: {
                         const length = decoder.uint32();
                         obj.KubernetesCluster =
-                            events.KubernetesClusterMetadata.decode(
+                            events.KubernetesClusterMetadata.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -30945,13 +30384,14 @@ export namespace events {
                     }
                     case 8: {
                         const length = decoder.uint32();
-                        obj.KubernetesPod = events.KubernetesPodMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.KubernetesPod =
+                            events.KubernetesPodMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -31053,14 +30493,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes Resize to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes Resize to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes Resize to the Array<u8>
@@ -31210,12 +30647,12 @@ export namespace events {
         public SessionRecording: string = "";
 
         // Decodes SessionEnd from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SessionEnd {
-            return SessionEnd.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SessionEnd {
+            return SessionEnd.decodeDataView(new DataView(buf));
         }
 
         // Decodes SessionEnd from a DataView
-        static decode(view: DataView): SessionEnd {
+        static decodeDataView(view: DataView): SessionEnd {
             const decoder = new __proto.Decoder(view);
             const obj = new SessionEnd();
 
@@ -31226,7 +30663,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -31239,7 +30676,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -31252,7 +30689,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -31265,20 +30702,21 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Connection = events.ConnectionMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Connection =
+                            events.ConnectionMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Server = events.ServerMetadata.decode(
+                        obj.Server = events.ServerMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -31303,20 +30741,21 @@ export namespace events {
                     }
                     case 9: {
                         const length = decoder.uint32();
-                        obj.StartTime = google.protobuf.Timestamp.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.StartTime =
+                            google.protobuf.Timestamp.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
                     }
                     case 10: {
                         const length = decoder.uint32();
-                        obj.EndTime = google.protobuf.Timestamp.decode(
+                        obj.EndTime = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -31330,7 +30769,7 @@ export namespace events {
                     case 11: {
                         const length = decoder.uint32();
                         obj.KubernetesCluster =
-                            events.KubernetesClusterMetadata.decode(
+                            events.KubernetesClusterMetadata.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -31343,13 +30782,14 @@ export namespace events {
                     }
                     case 12: {
                         const length = decoder.uint32();
-                        obj.KubernetesPod = events.KubernetesPodMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.KubernetesPod =
+                            events.KubernetesPodMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -31488,14 +30928,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes SessionEnd to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SessionEnd to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SessionEnd to the Array<u8>
@@ -31658,12 +31095,12 @@ export namespace events {
         public Program: string = "";
 
         // Decodes BPFMetadata from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): BPFMetadata {
-            return BPFMetadata.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): BPFMetadata {
+            return BPFMetadata.decodeDataView(new DataView(buf));
         }
 
         // Decodes BPFMetadata from a DataView
-        static decode(view: DataView): BPFMetadata {
+        static decodeDataView(view: DataView): BPFMetadata {
             const decoder = new __proto.Decoder(view);
             const obj = new BPFMetadata();
 
@@ -31711,14 +31148,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes BPFMetadata to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes BPFMetadata to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes BPFMetadata to the Array<u8>
@@ -31755,12 +31189,12 @@ export namespace events {
         public UserMessage: string = "";
 
         // Decodes Status from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): Status {
-            return Status.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): Status {
+            return Status.decodeDataView(new DataView(buf));
         }
 
         // Decodes Status from a DataView
-        static decode(view: DataView): Status {
+        static decodeDataView(view: DataView): Status {
             const decoder = new __proto.Decoder(view);
             const obj = new Status();
 
@@ -31810,14 +31244,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes Status to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes Status to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes Status to the Array<u8>
@@ -31870,12 +31301,12 @@ export namespace events {
         public ReturnCode: i32;
 
         // Decodes SessionCommand from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SessionCommand {
-            return SessionCommand.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SessionCommand {
+            return SessionCommand.decodeDataView(new DataView(buf));
         }
 
         // Decodes SessionCommand from a DataView
-        static decode(view: DataView): SessionCommand {
+        static decodeDataView(view: DataView): SessionCommand {
             const decoder = new __proto.Decoder(view);
             const obj = new SessionCommand();
 
@@ -31886,7 +31317,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -31899,7 +31330,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -31912,7 +31343,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -31925,7 +31356,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Server = events.ServerMetadata.decode(
+                        obj.Server = events.ServerMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -31938,7 +31369,7 @@ export namespace events {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.BPF = events.BPFMetadata.decode(
+                        obj.BPF = events.BPFMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -32047,14 +31478,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes SessionCommand to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SessionCommand to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SessionCommand to the Array<u8>
@@ -32170,12 +31598,12 @@ export namespace events {
         public ReturnCode: i32;
 
         // Decodes SessionDisk from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SessionDisk {
-            return SessionDisk.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SessionDisk {
+            return SessionDisk.decodeDataView(new DataView(buf));
         }
 
         // Decodes SessionDisk from a DataView
-        static decode(view: DataView): SessionDisk {
+        static decodeDataView(view: DataView): SessionDisk {
             const decoder = new __proto.Decoder(view);
             const obj = new SessionDisk();
 
@@ -32186,7 +31614,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -32199,7 +31627,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -32212,7 +31640,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -32225,7 +31653,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Server = events.ServerMetadata.decode(
+                        obj.Server = events.ServerMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -32238,7 +31666,7 @@ export namespace events {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.BPF = events.BPFMetadata.decode(
+                        obj.BPF = events.BPFMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -32340,14 +31768,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes SessionDisk to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SessionDisk to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SessionDisk to the Array<u8>
@@ -32460,12 +31885,12 @@ export namespace events {
         public Action: u32;
 
         // Decodes SessionNetwork from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SessionNetwork {
-            return SessionNetwork.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SessionNetwork {
+            return SessionNetwork.decodeDataView(new DataView(buf));
         }
 
         // Decodes SessionNetwork from a DataView
-        static decode(view: DataView): SessionNetwork {
+        static decodeDataView(view: DataView): SessionNetwork {
             const decoder = new __proto.Decoder(view);
             const obj = new SessionNetwork();
 
@@ -32476,7 +31901,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -32489,7 +31914,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -32502,7 +31927,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -32515,7 +31940,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Server = events.ServerMetadata.decode(
+                        obj.Server = events.ServerMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -32528,7 +31953,7 @@ export namespace events {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.BPF = events.BPFMetadata.decode(
+                        obj.BPF = events.BPFMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -32655,14 +32080,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes SessionNetwork to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SessionNetwork to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SessionNetwork to the Array<u8>
@@ -32788,12 +32210,12 @@ export namespace events {
         public BytesReceived: u64;
 
         // Decodes SessionData from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SessionData {
-            return SessionData.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SessionData {
+            return SessionData.decodeDataView(new DataView(buf));
         }
 
         // Decodes SessionData from a DataView
-        static decode(view: DataView): SessionData {
+        static decodeDataView(view: DataView): SessionData {
             const decoder = new __proto.Decoder(view);
             const obj = new SessionData();
 
@@ -32804,7 +32226,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -32817,7 +32239,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -32830,7 +32252,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -32843,7 +32265,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Server = events.ServerMetadata.decode(
+                        obj.Server = events.ServerMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -32856,13 +32278,14 @@ export namespace events {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Connection = events.ConnectionMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Connection =
+                            events.ConnectionMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -32952,14 +32375,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes SessionData to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SessionData to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SessionData to the Array<u8>
@@ -33056,12 +32476,12 @@ export namespace events {
             new events.ConnectionMetadata();
 
         // Decodes SessionLeave from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SessionLeave {
-            return SessionLeave.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SessionLeave {
+            return SessionLeave.decodeDataView(new DataView(buf));
         }
 
         // Decodes SessionLeave from a DataView
-        static decode(view: DataView): SessionLeave {
+        static decodeDataView(view: DataView): SessionLeave {
             const decoder = new __proto.Decoder(view);
             const obj = new SessionLeave();
 
@@ -33072,7 +32492,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -33085,7 +32505,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -33098,7 +32518,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -33111,7 +32531,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Server = events.ServerMetadata.decode(
+                        obj.Server = events.ServerMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -33124,13 +32544,14 @@ export namespace events {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Connection = events.ConnectionMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Connection =
+                            events.ConnectionMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -33203,14 +32624,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes SessionLeave to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SessionLeave to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SessionLeave to the Array<u8>
@@ -33301,12 +32719,12 @@ export namespace events {
             new events.MFADeviceMetadata();
 
         // Decodes UserLogin from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): UserLogin {
-            return UserLogin.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): UserLogin {
+            return UserLogin.decodeDataView(new DataView(buf));
         }
 
         // Decodes UserLogin from a DataView
-        static decode(view: DataView): UserLogin {
+        static decodeDataView(view: DataView): UserLogin {
             const decoder = new __proto.Decoder(view);
             const obj = new UserLogin();
 
@@ -33317,7 +32735,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -33330,7 +32748,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -33343,7 +32761,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Status = events.Status.decode(
+                        obj.Status = events.Status.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -33360,20 +32778,21 @@ export namespace events {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.IdentityAttributes = google.protobuf.Struct.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.IdentityAttributes =
+                            google.protobuf.Struct.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
                     }
                     case 6: {
                         const length = decoder.uint32();
-                        obj.MFADevice = events.MFADeviceMetadata.decode(
+                        obj.MFADevice = events.MFADeviceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -33458,14 +32877,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes UserLogin to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes UserLogin to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes UserLogin to the Array<u8>
@@ -33561,12 +32977,12 @@ export namespace events {
         public TTL: string = "";
 
         // Decodes ResourceMetadata from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ResourceMetadata {
-            return ResourceMetadata.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ResourceMetadata {
+            return ResourceMetadata.decodeDataView(new DataView(buf));
         }
 
         // Decodes ResourceMetadata from a DataView
-        static decode(view: DataView): ResourceMetadata {
+        static decodeDataView(view: DataView): ResourceMetadata {
             const decoder = new __proto.Decoder(view);
             const obj = new ResourceMetadata();
 
@@ -33581,7 +32997,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Expires = google.protobuf.Timestamp.decode(
+                        obj.Expires = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -33646,14 +33062,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes ResourceMetadata to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ResourceMetadata to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ResourceMetadata to the Array<u8>
@@ -33710,12 +33123,12 @@ export namespace events {
         public Connector: string = "";
 
         // Decodes UserCreate from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): UserCreate {
-            return UserCreate.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): UserCreate {
+            return UserCreate.decodeDataView(new DataView(buf));
         }
 
         // Decodes UserCreate from a DataView
-        static decode(view: DataView): UserCreate {
+        static decodeDataView(view: DataView): UserCreate {
             const decoder = new __proto.Decoder(view);
             const obj = new UserCreate();
 
@@ -33726,7 +33139,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -33739,7 +33152,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -33752,7 +33165,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Resource = events.ResourceMetadata.decode(
+                        obj.Resource = events.ResourceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -33826,14 +33239,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes UserCreate to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes UserCreate to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes UserCreate to the Array<u8>
@@ -33907,12 +33317,12 @@ export namespace events {
             new events.ResourceMetadata();
 
         // Decodes UserDelete from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): UserDelete {
-            return UserDelete.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): UserDelete {
+            return UserDelete.decodeDataView(new DataView(buf));
         }
 
         // Decodes UserDelete from a DataView
-        static decode(view: DataView): UserDelete {
+        static decodeDataView(view: DataView): UserDelete {
             const decoder = new __proto.Decoder(view);
             const obj = new UserDelete();
 
@@ -33923,7 +33333,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -33936,7 +33346,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -33949,7 +33359,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Resource = events.ResourceMetadata.decode(
+                        obj.Resource = events.ResourceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -34006,14 +33416,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes UserDelete to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes UserDelete to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes UserDelete to the Array<u8>
@@ -34070,12 +33477,12 @@ export namespace events {
         public User: events.UserMetadata = new events.UserMetadata();
 
         // Decodes UserPasswordChange from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): UserPasswordChange {
-            return UserPasswordChange.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): UserPasswordChange {
+            return UserPasswordChange.decodeDataView(new DataView(buf));
         }
 
         // Decodes UserPasswordChange from a DataView
-        static decode(view: DataView): UserPasswordChange {
+        static decodeDataView(view: DataView): UserPasswordChange {
             const decoder = new __proto.Decoder(view);
             const obj = new UserPasswordChange();
 
@@ -34086,7 +33493,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -34099,7 +33506,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -34145,14 +33552,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes UserPasswordChange to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes UserPasswordChange to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes UserPasswordChange to the Array<u8>
@@ -34232,12 +33636,12 @@ export namespace events {
         public ProposedState: string = "";
 
         // Decodes AccessRequestCreate from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AccessRequestCreate {
-            return AccessRequestCreate.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AccessRequestCreate {
+            return AccessRequestCreate.decodeDataView(new DataView(buf));
         }
 
         // Decodes AccessRequestCreate from a DataView
-        static decode(view: DataView): AccessRequestCreate {
+        static decodeDataView(view: DataView): AccessRequestCreate {
             const decoder = new __proto.Decoder(view);
             const obj = new AccessRequestCreate();
 
@@ -34248,7 +33652,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -34261,7 +33665,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -34274,7 +33678,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Resource = events.ResourceMetadata.decode(
+                        obj.Resource = events.ResourceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -34307,7 +33711,7 @@ export namespace events {
                     }
                     case 9: {
                         const length = decoder.uint32();
-                        obj.Annotations = google.protobuf.Struct.decode(
+                        obj.Annotations = google.protobuf.Struct.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -34423,14 +33827,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes AccessRequestCreate to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AccessRequestCreate to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AccessRequestCreate to the Array<u8>
@@ -34541,12 +33942,12 @@ export namespace events {
         public RequestID: string = "";
 
         // Decodes AccessRequestDelete from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AccessRequestDelete {
-            return AccessRequestDelete.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AccessRequestDelete {
+            return AccessRequestDelete.decodeDataView(new DataView(buf));
         }
 
         // Decodes AccessRequestDelete from a DataView
-        static decode(view: DataView): AccessRequestDelete {
+        static decodeDataView(view: DataView): AccessRequestDelete {
             const decoder = new __proto.Decoder(view);
             const obj = new AccessRequestDelete();
 
@@ -34557,7 +33958,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -34570,7 +33971,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -34627,14 +34028,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes AccessRequestDelete to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AccessRequestDelete to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AccessRequestDelete to the Array<u8>
@@ -34692,12 +34090,12 @@ export namespace events {
         public Addr: string = "";
 
         // Decodes PortForward from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): PortForward {
-            return PortForward.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): PortForward {
+            return PortForward.decodeDataView(new DataView(buf));
         }
 
         // Decodes PortForward from a DataView
-        static decode(view: DataView): PortForward {
+        static decodeDataView(view: DataView): PortForward {
             const decoder = new __proto.Decoder(view);
             const obj = new PortForward();
 
@@ -34708,7 +34106,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -34721,7 +34119,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -34734,20 +34132,21 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Connection = events.ConnectionMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Connection =
+                            events.ConnectionMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Status = events.Status.decode(
+                        obj.Status = events.Status.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -34825,14 +34224,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes PortForward to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes PortForward to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes PortForward to the Array<u8>
@@ -34912,12 +34308,12 @@ export namespace events {
         public Status: events.Status = new events.Status();
 
         // Decodes X11Forward from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): X11Forward {
-            return X11Forward.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): X11Forward {
+            return X11Forward.decodeDataView(new DataView(buf));
         }
 
         // Decodes X11Forward from a DataView
-        static decode(view: DataView): X11Forward {
+        static decodeDataView(view: DataView): X11Forward {
             const decoder = new __proto.Decoder(view);
             const obj = new X11Forward();
 
@@ -34928,7 +34324,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -34941,7 +34337,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -34954,20 +34350,21 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Connection = events.ConnectionMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Connection =
+                            events.ConnectionMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Status = events.Status.decode(
+                        obj.Status = events.Status.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -35034,14 +34431,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes X11Forward to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes X11Forward to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes X11Forward to the Array<u8>
@@ -35112,12 +34506,12 @@ export namespace events {
         public Error: string = "";
 
         // Decodes CommandMetadata from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): CommandMetadata {
-            return CommandMetadata.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): CommandMetadata {
+            return CommandMetadata.decodeDataView(new DataView(buf));
         }
 
         // Decodes CommandMetadata from a DataView
-        static decode(view: DataView): CommandMetadata {
+        static decodeDataView(view: DataView): CommandMetadata {
             const decoder = new __proto.Decoder(view);
             const obj = new CommandMetadata();
 
@@ -35172,14 +34566,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes CommandMetadata to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes CommandMetadata to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes CommandMetadata to the Array<u8>
@@ -35234,12 +34625,12 @@ export namespace events {
             new events.KubernetesPodMetadata();
 
         // Decodes Exec from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): Exec {
-            return Exec.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): Exec {
+            return Exec.decodeDataView(new DataView(buf));
         }
 
         // Decodes Exec from a DataView
-        static decode(view: DataView): Exec {
+        static decodeDataView(view: DataView): Exec {
             const decoder = new __proto.Decoder(view);
             const obj = new Exec();
 
@@ -35250,7 +34641,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -35263,7 +34654,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -35276,20 +34667,21 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Connection = events.ConnectionMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Connection =
+                            events.ConnectionMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -35302,7 +34694,7 @@ export namespace events {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Server = events.ServerMetadata.decode(
+                        obj.Server = events.ServerMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -35315,7 +34707,7 @@ export namespace events {
                     }
                     case 6: {
                         const length = decoder.uint32();
-                        obj.Command = events.CommandMetadata.decode(
+                        obj.Command = events.CommandMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -35329,7 +34721,7 @@ export namespace events {
                     case 7: {
                         const length = decoder.uint32();
                         obj.KubernetesCluster =
-                            events.KubernetesClusterMetadata.decode(
+                            events.KubernetesClusterMetadata.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -35342,13 +34734,14 @@ export namespace events {
                     }
                     case 8: {
                         const length = decoder.uint32();
-                        obj.KubernetesPod = events.KubernetesPodMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.KubernetesPod =
+                            events.KubernetesPodMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -35454,14 +34847,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes Exec to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes Exec to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes Exec to the Array<u8>
@@ -35592,12 +34982,12 @@ export namespace events {
         public Action: string = "";
 
         // Decodes SCP from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SCP {
-            return SCP.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SCP {
+            return SCP.decodeDataView(new DataView(buf));
         }
 
         // Decodes SCP from a DataView
-        static decode(view: DataView): SCP {
+        static decodeDataView(view: DataView): SCP {
             const decoder = new __proto.Decoder(view);
             const obj = new SCP();
 
@@ -35608,7 +34998,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -35621,7 +35011,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -35634,20 +35024,21 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Connection = events.ConnectionMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Connection =
+                            events.ConnectionMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -35660,7 +35051,7 @@ export namespace events {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Server = events.ServerMetadata.decode(
+                        obj.Server = events.ServerMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -35673,7 +35064,7 @@ export namespace events {
                     }
                     case 6: {
                         const length = decoder.uint32();
-                        obj.Command = events.CommandMetadata.decode(
+                        obj.Command = events.CommandMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -35784,14 +35175,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes SCP to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SCP to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SCP to the Array<u8>
@@ -35902,12 +35290,12 @@ export namespace events {
         public Error: string = "";
 
         // Decodes Subsystem from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): Subsystem {
-            return Subsystem.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): Subsystem {
+            return Subsystem.decodeDataView(new DataView(buf));
         }
 
         // Decodes Subsystem from a DataView
-        static decode(view: DataView): Subsystem {
+        static decodeDataView(view: DataView): Subsystem {
             const decoder = new __proto.Decoder(view);
             const obj = new Subsystem();
 
@@ -35918,7 +35306,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -35931,7 +35319,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -35944,13 +35332,14 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Connection = events.ConnectionMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Connection =
+                            events.ConnectionMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -36022,14 +35411,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes Subsystem to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes Subsystem to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes Subsystem to the Array<u8>
@@ -36110,12 +35496,12 @@ export namespace events {
         public Reason: string = "";
 
         // Decodes ClientDisconnect from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): ClientDisconnect {
-            return ClientDisconnect.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): ClientDisconnect {
+            return ClientDisconnect.decodeDataView(new DataView(buf));
         }
 
         // Decodes ClientDisconnect from a DataView
-        static decode(view: DataView): ClientDisconnect {
+        static decodeDataView(view: DataView): ClientDisconnect {
             const decoder = new __proto.Decoder(view);
             const obj = new ClientDisconnect();
 
@@ -36126,7 +35512,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -36139,7 +35525,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -36152,20 +35538,21 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Connection = events.ConnectionMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Connection =
+                            events.ConnectionMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Server = events.ServerMetadata.decode(
+                        obj.Server = events.ServerMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -36244,14 +35631,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes ClientDisconnect to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes ClientDisconnect to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes ClientDisconnect to the Array<u8>
@@ -36331,12 +35715,12 @@ export namespace events {
         public Status: events.Status = new events.Status();
 
         // Decodes AuthAttempt from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AuthAttempt {
-            return AuthAttempt.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AuthAttempt {
+            return AuthAttempt.decodeDataView(new DataView(buf));
         }
 
         // Decodes AuthAttempt from a DataView
-        static decode(view: DataView): AuthAttempt {
+        static decodeDataView(view: DataView): AuthAttempt {
             const decoder = new __proto.Decoder(view);
             const obj = new AuthAttempt();
 
@@ -36347,7 +35731,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -36360,7 +35744,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -36373,20 +35757,21 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Connection = events.ConnectionMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Connection =
+                            events.ConnectionMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Status = events.Status.decode(
+                        obj.Status = events.Status.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -36453,14 +35838,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes AuthAttempt to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AuthAttempt to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AuthAttempt to the Array<u8>
@@ -36532,12 +35914,12 @@ export namespace events {
         public User: events.UserMetadata = new events.UserMetadata();
 
         // Decodes UserTokenCreate from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): UserTokenCreate {
-            return UserTokenCreate.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): UserTokenCreate {
+            return UserTokenCreate.decodeDataView(new DataView(buf));
         }
 
         // Decodes UserTokenCreate from a DataView
-        static decode(view: DataView): UserTokenCreate {
+        static decodeDataView(view: DataView): UserTokenCreate {
             const decoder = new __proto.Decoder(view);
             const obj = new UserTokenCreate();
 
@@ -36548,7 +35930,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -36561,7 +35943,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Resource = events.ResourceMetadata.decode(
+                        obj.Resource = events.ResourceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -36574,7 +35956,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -36631,14 +36013,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes UserTokenCreate to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes UserTokenCreate to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes UserTokenCreate to the Array<u8>
@@ -36698,12 +36077,12 @@ export namespace events {
         public User: events.UserMetadata = new events.UserMetadata();
 
         // Decodes RoleCreate from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): RoleCreate {
-            return RoleCreate.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): RoleCreate {
+            return RoleCreate.decodeDataView(new DataView(buf));
         }
 
         // Decodes RoleCreate from a DataView
-        static decode(view: DataView): RoleCreate {
+        static decodeDataView(view: DataView): RoleCreate {
             const decoder = new __proto.Decoder(view);
             const obj = new RoleCreate();
 
@@ -36714,7 +36093,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -36727,7 +36106,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Resource = events.ResourceMetadata.decode(
+                        obj.Resource = events.ResourceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -36740,7 +36119,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -36797,14 +36176,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes RoleCreate to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes RoleCreate to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes RoleCreate to the Array<u8>
@@ -36864,12 +36240,12 @@ export namespace events {
         public User: events.UserMetadata = new events.UserMetadata();
 
         // Decodes RoleDelete from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): RoleDelete {
-            return RoleDelete.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): RoleDelete {
+            return RoleDelete.decodeDataView(new DataView(buf));
         }
 
         // Decodes RoleDelete from a DataView
-        static decode(view: DataView): RoleDelete {
+        static decodeDataView(view: DataView): RoleDelete {
             const decoder = new __proto.Decoder(view);
             const obj = new RoleDelete();
 
@@ -36880,7 +36256,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -36893,7 +36269,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Resource = events.ResourceMetadata.decode(
+                        obj.Resource = events.ResourceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -36906,7 +36282,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -36963,14 +36339,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes RoleDelete to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes RoleDelete to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes RoleDelete to the Array<u8>
@@ -37030,12 +36403,12 @@ export namespace events {
         public User: events.UserMetadata = new events.UserMetadata();
 
         // Decodes TrustedClusterCreate from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): TrustedClusterCreate {
-            return TrustedClusterCreate.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): TrustedClusterCreate {
+            return TrustedClusterCreate.decodeDataView(new DataView(buf));
         }
 
         // Decodes TrustedClusterCreate from a DataView
-        static decode(view: DataView): TrustedClusterCreate {
+        static decodeDataView(view: DataView): TrustedClusterCreate {
             const decoder = new __proto.Decoder(view);
             const obj = new TrustedClusterCreate();
 
@@ -37046,7 +36419,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -37059,7 +36432,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Resource = events.ResourceMetadata.decode(
+                        obj.Resource = events.ResourceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -37072,7 +36445,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -37129,14 +36502,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes TrustedClusterCreate to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes TrustedClusterCreate to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes TrustedClusterCreate to the Array<u8>
@@ -37196,12 +36566,12 @@ export namespace events {
         public User: events.UserMetadata = new events.UserMetadata();
 
         // Decodes TrustedClusterDelete from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): TrustedClusterDelete {
-            return TrustedClusterDelete.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): TrustedClusterDelete {
+            return TrustedClusterDelete.decodeDataView(new DataView(buf));
         }
 
         // Decodes TrustedClusterDelete from a DataView
-        static decode(view: DataView): TrustedClusterDelete {
+        static decodeDataView(view: DataView): TrustedClusterDelete {
             const decoder = new __proto.Decoder(view);
             const obj = new TrustedClusterDelete();
 
@@ -37212,7 +36582,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -37225,7 +36595,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Resource = events.ResourceMetadata.decode(
+                        obj.Resource = events.ResourceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -37238,7 +36608,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -37295,14 +36665,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes TrustedClusterDelete to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes TrustedClusterDelete to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes TrustedClusterDelete to the Array<u8>
@@ -37365,12 +36732,12 @@ export namespace events {
         public User: events.UserMetadata = new events.UserMetadata();
 
         // Decodes TrustedClusterTokenCreate from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): TrustedClusterTokenCreate {
-            return TrustedClusterTokenCreate.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): TrustedClusterTokenCreate {
+            return TrustedClusterTokenCreate.decodeDataView(new DataView(buf));
         }
 
         // Decodes TrustedClusterTokenCreate from a DataView
-        static decode(view: DataView): TrustedClusterTokenCreate {
+        static decodeDataView(view: DataView): TrustedClusterTokenCreate {
             const decoder = new __proto.Decoder(view);
             const obj = new TrustedClusterTokenCreate();
 
@@ -37381,7 +36748,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -37394,7 +36761,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Resource = events.ResourceMetadata.decode(
+                        obj.Resource = events.ResourceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -37407,7 +36774,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -37464,14 +36831,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes TrustedClusterTokenCreate to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes TrustedClusterTokenCreate to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes TrustedClusterTokenCreate to the Array<u8>
@@ -37531,12 +36895,12 @@ export namespace events {
         public User: events.UserMetadata = new events.UserMetadata();
 
         // Decodes GithubConnectorCreate from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): GithubConnectorCreate {
-            return GithubConnectorCreate.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): GithubConnectorCreate {
+            return GithubConnectorCreate.decodeDataView(new DataView(buf));
         }
 
         // Decodes GithubConnectorCreate from a DataView
-        static decode(view: DataView): GithubConnectorCreate {
+        static decodeDataView(view: DataView): GithubConnectorCreate {
             const decoder = new __proto.Decoder(view);
             const obj = new GithubConnectorCreate();
 
@@ -37547,7 +36911,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -37560,7 +36924,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Resource = events.ResourceMetadata.decode(
+                        obj.Resource = events.ResourceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -37573,7 +36937,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -37630,14 +36994,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes GithubConnectorCreate to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes GithubConnectorCreate to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes GithubConnectorCreate to the Array<u8>
@@ -37697,12 +37058,12 @@ export namespace events {
         public User: events.UserMetadata = new events.UserMetadata();
 
         // Decodes GithubConnectorDelete from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): GithubConnectorDelete {
-            return GithubConnectorDelete.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): GithubConnectorDelete {
+            return GithubConnectorDelete.decodeDataView(new DataView(buf));
         }
 
         // Decodes GithubConnectorDelete from a DataView
-        static decode(view: DataView): GithubConnectorDelete {
+        static decodeDataView(view: DataView): GithubConnectorDelete {
             const decoder = new __proto.Decoder(view);
             const obj = new GithubConnectorDelete();
 
@@ -37713,7 +37074,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -37726,7 +37087,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Resource = events.ResourceMetadata.decode(
+                        obj.Resource = events.ResourceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -37739,7 +37100,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -37796,14 +37157,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes GithubConnectorDelete to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes GithubConnectorDelete to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes GithubConnectorDelete to the Array<u8>
@@ -37863,12 +37221,12 @@ export namespace events {
         public User: events.UserMetadata = new events.UserMetadata();
 
         // Decodes OIDCConnectorCreate from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): OIDCConnectorCreate {
-            return OIDCConnectorCreate.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): OIDCConnectorCreate {
+            return OIDCConnectorCreate.decodeDataView(new DataView(buf));
         }
 
         // Decodes OIDCConnectorCreate from a DataView
-        static decode(view: DataView): OIDCConnectorCreate {
+        static decodeDataView(view: DataView): OIDCConnectorCreate {
             const decoder = new __proto.Decoder(view);
             const obj = new OIDCConnectorCreate();
 
@@ -37879,7 +37237,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -37892,7 +37250,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Resource = events.ResourceMetadata.decode(
+                        obj.Resource = events.ResourceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -37905,7 +37263,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -37962,14 +37320,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes OIDCConnectorCreate to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes OIDCConnectorCreate to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes OIDCConnectorCreate to the Array<u8>
@@ -38029,12 +37384,12 @@ export namespace events {
         public User: events.UserMetadata = new events.UserMetadata();
 
         // Decodes OIDCConnectorDelete from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): OIDCConnectorDelete {
-            return OIDCConnectorDelete.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): OIDCConnectorDelete {
+            return OIDCConnectorDelete.decodeDataView(new DataView(buf));
         }
 
         // Decodes OIDCConnectorDelete from a DataView
-        static decode(view: DataView): OIDCConnectorDelete {
+        static decodeDataView(view: DataView): OIDCConnectorDelete {
             const decoder = new __proto.Decoder(view);
             const obj = new OIDCConnectorDelete();
 
@@ -38045,7 +37400,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -38058,7 +37413,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Resource = events.ResourceMetadata.decode(
+                        obj.Resource = events.ResourceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -38071,7 +37426,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -38128,14 +37483,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes OIDCConnectorDelete to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes OIDCConnectorDelete to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes OIDCConnectorDelete to the Array<u8>
@@ -38195,12 +37547,12 @@ export namespace events {
         public User: events.UserMetadata = new events.UserMetadata();
 
         // Decodes SAMLConnectorCreate from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SAMLConnectorCreate {
-            return SAMLConnectorCreate.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SAMLConnectorCreate {
+            return SAMLConnectorCreate.decodeDataView(new DataView(buf));
         }
 
         // Decodes SAMLConnectorCreate from a DataView
-        static decode(view: DataView): SAMLConnectorCreate {
+        static decodeDataView(view: DataView): SAMLConnectorCreate {
             const decoder = new __proto.Decoder(view);
             const obj = new SAMLConnectorCreate();
 
@@ -38211,7 +37563,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -38224,7 +37576,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Resource = events.ResourceMetadata.decode(
+                        obj.Resource = events.ResourceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -38237,7 +37589,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -38294,14 +37646,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes SAMLConnectorCreate to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SAMLConnectorCreate to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SAMLConnectorCreate to the Array<u8>
@@ -38361,12 +37710,12 @@ export namespace events {
         public User: events.UserMetadata = new events.UserMetadata();
 
         // Decodes SAMLConnectorDelete from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SAMLConnectorDelete {
-            return SAMLConnectorDelete.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SAMLConnectorDelete {
+            return SAMLConnectorDelete.decodeDataView(new DataView(buf));
         }
 
         // Decodes SAMLConnectorDelete from a DataView
-        static decode(view: DataView): SAMLConnectorDelete {
+        static decodeDataView(view: DataView): SAMLConnectorDelete {
             const decoder = new __proto.Decoder(view);
             const obj = new SAMLConnectorDelete();
 
@@ -38377,7 +37726,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -38390,7 +37739,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Resource = events.ResourceMetadata.decode(
+                        obj.Resource = events.ResourceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -38403,7 +37752,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -38460,14 +37809,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes SAMLConnectorDelete to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SAMLConnectorDelete to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SAMLConnectorDelete to the Array<u8>
@@ -38546,12 +37892,12 @@ export namespace events {
             new events.KubernetesClusterMetadata();
 
         // Decodes KubeRequest from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): KubeRequest {
-            return KubeRequest.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): KubeRequest {
+            return KubeRequest.decodeDataView(new DataView(buf));
         }
 
         // Decodes KubeRequest from a DataView
-        static decode(view: DataView): KubeRequest {
+        static decodeDataView(view: DataView): KubeRequest {
             const decoder = new __proto.Decoder(view);
             const obj = new KubeRequest();
 
@@ -38562,7 +37908,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -38575,7 +37921,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -38588,20 +37934,21 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Connection = events.ConnectionMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Connection =
+                            events.ConnectionMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Server = events.ServerMetadata.decode(
+                        obj.Server = events.ServerMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -38643,7 +37990,7 @@ export namespace events {
                     case 12: {
                         const length = decoder.uint32();
                         obj.Kubernetes =
-                            events.KubernetesClusterMetadata.decode(
+                            events.KubernetesClusterMetadata.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -38763,14 +38110,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes KubeRequest to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes KubeRequest to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes KubeRequest to the Array<u8>
@@ -38890,12 +38234,12 @@ export namespace events {
         public AppName: string = "";
 
         // Decodes AppMetadata from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AppMetadata {
-            return AppMetadata.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AppMetadata {
+            return AppMetadata.decodeDataView(new DataView(buf));
         }
 
         // Decodes AppMetadata from a DataView
-        static decode(view: DataView): AppMetadata {
+        static decodeDataView(view: DataView): AppMetadata {
             const decoder = new __proto.Decoder(view);
             const obj = new AppMetadata();
 
@@ -38975,14 +38319,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes AppMetadata to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AppMetadata to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AppMetadata to the Array<u8>
@@ -39048,12 +38389,12 @@ export namespace events {
         public App: events.AppMetadata = new events.AppMetadata();
 
         // Decodes AppCreate from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AppCreate {
-            return AppCreate.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AppCreate {
+            return AppCreate.decodeDataView(new DataView(buf));
         }
 
         // Decodes AppCreate from a DataView
-        static decode(view: DataView): AppCreate {
+        static decodeDataView(view: DataView): AppCreate {
             const decoder = new __proto.Decoder(view);
             const obj = new AppCreate();
 
@@ -39064,7 +38405,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -39077,7 +38418,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -39090,7 +38431,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Resource = events.ResourceMetadata.decode(
+                        obj.Resource = events.ResourceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -39103,7 +38444,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.App = events.AppMetadata.decode(
+                        obj.App = events.AppMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -39170,14 +38511,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes AppCreate to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AppCreate to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AppCreate to the Array<u8>
@@ -39251,12 +38589,12 @@ export namespace events {
         public App: events.AppMetadata = new events.AppMetadata();
 
         // Decodes AppUpdate from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AppUpdate {
-            return AppUpdate.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AppUpdate {
+            return AppUpdate.decodeDataView(new DataView(buf));
         }
 
         // Decodes AppUpdate from a DataView
-        static decode(view: DataView): AppUpdate {
+        static decodeDataView(view: DataView): AppUpdate {
             const decoder = new __proto.Decoder(view);
             const obj = new AppUpdate();
 
@@ -39267,7 +38605,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -39280,7 +38618,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -39293,7 +38631,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Resource = events.ResourceMetadata.decode(
+                        obj.Resource = events.ResourceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -39306,7 +38644,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.App = events.AppMetadata.decode(
+                        obj.App = events.AppMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -39373,14 +38711,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes AppUpdate to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AppUpdate to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AppUpdate to the Array<u8>
@@ -39452,12 +38787,12 @@ export namespace events {
             new events.ResourceMetadata();
 
         // Decodes AppDelete from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AppDelete {
-            return AppDelete.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AppDelete {
+            return AppDelete.decodeDataView(new DataView(buf));
         }
 
         // Decodes AppDelete from a DataView
-        static decode(view: DataView): AppDelete {
+        static decodeDataView(view: DataView): AppDelete {
             const decoder = new __proto.Decoder(view);
             const obj = new AppDelete();
 
@@ -39468,7 +38803,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -39481,7 +38816,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -39494,7 +38829,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Resource = events.ResourceMetadata.decode(
+                        obj.Resource = events.ResourceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -39551,14 +38886,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes AppDelete to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AppDelete to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AppDelete to the Array<u8>
@@ -39629,12 +38961,12 @@ export namespace events {
         public App: events.AppMetadata = new events.AppMetadata();
 
         // Decodes AppSessionStart from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AppSessionStart {
-            return AppSessionStart.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AppSessionStart {
+            return AppSessionStart.decodeDataView(new DataView(buf));
         }
 
         // Decodes AppSessionStart from a DataView
-        static decode(view: DataView): AppSessionStart {
+        static decodeDataView(view: DataView): AppSessionStart {
             const decoder = new __proto.Decoder(view);
             const obj = new AppSessionStart();
 
@@ -39645,7 +38977,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -39658,7 +38990,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -39671,7 +39003,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -39684,7 +39016,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Server = events.ServerMetadata.decode(
+                        obj.Server = events.ServerMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -39697,13 +39029,14 @@ export namespace events {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Connection = events.ConnectionMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Connection =
+                            events.ConnectionMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -39714,7 +39047,7 @@ export namespace events {
                     }
                     case 8: {
                         const length = decoder.uint32();
-                        obj.App = events.AppMetadata.decode(
+                        obj.App = events.AppMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -39810,14 +39143,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes AppSessionStart to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AppSessionStart to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AppSessionStart to the Array<u8>
@@ -39934,12 +39264,12 @@ export namespace events {
         public App: events.AppMetadata = new events.AppMetadata();
 
         // Decodes AppSessionChunk from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AppSessionChunk {
-            return AppSessionChunk.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AppSessionChunk {
+            return AppSessionChunk.decodeDataView(new DataView(buf));
         }
 
         // Decodes AppSessionChunk from a DataView
-        static decode(view: DataView): AppSessionChunk {
+        static decodeDataView(view: DataView): AppSessionChunk {
             const decoder = new __proto.Decoder(view);
             const obj = new AppSessionChunk();
 
@@ -39950,7 +39280,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -39963,7 +39293,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -39976,7 +39306,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -39989,7 +39319,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Server = events.ServerMetadata.decode(
+                        obj.Server = events.ServerMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -40002,13 +39332,14 @@ export namespace events {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Connection = events.ConnectionMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Connection =
+                            events.ConnectionMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -40019,7 +39350,7 @@ export namespace events {
                     }
                     case 7: {
                         const length = decoder.uint32();
-                        obj.App = events.AppMetadata.decode(
+                        obj.App = events.AppMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -40115,14 +39446,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes AppSessionChunk to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AppSessionChunk to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AppSessionChunk to the Array<u8>
@@ -40229,12 +39557,12 @@ export namespace events {
         public App: events.AppMetadata = new events.AppMetadata();
 
         // Decodes AppSessionRequest from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): AppSessionRequest {
-            return AppSessionRequest.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): AppSessionRequest {
+            return AppSessionRequest.decodeDataView(new DataView(buf));
         }
 
         // Decodes AppSessionRequest from a DataView
-        static decode(view: DataView): AppSessionRequest {
+        static decodeDataView(view: DataView): AppSessionRequest {
             const decoder = new __proto.Decoder(view);
             const obj = new AppSessionRequest();
 
@@ -40245,7 +39573,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -40274,7 +39602,7 @@ export namespace events {
                     }
                     case 6: {
                         const length = decoder.uint32();
-                        obj.App = events.AppMetadata.decode(
+                        obj.App = events.AppMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -40343,14 +39671,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes AppSessionRequest to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes AppSessionRequest to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes AppSessionRequest to the Array<u8>
@@ -40431,12 +39756,12 @@ export namespace events {
         public DatabaseGCPInstanceID: string = "";
 
         // Decodes DatabaseMetadata from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): DatabaseMetadata {
-            return DatabaseMetadata.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): DatabaseMetadata {
+            return DatabaseMetadata.decodeDataView(new DataView(buf));
         }
 
         // Decodes DatabaseMetadata from a DataView
-        static decode(view: DataView): DatabaseMetadata {
+        static decodeDataView(view: DataView): DatabaseMetadata {
             const decoder = new __proto.Decoder(view);
             const obj = new DatabaseMetadata();
 
@@ -40580,14 +39905,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes DatabaseMetadata to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes DatabaseMetadata to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes DatabaseMetadata to the Array<u8>
@@ -40684,12 +40006,12 @@ export namespace events {
             new events.DatabaseMetadata();
 
         // Decodes DatabaseCreate from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): DatabaseCreate {
-            return DatabaseCreate.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): DatabaseCreate {
+            return DatabaseCreate.decodeDataView(new DataView(buf));
         }
 
         // Decodes DatabaseCreate from a DataView
-        static decode(view: DataView): DatabaseCreate {
+        static decodeDataView(view: DataView): DatabaseCreate {
             const decoder = new __proto.Decoder(view);
             const obj = new DatabaseCreate();
 
@@ -40700,7 +40022,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -40713,7 +40035,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -40726,7 +40048,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Resource = events.ResourceMetadata.decode(
+                        obj.Resource = events.ResourceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -40739,7 +40061,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Database = events.DatabaseMetadata.decode(
+                        obj.Database = events.DatabaseMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -40807,14 +40129,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes DatabaseCreate to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes DatabaseCreate to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes DatabaseCreate to the Array<u8>
@@ -40889,12 +40208,12 @@ export namespace events {
             new events.DatabaseMetadata();
 
         // Decodes DatabaseUpdate from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): DatabaseUpdate {
-            return DatabaseUpdate.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): DatabaseUpdate {
+            return DatabaseUpdate.decodeDataView(new DataView(buf));
         }
 
         // Decodes DatabaseUpdate from a DataView
-        static decode(view: DataView): DatabaseUpdate {
+        static decodeDataView(view: DataView): DatabaseUpdate {
             const decoder = new __proto.Decoder(view);
             const obj = new DatabaseUpdate();
 
@@ -40905,7 +40224,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -40918,7 +40237,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -40931,7 +40250,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Resource = events.ResourceMetadata.decode(
+                        obj.Resource = events.ResourceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -40944,7 +40263,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Database = events.DatabaseMetadata.decode(
+                        obj.Database = events.DatabaseMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -41012,14 +40331,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes DatabaseUpdate to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes DatabaseUpdate to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes DatabaseUpdate to the Array<u8>
@@ -41091,12 +40407,12 @@ export namespace events {
             new events.ResourceMetadata();
 
         // Decodes DatabaseDelete from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): DatabaseDelete {
-            return DatabaseDelete.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): DatabaseDelete {
+            return DatabaseDelete.decodeDataView(new DataView(buf));
         }
 
         // Decodes DatabaseDelete from a DataView
-        static decode(view: DataView): DatabaseDelete {
+        static decodeDataView(view: DataView): DatabaseDelete {
             const decoder = new __proto.Decoder(view);
             const obj = new DatabaseDelete();
 
@@ -41107,7 +40423,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -41120,7 +40436,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -41133,7 +40449,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Resource = events.ResourceMetadata.decode(
+                        obj.Resource = events.ResourceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -41190,14 +40506,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes DatabaseDelete to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes DatabaseDelete to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes DatabaseDelete to the Array<u8>
@@ -41266,12 +40579,12 @@ export namespace events {
             new events.DatabaseMetadata();
 
         // Decodes DatabaseSessionStart from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): DatabaseSessionStart {
-            return DatabaseSessionStart.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): DatabaseSessionStart {
+            return DatabaseSessionStart.decodeDataView(new DataView(buf));
         }
 
         // Decodes DatabaseSessionStart from a DataView
-        static decode(view: DataView): DatabaseSessionStart {
+        static decodeDataView(view: DataView): DatabaseSessionStart {
             const decoder = new __proto.Decoder(view);
             const obj = new DatabaseSessionStart();
 
@@ -41282,7 +40595,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -41295,7 +40608,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -41308,7 +40621,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -41321,7 +40634,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Server = events.ServerMetadata.decode(
+                        obj.Server = events.ServerMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -41334,20 +40647,21 @@ export namespace events {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Connection = events.ConnectionMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Connection =
+                            events.ConnectionMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
                     }
                     case 6: {
                         const length = decoder.uint32();
-                        obj.Status = events.Status.decode(
+                        obj.Status = events.Status.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -41360,7 +40674,7 @@ export namespace events {
                     }
                     case 7: {
                         const length = decoder.uint32();
-                        obj.Database = events.DatabaseMetadata.decode(
+                        obj.Database = events.DatabaseMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -41460,14 +40774,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes DatabaseSessionStart to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes DatabaseSessionStart to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes DatabaseSessionStart to the Array<u8>
@@ -41583,12 +40894,12 @@ export namespace events {
         public Status: events.Status = new events.Status();
 
         // Decodes DatabaseSessionQuery from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): DatabaseSessionQuery {
-            return DatabaseSessionQuery.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): DatabaseSessionQuery {
+            return DatabaseSessionQuery.decodeDataView(new DataView(buf));
         }
 
         // Decodes DatabaseSessionQuery from a DataView
-        static decode(view: DataView): DatabaseSessionQuery {
+        static decodeDataView(view: DataView): DatabaseSessionQuery {
             const decoder = new __proto.Decoder(view);
             const obj = new DatabaseSessionQuery();
 
@@ -41599,7 +40910,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -41612,7 +40923,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -41625,7 +40936,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -41638,7 +40949,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Database = events.DatabaseMetadata.decode(
+                        obj.Database = events.DatabaseMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -41659,7 +40970,7 @@ export namespace events {
                     }
                     case 7: {
                         const length = decoder.uint32();
-                        obj.Status = events.Status.decode(
+                        obj.Status = events.Status.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -41746,14 +41057,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes DatabaseSessionQuery to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes DatabaseSessionQuery to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes DatabaseSessionQuery to the Array<u8>
@@ -41864,12 +41172,12 @@ export namespace events {
         public Query: string = "";
 
         // Decodes PostgresParse from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): PostgresParse {
-            return PostgresParse.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): PostgresParse {
+            return PostgresParse.decodeDataView(new DataView(buf));
         }
 
         // Decodes PostgresParse from a DataView
-        static decode(view: DataView): PostgresParse {
+        static decodeDataView(view: DataView): PostgresParse {
             const decoder = new __proto.Decoder(view);
             const obj = new PostgresParse();
 
@@ -41880,7 +41188,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -41893,7 +41201,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -41906,7 +41214,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -41919,7 +41227,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Database = events.DatabaseMetadata.decode(
+                        obj.Database = events.DatabaseMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -42008,14 +41316,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes PostgresParse to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes PostgresParse to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes PostgresParse to the Array<u8>
@@ -42109,12 +41414,12 @@ export namespace events {
         public Parameters: Array<string> = new Array<string>();
 
         // Decodes PostgresBind from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): PostgresBind {
-            return PostgresBind.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): PostgresBind {
+            return PostgresBind.decodeDataView(new DataView(buf));
         }
 
         // Decodes PostgresBind from a DataView
-        static decode(view: DataView): PostgresBind {
+        static decodeDataView(view: DataView): PostgresBind {
             const decoder = new __proto.Decoder(view);
             const obj = new PostgresBind();
 
@@ -42125,7 +41430,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -42138,7 +41443,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -42151,7 +41456,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -42164,7 +41469,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Database = events.DatabaseMetadata.decode(
+                        obj.Database = events.DatabaseMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -42259,14 +41564,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes PostgresBind to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes PostgresBind to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes PostgresBind to the Array<u8>
@@ -42364,12 +41666,12 @@ export namespace events {
         public PortalName: string = "";
 
         // Decodes PostgresExecute from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): PostgresExecute {
-            return PostgresExecute.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): PostgresExecute {
+            return PostgresExecute.decodeDataView(new DataView(buf));
         }
 
         // Decodes PostgresExecute from a DataView
-        static decode(view: DataView): PostgresExecute {
+        static decodeDataView(view: DataView): PostgresExecute {
             const decoder = new __proto.Decoder(view);
             const obj = new PostgresExecute();
 
@@ -42380,7 +41682,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -42393,7 +41695,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -42406,7 +41708,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -42419,7 +41721,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Database = events.DatabaseMetadata.decode(
+                        obj.Database = events.DatabaseMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -42498,14 +41800,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes PostgresExecute to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes PostgresExecute to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes PostgresExecute to the Array<u8>
@@ -42592,12 +41891,12 @@ export namespace events {
         public PortalName: string = "";
 
         // Decodes PostgresClose from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): PostgresClose {
-            return PostgresClose.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): PostgresClose {
+            return PostgresClose.decodeDataView(new DataView(buf));
         }
 
         // Decodes PostgresClose from a DataView
-        static decode(view: DataView): PostgresClose {
+        static decodeDataView(view: DataView): PostgresClose {
             const decoder = new __proto.Decoder(view);
             const obj = new PostgresClose();
 
@@ -42608,7 +41907,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -42621,7 +41920,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -42634,7 +41933,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -42647,7 +41946,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Database = events.DatabaseMetadata.decode(
+                        obj.Database = events.DatabaseMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -42736,14 +42035,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes PostgresClose to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes PostgresClose to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes PostgresClose to the Array<u8>
@@ -42835,12 +42131,12 @@ export namespace events {
         public FunctionArgs: Array<string> = new Array<string>();
 
         // Decodes PostgresFunctionCall from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): PostgresFunctionCall {
-            return PostgresFunctionCall.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): PostgresFunctionCall {
+            return PostgresFunctionCall.decodeDataView(new DataView(buf));
         }
 
         // Decodes PostgresFunctionCall from a DataView
-        static decode(view: DataView): PostgresFunctionCall {
+        static decodeDataView(view: DataView): PostgresFunctionCall {
             const decoder = new __proto.Decoder(view);
             const obj = new PostgresFunctionCall();
 
@@ -42851,7 +42147,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -42864,7 +42160,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -42877,7 +42173,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -42890,7 +42186,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Database = events.DatabaseMetadata.decode(
+                        obj.Database = events.DatabaseMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -42973,14 +42269,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes PostgresFunctionCall to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes PostgresFunctionCall to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes PostgresFunctionCall to the Array<u8>
@@ -43081,12 +42374,12 @@ export namespace events {
         public DesktopName: string = "";
 
         // Decodes WindowsDesktopSessionStart from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): WindowsDesktopSessionStart {
-            return WindowsDesktopSessionStart.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): WindowsDesktopSessionStart {
+            return WindowsDesktopSessionStart.decodeDataView(new DataView(buf));
         }
 
         // Decodes WindowsDesktopSessionStart from a DataView
-        static decode(view: DataView): WindowsDesktopSessionStart {
+        static decodeDataView(view: DataView): WindowsDesktopSessionStart {
             const decoder = new __proto.Decoder(view);
             const obj = new WindowsDesktopSessionStart();
 
@@ -43097,7 +42390,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -43110,7 +42403,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -43123,7 +42416,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -43136,20 +42429,21 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Connection = events.ConnectionMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.Connection =
+                            events.ConnectionMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.Status = events.Status.decode(
+                        obj.Status = events.Status.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -43305,14 +42599,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes WindowsDesktopSessionStart to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes WindowsDesktopSessionStart to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes WindowsDesktopSessionStart to the Array<u8>
@@ -43448,12 +42739,12 @@ export namespace events {
             new events.DatabaseMetadata();
 
         // Decodes DatabaseSessionEnd from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): DatabaseSessionEnd {
-            return DatabaseSessionEnd.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): DatabaseSessionEnd {
+            return DatabaseSessionEnd.decodeDataView(new DataView(buf));
         }
 
         // Decodes DatabaseSessionEnd from a DataView
-        static decode(view: DataView): DatabaseSessionEnd {
+        static decodeDataView(view: DataView): DatabaseSessionEnd {
             const decoder = new __proto.Decoder(view);
             const obj = new DatabaseSessionEnd();
 
@@ -43464,7 +42755,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -43477,7 +42768,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -43490,7 +42781,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -43503,7 +42794,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Database = events.DatabaseMetadata.decode(
+                        obj.Database = events.DatabaseMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -43571,14 +42862,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes DatabaseSessionEnd to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes DatabaseSessionEnd to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes DatabaseSessionEnd to the Array<u8>
@@ -43649,12 +42937,12 @@ export namespace events {
         public DeviceType: string = "";
 
         // Decodes MFADeviceMetadata from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): MFADeviceMetadata {
-            return MFADeviceMetadata.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): MFADeviceMetadata {
+            return MFADeviceMetadata.decodeDataView(new DataView(buf));
         }
 
         // Decodes MFADeviceMetadata from a DataView
-        static decode(view: DataView): MFADeviceMetadata {
+        static decodeDataView(view: DataView): MFADeviceMetadata {
             const decoder = new __proto.Decoder(view);
             const obj = new MFADeviceMetadata();
 
@@ -43709,14 +42997,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes MFADeviceMetadata to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes MFADeviceMetadata to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes MFADeviceMetadata to the Array<u8>
@@ -43756,12 +43041,12 @@ export namespace events {
             new events.MFADeviceMetadata();
 
         // Decodes MFADeviceAdd from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): MFADeviceAdd {
-            return MFADeviceAdd.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): MFADeviceAdd {
+            return MFADeviceAdd.decodeDataView(new DataView(buf));
         }
 
         // Decodes MFADeviceAdd from a DataView
-        static decode(view: DataView): MFADeviceAdd {
+        static decodeDataView(view: DataView): MFADeviceAdd {
             const decoder = new __proto.Decoder(view);
             const obj = new MFADeviceAdd();
 
@@ -43772,7 +43057,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -43785,7 +43070,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -43798,7 +43083,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Device = events.MFADeviceMetadata.decode(
+                        obj.Device = events.MFADeviceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -43855,14 +43140,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes MFADeviceAdd to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes MFADeviceAdd to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes MFADeviceAdd to the Array<u8>
@@ -43922,12 +43204,12 @@ export namespace events {
             new events.MFADeviceMetadata();
 
         // Decodes MFADeviceDelete from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): MFADeviceDelete {
-            return MFADeviceDelete.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): MFADeviceDelete {
+            return MFADeviceDelete.decodeDataView(new DataView(buf));
         }
 
         // Decodes MFADeviceDelete from a DataView
-        static decode(view: DataView): MFADeviceDelete {
+        static decodeDataView(view: DataView): MFADeviceDelete {
             const decoder = new __proto.Decoder(view);
             const obj = new MFADeviceDelete();
 
@@ -43938,7 +43220,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -43951,7 +43233,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -43964,7 +43246,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Device = events.MFADeviceMetadata.decode(
+                        obj.Device = events.MFADeviceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -44021,14 +43303,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes MFADeviceDelete to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes MFADeviceDelete to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes MFADeviceDelete to the Array<u8>
@@ -44085,12 +43364,12 @@ export namespace events {
         public User: events.UserMetadata = new events.UserMetadata();
 
         // Decodes BillingInformationUpdate from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): BillingInformationUpdate {
-            return BillingInformationUpdate.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): BillingInformationUpdate {
+            return BillingInformationUpdate.decodeDataView(new DataView(buf));
         }
 
         // Decodes BillingInformationUpdate from a DataView
-        static decode(view: DataView): BillingInformationUpdate {
+        static decodeDataView(view: DataView): BillingInformationUpdate {
             const decoder = new __proto.Decoder(view);
             const obj = new BillingInformationUpdate();
 
@@ -44101,7 +43380,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -44114,7 +43393,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -44160,14 +43439,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes BillingInformationUpdate to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes BillingInformationUpdate to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes BillingInformationUpdate to the Array<u8>
@@ -44212,12 +43488,12 @@ export namespace events {
         public User: events.UserMetadata = new events.UserMetadata();
 
         // Decodes BillingCardCreate from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): BillingCardCreate {
-            return BillingCardCreate.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): BillingCardCreate {
+            return BillingCardCreate.decodeDataView(new DataView(buf));
         }
 
         // Decodes BillingCardCreate from a DataView
-        static decode(view: DataView): BillingCardCreate {
+        static decodeDataView(view: DataView): BillingCardCreate {
             const decoder = new __proto.Decoder(view);
             const obj = new BillingCardCreate();
 
@@ -44228,7 +43504,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -44241,7 +43517,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -44287,14 +43563,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes BillingCardCreate to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes BillingCardCreate to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes BillingCardCreate to the Array<u8>
@@ -44339,12 +43612,12 @@ export namespace events {
         public User: events.UserMetadata = new events.UserMetadata();
 
         // Decodes BillingCardDelete from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): BillingCardDelete {
-            return BillingCardDelete.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): BillingCardDelete {
+            return BillingCardDelete.decodeDataView(new DataView(buf));
         }
 
         // Decodes BillingCardDelete from a DataView
-        static decode(view: DataView): BillingCardDelete {
+        static decodeDataView(view: DataView): BillingCardDelete {
             const decoder = new __proto.Decoder(view);
             const obj = new BillingCardDelete();
 
@@ -44355,7 +43628,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -44368,7 +43641,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -44414,14 +43687,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes BillingCardDelete to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes BillingCardDelete to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes BillingCardDelete to the Array<u8>
@@ -44474,12 +43744,12 @@ export namespace events {
         public User: events.UserMetadata = new events.UserMetadata();
 
         // Decodes LockCreate from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): LockCreate {
-            return LockCreate.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): LockCreate {
+            return LockCreate.decodeDataView(new DataView(buf));
         }
 
         // Decodes LockCreate from a DataView
-        static decode(view: DataView): LockCreate {
+        static decodeDataView(view: DataView): LockCreate {
             const decoder = new __proto.Decoder(view);
             const obj = new LockCreate();
 
@@ -44490,7 +43760,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -44503,7 +43773,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Resource = events.ResourceMetadata.decode(
+                        obj.Resource = events.ResourceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -44516,7 +43786,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -44573,14 +43843,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes LockCreate to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes LockCreate to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes LockCreate to the Array<u8>
@@ -44640,12 +43907,12 @@ export namespace events {
         public User: events.UserMetadata = new events.UserMetadata();
 
         // Decodes LockDelete from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): LockDelete {
-            return LockDelete.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): LockDelete {
+            return LockDelete.decodeDataView(new DataView(buf));
         }
 
         // Decodes LockDelete from a DataView
-        static decode(view: DataView): LockDelete {
+        static decodeDataView(view: DataView): LockDelete {
             const decoder = new __proto.Decoder(view);
             const obj = new LockDelete();
 
@@ -44656,7 +43923,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -44669,7 +43936,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.Resource = events.ResourceMetadata.decode(
+                        obj.Resource = events.ResourceMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -44682,7 +43949,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -44739,14 +44006,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes LockDelete to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes LockDelete to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes LockDelete to the Array<u8>
@@ -44803,12 +44067,12 @@ export namespace events {
         public User: events.UserMetadata = new events.UserMetadata();
 
         // Decodes RecoveryCodeGenerate from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): RecoveryCodeGenerate {
-            return RecoveryCodeGenerate.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): RecoveryCodeGenerate {
+            return RecoveryCodeGenerate.decodeDataView(new DataView(buf));
         }
 
         // Decodes RecoveryCodeGenerate from a DataView
-        static decode(view: DataView): RecoveryCodeGenerate {
+        static decodeDataView(view: DataView): RecoveryCodeGenerate {
             const decoder = new __proto.Decoder(view);
             const obj = new RecoveryCodeGenerate();
 
@@ -44819,7 +44083,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -44832,7 +44096,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -44878,14 +44142,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes RecoveryCodeGenerate to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes RecoveryCodeGenerate to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes RecoveryCodeGenerate to the Array<u8>
@@ -44935,12 +44196,12 @@ export namespace events {
         public Status: events.Status = new events.Status();
 
         // Decodes RecoveryCodeUsed from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): RecoveryCodeUsed {
-            return RecoveryCodeUsed.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): RecoveryCodeUsed {
+            return RecoveryCodeUsed.decodeDataView(new DataView(buf));
         }
 
         // Decodes RecoveryCodeUsed from a DataView
-        static decode(view: DataView): RecoveryCodeUsed {
+        static decodeDataView(view: DataView): RecoveryCodeUsed {
             const decoder = new __proto.Decoder(view);
             const obj = new RecoveryCodeUsed();
 
@@ -44951,7 +44212,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -44964,7 +44225,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -44977,7 +44238,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Status = events.Status.decode(
+                        obj.Status = events.Status.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -45033,14 +44294,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes RecoveryCodeUsed to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes RecoveryCodeUsed to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes RecoveryCodeUsed to the Array<u8>
@@ -45121,12 +44379,12 @@ export namespace events {
         public Participants: Array<string> = new Array<string>();
 
         // Decodes WindowsDesktopSessionEnd from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): WindowsDesktopSessionEnd {
-            return WindowsDesktopSessionEnd.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): WindowsDesktopSessionEnd {
+            return WindowsDesktopSessionEnd.decodeDataView(new DataView(buf));
         }
 
         // Decodes WindowsDesktopSessionEnd from a DataView
-        static decode(view: DataView): WindowsDesktopSessionEnd {
+        static decodeDataView(view: DataView): WindowsDesktopSessionEnd {
             const decoder = new __proto.Decoder(view);
             const obj = new WindowsDesktopSessionEnd();
 
@@ -45137,7 +44395,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -45150,7 +44408,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -45163,7 +44421,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -45203,20 +44461,21 @@ export namespace events {
                     }
                     case 9: {
                         const length = decoder.uint32();
-                        obj.StartTime = google.protobuf.Timestamp.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.StartTime =
+                            google.protobuf.Timestamp.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
                     }
                     case 10: {
                         const length = decoder.uint32();
-                        obj.EndTime = google.protobuf.Timestamp.decode(
+                        obj.EndTime = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -45357,14 +44616,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes WindowsDesktopSessionEnd to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes WindowsDesktopSessionEnd to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes WindowsDesktopSessionEnd to the Array<u8>
@@ -45509,12 +44765,12 @@ export namespace events {
         public Identity: events.Identity = new events.Identity();
 
         // Decodes CertificateCreate from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): CertificateCreate {
-            return CertificateCreate.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): CertificateCreate {
+            return CertificateCreate.decodeDataView(new DataView(buf));
         }
 
         // Decodes CertificateCreate from a DataView
-        static decode(view: DataView): CertificateCreate {
+        static decodeDataView(view: DataView): CertificateCreate {
             const decoder = new __proto.Decoder(view);
             const obj = new CertificateCreate();
 
@@ -45525,7 +44781,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -45542,7 +44798,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Identity = events.Identity.decode(
+                        obj.Identity = events.Identity.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -45595,14 +44851,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes CertificateCreate to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes CertificateCreate to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes CertificateCreate to the Array<u8>
@@ -45657,16 +44910,18 @@ export namespace events {
         public UserMetadata: events.UserMetadata = new events.UserMetadata();
 
         // Decodes RenewableCertificateGenerationMismatch from an ArrayBuffer
-        static decodeArrayBuffer(
+        static decode(
             buf: ArrayBuffer
         ): RenewableCertificateGenerationMismatch {
-            return RenewableCertificateGenerationMismatch.decode(
+            return RenewableCertificateGenerationMismatch.decodeDataView(
                 new DataView(buf)
             );
         }
 
         // Decodes RenewableCertificateGenerationMismatch from a DataView
-        static decode(view: DataView): RenewableCertificateGenerationMismatch {
+        static decodeDataView(
+            view: DataView
+        ): RenewableCertificateGenerationMismatch {
             const decoder = new __proto.Decoder(view);
             const obj = new RenewableCertificateGenerationMismatch();
 
@@ -45677,7 +44932,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -45690,7 +44945,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.UserMetadata = events.UserMetadata.decode(
+                        obj.UserMetadata = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -45737,14 +44992,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes RenewableCertificateGenerationMismatch to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes RenewableCertificateGenerationMismatch to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes RenewableCertificateGenerationMismatch to the Array<u8>
@@ -45793,12 +45045,12 @@ export namespace events {
         public Data: string = "";
 
         // Decodes Unknown from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): Unknown {
-            return Unknown.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): Unknown {
+            return Unknown.decodeDataView(new DataView(buf));
         }
 
         // Decodes Unknown from a DataView
-        static decode(view: DataView): Unknown {
+        static decodeDataView(view: DataView): Unknown {
             const decoder = new __proto.Decoder(view);
             const obj = new Unknown();
 
@@ -45809,7 +45061,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -45876,14 +45128,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes Unknown to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes Unknown to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes Unknown to the Array<u8>
@@ -46009,12 +45258,12 @@ export namespace events {
         public Unknown: events.Unknown | null;
 
         // Decodes OneOf from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): OneOf {
-            return OneOf.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): OneOf {
+            return OneOf.decodeDataView(new DataView(buf));
         }
 
         // Decodes OneOf from a DataView
-        static decode(view: DataView): OneOf {
+        static decodeDataView(view: DataView): OneOf {
             const decoder = new __proto.Decoder(view);
             const obj = new OneOf();
 
@@ -46025,7 +45274,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.UserLogin = events.UserLogin.decode(
+                        obj.UserLogin = events.UserLogin.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46039,7 +45288,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.UserCreate = events.UserCreate.decode(
+                        obj.UserCreate = events.UserCreate.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46053,7 +45302,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.UserDelete = events.UserDelete.decode(
+                        obj.UserDelete = events.UserDelete.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46068,7 +45317,7 @@ export namespace events {
                     case 4: {
                         const length = decoder.uint32();
                         obj.UserPasswordChange =
-                            events.UserPasswordChange.decode(
+                            events.UserPasswordChange.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -46082,7 +45331,7 @@ export namespace events {
                     }
                     case 5: {
                         const length = decoder.uint32();
-                        obj.SessionStart = events.SessionStart.decode(
+                        obj.SessionStart = events.SessionStart.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46096,7 +45345,7 @@ export namespace events {
                     }
                     case 6: {
                         const length = decoder.uint32();
-                        obj.SessionJoin = events.SessionJoin.decode(
+                        obj.SessionJoin = events.SessionJoin.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46110,7 +45359,7 @@ export namespace events {
                     }
                     case 7: {
                         const length = decoder.uint32();
-                        obj.SessionPrint = events.SessionPrint.decode(
+                        obj.SessionPrint = events.SessionPrint.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46124,7 +45373,7 @@ export namespace events {
                     }
                     case 8: {
                         const length = decoder.uint32();
-                        obj.SessionReject = events.SessionReject.decode(
+                        obj.SessionReject = events.SessionReject.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46138,7 +45387,7 @@ export namespace events {
                     }
                     case 9: {
                         const length = decoder.uint32();
-                        obj.Resize = events.Resize.decode(
+                        obj.Resize = events.Resize.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46152,7 +45401,7 @@ export namespace events {
                     }
                     case 10: {
                         const length = decoder.uint32();
-                        obj.SessionEnd = events.SessionEnd.decode(
+                        obj.SessionEnd = events.SessionEnd.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46166,13 +45415,14 @@ export namespace events {
                     }
                     case 11: {
                         const length = decoder.uint32();
-                        obj.SessionCommand = events.SessionCommand.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.SessionCommand =
+                            events.SessionCommand.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         obj.__oneOf_Event = "SessionCommand";
@@ -46180,7 +45430,7 @@ export namespace events {
                     }
                     case 12: {
                         const length = decoder.uint32();
-                        obj.SessionDisk = events.SessionDisk.decode(
+                        obj.SessionDisk = events.SessionDisk.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46194,13 +45444,14 @@ export namespace events {
                     }
                     case 13: {
                         const length = decoder.uint32();
-                        obj.SessionNetwork = events.SessionNetwork.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.SessionNetwork =
+                            events.SessionNetwork.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         obj.__oneOf_Event = "SessionNetwork";
@@ -46208,7 +45459,7 @@ export namespace events {
                     }
                     case 14: {
                         const length = decoder.uint32();
-                        obj.SessionData = events.SessionData.decode(
+                        obj.SessionData = events.SessionData.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46222,7 +45473,7 @@ export namespace events {
                     }
                     case 15: {
                         const length = decoder.uint32();
-                        obj.SessionLeave = events.SessionLeave.decode(
+                        obj.SessionLeave = events.SessionLeave.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46236,7 +45487,7 @@ export namespace events {
                     }
                     case 16: {
                         const length = decoder.uint32();
-                        obj.PortForward = events.PortForward.decode(
+                        obj.PortForward = events.PortForward.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46250,7 +45501,7 @@ export namespace events {
                     }
                     case 17: {
                         const length = decoder.uint32();
-                        obj.X11Forward = events.X11Forward.decode(
+                        obj.X11Forward = events.X11Forward.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46264,7 +45515,7 @@ export namespace events {
                     }
                     case 18: {
                         const length = decoder.uint32();
-                        obj.SCP = events.SCP.decode(
+                        obj.SCP = events.SCP.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46278,7 +45529,7 @@ export namespace events {
                     }
                     case 19: {
                         const length = decoder.uint32();
-                        obj.Exec = events.Exec.decode(
+                        obj.Exec = events.Exec.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46292,7 +45543,7 @@ export namespace events {
                     }
                     case 20: {
                         const length = decoder.uint32();
-                        obj.Subsystem = events.Subsystem.decode(
+                        obj.Subsystem = events.Subsystem.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46306,13 +45557,14 @@ export namespace events {
                     }
                     case 21: {
                         const length = decoder.uint32();
-                        obj.ClientDisconnect = events.ClientDisconnect.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.ClientDisconnect =
+                            events.ClientDisconnect.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         obj.__oneOf_Event = "ClientDisconnect";
@@ -46320,7 +45572,7 @@ export namespace events {
                     }
                     case 22: {
                         const length = decoder.uint32();
-                        obj.AuthAttempt = events.AuthAttempt.decode(
+                        obj.AuthAttempt = events.AuthAttempt.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46335,7 +45587,7 @@ export namespace events {
                     case 23: {
                         const length = decoder.uint32();
                         obj.AccessRequestCreate =
-                            events.AccessRequestCreate.decode(
+                            events.AccessRequestCreate.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -46349,13 +45601,14 @@ export namespace events {
                     }
                     case 24: {
                         const length = decoder.uint32();
-                        obj.UserTokenCreate = events.UserTokenCreate.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.UserTokenCreate =
+                            events.UserTokenCreate.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         obj.__oneOf_Event = "UserTokenCreate";
@@ -46363,7 +45616,7 @@ export namespace events {
                     }
                     case 25: {
                         const length = decoder.uint32();
-                        obj.RoleCreate = events.RoleCreate.decode(
+                        obj.RoleCreate = events.RoleCreate.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46377,7 +45630,7 @@ export namespace events {
                     }
                     case 26: {
                         const length = decoder.uint32();
-                        obj.RoleDelete = events.RoleDelete.decode(
+                        obj.RoleDelete = events.RoleDelete.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46392,7 +45645,7 @@ export namespace events {
                     case 27: {
                         const length = decoder.uint32();
                         obj.TrustedClusterCreate =
-                            events.TrustedClusterCreate.decode(
+                            events.TrustedClusterCreate.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -46407,7 +45660,7 @@ export namespace events {
                     case 28: {
                         const length = decoder.uint32();
                         obj.TrustedClusterDelete =
-                            events.TrustedClusterDelete.decode(
+                            events.TrustedClusterDelete.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -46422,7 +45675,7 @@ export namespace events {
                     case 29: {
                         const length = decoder.uint32();
                         obj.TrustedClusterTokenCreate =
-                            events.TrustedClusterTokenCreate.decode(
+                            events.TrustedClusterTokenCreate.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -46437,7 +45690,7 @@ export namespace events {
                     case 30: {
                         const length = decoder.uint32();
                         obj.GithubConnectorCreate =
-                            events.GithubConnectorCreate.decode(
+                            events.GithubConnectorCreate.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -46452,7 +45705,7 @@ export namespace events {
                     case 31: {
                         const length = decoder.uint32();
                         obj.GithubConnectorDelete =
-                            events.GithubConnectorDelete.decode(
+                            events.GithubConnectorDelete.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -46467,7 +45720,7 @@ export namespace events {
                     case 32: {
                         const length = decoder.uint32();
                         obj.OIDCConnectorCreate =
-                            events.OIDCConnectorCreate.decode(
+                            events.OIDCConnectorCreate.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -46482,7 +45735,7 @@ export namespace events {
                     case 33: {
                         const length = decoder.uint32();
                         obj.OIDCConnectorDelete =
-                            events.OIDCConnectorDelete.decode(
+                            events.OIDCConnectorDelete.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -46497,7 +45750,7 @@ export namespace events {
                     case 34: {
                         const length = decoder.uint32();
                         obj.SAMLConnectorCreate =
-                            events.SAMLConnectorCreate.decode(
+                            events.SAMLConnectorCreate.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -46512,7 +45765,7 @@ export namespace events {
                     case 35: {
                         const length = decoder.uint32();
                         obj.SAMLConnectorDelete =
-                            events.SAMLConnectorDelete.decode(
+                            events.SAMLConnectorDelete.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -46526,7 +45779,7 @@ export namespace events {
                     }
                     case 36: {
                         const length = decoder.uint32();
-                        obj.KubeRequest = events.KubeRequest.decode(
+                        obj.KubeRequest = events.KubeRequest.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46540,13 +45793,14 @@ export namespace events {
                     }
                     case 37: {
                         const length = decoder.uint32();
-                        obj.AppSessionStart = events.AppSessionStart.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.AppSessionStart =
+                            events.AppSessionStart.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         obj.__oneOf_Event = "AppSessionStart";
@@ -46554,13 +45808,14 @@ export namespace events {
                     }
                     case 38: {
                         const length = decoder.uint32();
-                        obj.AppSessionChunk = events.AppSessionChunk.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.AppSessionChunk =
+                            events.AppSessionChunk.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         obj.__oneOf_Event = "AppSessionChunk";
@@ -46568,13 +45823,14 @@ export namespace events {
                     }
                     case 39: {
                         const length = decoder.uint32();
-                        obj.AppSessionRequest = events.AppSessionRequest.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.AppSessionRequest =
+                            events.AppSessionRequest.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         obj.__oneOf_Event = "AppSessionRequest";
@@ -46583,7 +45839,7 @@ export namespace events {
                     case 40: {
                         const length = decoder.uint32();
                         obj.DatabaseSessionStart =
-                            events.DatabaseSessionStart.decode(
+                            events.DatabaseSessionStart.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -46598,7 +45854,7 @@ export namespace events {
                     case 41: {
                         const length = decoder.uint32();
                         obj.DatabaseSessionEnd =
-                            events.DatabaseSessionEnd.decode(
+                            events.DatabaseSessionEnd.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -46613,7 +45869,7 @@ export namespace events {
                     case 42: {
                         const length = decoder.uint32();
                         obj.DatabaseSessionQuery =
-                            events.DatabaseSessionQuery.decode(
+                            events.DatabaseSessionQuery.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -46627,7 +45883,7 @@ export namespace events {
                     }
                     case 43: {
                         const length = decoder.uint32();
-                        obj.SessionUpload = events.SessionUpload.decode(
+                        obj.SessionUpload = events.SessionUpload.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46641,7 +45897,7 @@ export namespace events {
                     }
                     case 44: {
                         const length = decoder.uint32();
-                        obj.MFADeviceAdd = events.MFADeviceAdd.decode(
+                        obj.MFADeviceAdd = events.MFADeviceAdd.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46655,13 +45911,14 @@ export namespace events {
                     }
                     case 45: {
                         const length = decoder.uint32();
-                        obj.MFADeviceDelete = events.MFADeviceDelete.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.MFADeviceDelete =
+                            events.MFADeviceDelete.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         obj.__oneOf_Event = "MFADeviceDelete";
@@ -46670,7 +45927,7 @@ export namespace events {
                     case 46: {
                         const length = decoder.uint32();
                         obj.BillingInformationUpdate =
-                            events.BillingInformationUpdate.decode(
+                            events.BillingInformationUpdate.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -46684,13 +45941,14 @@ export namespace events {
                     }
                     case 47: {
                         const length = decoder.uint32();
-                        obj.BillingCardCreate = events.BillingCardCreate.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.BillingCardCreate =
+                            events.BillingCardCreate.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         obj.__oneOf_Event = "BillingCardCreate";
@@ -46698,13 +45956,14 @@ export namespace events {
                     }
                     case 48: {
                         const length = decoder.uint32();
-                        obj.BillingCardDelete = events.BillingCardDelete.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.BillingCardDelete =
+                            events.BillingCardDelete.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         obj.__oneOf_Event = "BillingCardDelete";
@@ -46712,7 +45971,7 @@ export namespace events {
                     }
                     case 49: {
                         const length = decoder.uint32();
-                        obj.LockCreate = events.LockCreate.decode(
+                        obj.LockCreate = events.LockCreate.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46726,7 +45985,7 @@ export namespace events {
                     }
                     case 50: {
                         const length = decoder.uint32();
-                        obj.LockDelete = events.LockDelete.decode(
+                        obj.LockDelete = events.LockDelete.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46741,7 +46000,7 @@ export namespace events {
                     case 51: {
                         const length = decoder.uint32();
                         obj.RecoveryCodeGenerate =
-                            events.RecoveryCodeGenerate.decode(
+                            events.RecoveryCodeGenerate.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -46755,13 +46014,14 @@ export namespace events {
                     }
                     case 52: {
                         const length = decoder.uint32();
-                        obj.RecoveryCodeUsed = events.RecoveryCodeUsed.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.RecoveryCodeUsed =
+                            events.RecoveryCodeUsed.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         obj.__oneOf_Event = "RecoveryCodeUsed";
@@ -46769,13 +46029,14 @@ export namespace events {
                     }
                     case 53: {
                         const length = decoder.uint32();
-                        obj.DatabaseCreate = events.DatabaseCreate.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.DatabaseCreate =
+                            events.DatabaseCreate.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         obj.__oneOf_Event = "DatabaseCreate";
@@ -46783,13 +46044,14 @@ export namespace events {
                     }
                     case 54: {
                         const length = decoder.uint32();
-                        obj.DatabaseUpdate = events.DatabaseUpdate.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.DatabaseUpdate =
+                            events.DatabaseUpdate.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         obj.__oneOf_Event = "DatabaseUpdate";
@@ -46797,13 +46059,14 @@ export namespace events {
                     }
                     case 55: {
                         const length = decoder.uint32();
-                        obj.DatabaseDelete = events.DatabaseDelete.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.DatabaseDelete =
+                            events.DatabaseDelete.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         obj.__oneOf_Event = "DatabaseDelete";
@@ -46811,7 +46074,7 @@ export namespace events {
                     }
                     case 56: {
                         const length = decoder.uint32();
-                        obj.AppCreate = events.AppCreate.decode(
+                        obj.AppCreate = events.AppCreate.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46825,7 +46088,7 @@ export namespace events {
                     }
                     case 57: {
                         const length = decoder.uint32();
-                        obj.AppUpdate = events.AppUpdate.decode(
+                        obj.AppUpdate = events.AppUpdate.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46839,7 +46102,7 @@ export namespace events {
                     }
                     case 58: {
                         const length = decoder.uint32();
-                        obj.AppDelete = events.AppDelete.decode(
+                        obj.AppDelete = events.AppDelete.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46854,7 +46117,7 @@ export namespace events {
                     case 59: {
                         const length = decoder.uint32();
                         obj.WindowsDesktopSessionStart =
-                            events.WindowsDesktopSessionStart.decode(
+                            events.WindowsDesktopSessionStart.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -46869,7 +46132,7 @@ export namespace events {
                     case 60: {
                         const length = decoder.uint32();
                         obj.WindowsDesktopSessionEnd =
-                            events.WindowsDesktopSessionEnd.decode(
+                            events.WindowsDesktopSessionEnd.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -46883,7 +46146,7 @@ export namespace events {
                     }
                     case 61: {
                         const length = decoder.uint32();
-                        obj.PostgresParse = events.PostgresParse.decode(
+                        obj.PostgresParse = events.PostgresParse.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46897,7 +46160,7 @@ export namespace events {
                     }
                     case 62: {
                         const length = decoder.uint32();
-                        obj.PostgresBind = events.PostgresBind.decode(
+                        obj.PostgresBind = events.PostgresBind.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46911,13 +46174,14 @@ export namespace events {
                     }
                     case 63: {
                         const length = decoder.uint32();
-                        obj.PostgresExecute = events.PostgresExecute.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.PostgresExecute =
+                            events.PostgresExecute.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         obj.__oneOf_Event = "PostgresExecute";
@@ -46925,7 +46189,7 @@ export namespace events {
                     }
                     case 64: {
                         const length = decoder.uint32();
-                        obj.PostgresClose = events.PostgresClose.decode(
+                        obj.PostgresClose = events.PostgresClose.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -46940,7 +46204,7 @@ export namespace events {
                     case 65: {
                         const length = decoder.uint32();
                         obj.PostgresFunctionCall =
-                            events.PostgresFunctionCall.decode(
+                            events.PostgresFunctionCall.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -46955,7 +46219,7 @@ export namespace events {
                     case 66: {
                         const length = decoder.uint32();
                         obj.AccessRequestDelete =
-                            events.AccessRequestDelete.decode(
+                            events.AccessRequestDelete.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -46969,13 +46233,14 @@ export namespace events {
                     }
                     case 67: {
                         const length = decoder.uint32();
-                        obj.SessionConnect = events.SessionConnect.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.SessionConnect =
+                            events.SessionConnect.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         obj.__oneOf_Event = "SessionConnect";
@@ -46983,13 +46248,14 @@ export namespace events {
                     }
                     case 68: {
                         const length = decoder.uint32();
-                        obj.CertificateCreate = events.CertificateCreate.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.CertificateCreate =
+                            events.CertificateCreate.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         obj.__oneOf_Event = "CertificateCreate";
@@ -46997,13 +46263,14 @@ export namespace events {
                     }
                     case 69: {
                         const length = decoder.uint32();
-                        obj.DesktopRecording = events.DesktopRecording.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.DesktopRecording =
+                            events.DesktopRecording.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         obj.__oneOf_Event = "DesktopRecording";
@@ -47012,7 +46279,7 @@ export namespace events {
                     case 70: {
                         const length = decoder.uint32();
                         obj.DesktopClipboardSend =
-                            events.DesktopClipboardSend.decode(
+                            events.DesktopClipboardSend.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -47027,7 +46294,7 @@ export namespace events {
                     case 71: {
                         const length = decoder.uint32();
                         obj.DesktopClipboardReceive =
-                            events.DesktopClipboardReceive.decode(
+                            events.DesktopClipboardReceive.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -47042,7 +46309,7 @@ export namespace events {
                     case 72: {
                         const length = decoder.uint32();
                         obj.MySQLStatementPrepare =
-                            events.MySQLStatementPrepare.decode(
+                            events.MySQLStatementPrepare.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -47057,7 +46324,7 @@ export namespace events {
                     case 73: {
                         const length = decoder.uint32();
                         obj.MySQLStatementExecute =
-                            events.MySQLStatementExecute.decode(
+                            events.MySQLStatementExecute.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -47072,7 +46339,7 @@ export namespace events {
                     case 74: {
                         const length = decoder.uint32();
                         obj.MySQLStatementSendLongData =
-                            events.MySQLStatementSendLongData.decode(
+                            events.MySQLStatementSendLongData.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -47087,7 +46354,7 @@ export namespace events {
                     case 75: {
                         const length = decoder.uint32();
                         obj.MySQLStatementClose =
-                            events.MySQLStatementClose.decode(
+                            events.MySQLStatementClose.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -47102,7 +46369,7 @@ export namespace events {
                     case 76: {
                         const length = decoder.uint32();
                         obj.MySQLStatementReset =
-                            events.MySQLStatementReset.decode(
+                            events.MySQLStatementReset.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -47117,7 +46384,7 @@ export namespace events {
                     case 77: {
                         const length = decoder.uint32();
                         obj.MySQLStatementFetch =
-                            events.MySQLStatementFetch.decode(
+                            events.MySQLStatementFetch.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -47132,7 +46399,7 @@ export namespace events {
                     case 78: {
                         const length = decoder.uint32();
                         obj.MySQLStatementBulkExecute =
-                            events.MySQLStatementBulkExecute.decode(
+                            events.MySQLStatementBulkExecute.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -47147,7 +46414,7 @@ export namespace events {
                     case 79: {
                         const length = decoder.uint32();
                         obj.RenewableCertificateGenerationMismatch =
-                            events.RenewableCertificateGenerationMismatch.decode(
+                            events.RenewableCertificateGenerationMismatch.decodeDataView(
                                 new DataView(
                                     decoder.view.buffer,
                                     decoder.pos + decoder.view.byteOffset,
@@ -47162,7 +46429,7 @@ export namespace events {
                     }
                     case 80: {
                         const length = decoder.uint32();
-                        obj.Unknown = events.Unknown.decode(
+                        obj.Unknown = events.Unknown.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -48060,14 +47327,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes OneOf to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes OneOf to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes OneOf to the Array<u8>
@@ -49079,12 +48343,12 @@ export namespace events {
             new google.protobuf.Timestamp();
 
         // Decodes StreamStatus from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): StreamStatus {
-            return StreamStatus.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): StreamStatus {
+            return StreamStatus.decodeDataView(new DataView(buf));
         }
 
         // Decodes StreamStatus from a DataView
-        static decode(view: DataView): StreamStatus {
+        static decodeDataView(view: DataView): StreamStatus {
             const decoder = new __proto.Decoder(view);
             const obj = new StreamStatus();
 
@@ -49103,13 +48367,14 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.LastUploadTime = google.protobuf.Timestamp.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.LastUploadTime =
+                            google.protobuf.Timestamp.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -49151,14 +48416,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes StreamStatus to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes StreamStatus to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes StreamStatus to the Array<u8>
@@ -49206,12 +48468,12 @@ export namespace events {
         public SessionURL: string = "";
 
         // Decodes SessionUpload from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): SessionUpload {
-            return SessionUpload.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): SessionUpload {
+            return SessionUpload.decodeDataView(new DataView(buf));
         }
 
         // Decodes SessionUpload from a DataView
-        static decode(view: DataView): SessionUpload {
+        static decodeDataView(view: DataView): SessionUpload {
             const decoder = new __proto.Decoder(view);
             const obj = new SessionUpload();
 
@@ -49222,7 +48484,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -49235,13 +48497,14 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.SessionMetadata = events.SessionMetadata.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.SessionMetadata =
+                            events.SessionMetadata.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -49303,14 +48566,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes SessionUpload to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes SessionUpload to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes SessionUpload to the Array<u8>
@@ -49433,12 +48693,12 @@ export namespace events {
         public DisallowReissue: bool;
 
         // Decodes Identity from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): Identity {
-            return Identity.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): Identity {
+            return Identity.decodeDataView(new DataView(buf));
         }
 
         // Decodes Identity from a DataView
-        static decode(view: DataView): Identity {
+        static decodeDataView(view: DataView): Identity {
             const decoder = new __proto.Decoder(view);
             const obj = new Identity();
 
@@ -49477,7 +48737,7 @@ export namespace events {
                     }
                     case 8: {
                         const length = decoder.uint32();
-                        obj.Expires = google.protobuf.Timestamp.decode(
+                        obj.Expires = google.protobuf.Timestamp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -49498,7 +48758,7 @@ export namespace events {
                     }
                     case 11: {
                         const length = decoder.uint32();
-                        obj.Traits = wrappers.LabelValues.decode(
+                        obj.Traits = wrappers.LabelValues.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -49511,7 +48771,7 @@ export namespace events {
                     }
                     case 12: {
                         const length = decoder.uint32();
-                        obj.RouteToApp = events.RouteToApp.decode(
+                        obj.RouteToApp = events.RouteToApp.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -49528,13 +48788,14 @@ export namespace events {
                     }
                     case 14: {
                         const length = decoder.uint32();
-                        obj.RouteToDatabase = events.RouteToDatabase.decode(
-                            new DataView(
-                                decoder.view.buffer,
-                                decoder.pos + decoder.view.byteOffset,
-                                length
-                            )
-                        );
+                        obj.RouteToDatabase =
+                            events.RouteToDatabase.decodeDataView(
+                                new DataView(
+                                    decoder.view.buffer,
+                                    decoder.pos + decoder.view.byteOffset,
+                                    length
+                                )
+                            );
                         decoder.skip(length);
 
                         break;
@@ -49692,14 +48953,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes Identity to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes Identity to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes Identity to the Array<u8>
@@ -49890,12 +49148,12 @@ export namespace events {
         public AWSRoleARN: string = "";
 
         // Decodes RouteToApp from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): RouteToApp {
-            return RouteToApp.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): RouteToApp {
+            return RouteToApp.decodeDataView(new DataView(buf));
         }
 
         // Decodes RouteToApp from a DataView
-        static decode(view: DataView): RouteToApp {
+        static decodeDataView(view: DataView): RouteToApp {
             const decoder = new __proto.Decoder(view);
             const obj = new RouteToApp();
 
@@ -49970,14 +49228,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes RouteToApp to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes RouteToApp to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes RouteToApp to the Array<u8>
@@ -50028,12 +49283,12 @@ export namespace events {
         public Database: string = "";
 
         // Decodes RouteToDatabase from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): RouteToDatabase {
-            return RouteToDatabase.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): RouteToDatabase {
+            return RouteToDatabase.decodeDataView(new DataView(buf));
         }
 
         // Decodes RouteToDatabase from a DataView
-        static decode(view: DataView): RouteToDatabase {
+        static decodeDataView(view: DataView): RouteToDatabase {
             const decoder = new __proto.Decoder(view);
             const obj = new RouteToDatabase();
 
@@ -50098,14 +49353,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes RouteToDatabase to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes RouteToDatabase to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes RouteToDatabase to the Array<u8>
@@ -50157,12 +49409,12 @@ export namespace events {
         public Query: string = "";
 
         // Decodes MySQLStatementPrepare from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): MySQLStatementPrepare {
-            return MySQLStatementPrepare.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): MySQLStatementPrepare {
+            return MySQLStatementPrepare.decodeDataView(new DataView(buf));
         }
 
         // Decodes MySQLStatementPrepare from a DataView
-        static decode(view: DataView): MySQLStatementPrepare {
+        static decodeDataView(view: DataView): MySQLStatementPrepare {
             const decoder = new __proto.Decoder(view);
             const obj = new MySQLStatementPrepare();
 
@@ -50173,7 +49425,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -50186,7 +49438,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -50199,7 +49451,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -50212,7 +49464,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Database = events.DatabaseMetadata.decode(
+                        obj.Database = events.DatabaseMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -50291,14 +49543,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes MySQLStatementPrepare to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes MySQLStatementPrepare to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes MySQLStatementPrepare to the Array<u8>
@@ -50385,12 +49634,12 @@ export namespace events {
         public Parameters: Array<string> = new Array<string>();
 
         // Decodes MySQLStatementExecute from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): MySQLStatementExecute {
-            return MySQLStatementExecute.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): MySQLStatementExecute {
+            return MySQLStatementExecute.decodeDataView(new DataView(buf));
         }
 
         // Decodes MySQLStatementExecute from a DataView
-        static decode(view: DataView): MySQLStatementExecute {
+        static decodeDataView(view: DataView): MySQLStatementExecute {
             const decoder = new __proto.Decoder(view);
             const obj = new MySQLStatementExecute();
 
@@ -50401,7 +49650,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -50414,7 +49663,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -50427,7 +49676,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -50440,7 +49689,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Database = events.DatabaseMetadata.decode(
+                        obj.Database = events.DatabaseMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -50523,14 +49772,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes MySQLStatementExecute to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes MySQLStatementExecute to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes MySQLStatementExecute to the Array<u8>
@@ -50626,12 +49872,12 @@ export namespace events {
         public DataSize: u32;
 
         // Decodes MySQLStatementSendLongData from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): MySQLStatementSendLongData {
-            return MySQLStatementSendLongData.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): MySQLStatementSendLongData {
+            return MySQLStatementSendLongData.decodeDataView(new DataView(buf));
         }
 
         // Decodes MySQLStatementSendLongData from a DataView
-        static decode(view: DataView): MySQLStatementSendLongData {
+        static decodeDataView(view: DataView): MySQLStatementSendLongData {
             const decoder = new __proto.Decoder(view);
             const obj = new MySQLStatementSendLongData();
 
@@ -50642,7 +49888,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -50655,7 +49901,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -50668,7 +49914,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -50681,7 +49927,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Database = events.DatabaseMetadata.decode(
+                        obj.Database = events.DatabaseMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -50774,14 +50020,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes MySQLStatementSendLongData to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes MySQLStatementSendLongData to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes MySQLStatementSendLongData to the Array<u8>
@@ -50873,12 +50116,12 @@ export namespace events {
         public StatementID: u32;
 
         // Decodes MySQLStatementClose from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): MySQLStatementClose {
-            return MySQLStatementClose.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): MySQLStatementClose {
+            return MySQLStatementClose.decodeDataView(new DataView(buf));
         }
 
         // Decodes MySQLStatementClose from a DataView
-        static decode(view: DataView): MySQLStatementClose {
+        static decodeDataView(view: DataView): MySQLStatementClose {
             const decoder = new __proto.Decoder(view);
             const obj = new MySQLStatementClose();
 
@@ -50889,7 +50132,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -50902,7 +50145,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -50915,7 +50158,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -50928,7 +50171,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Database = events.DatabaseMetadata.decode(
+                        obj.Database = events.DatabaseMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -51005,14 +50248,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes MySQLStatementClose to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes MySQLStatementClose to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes MySQLStatementClose to the Array<u8>
@@ -51096,12 +50336,12 @@ export namespace events {
         public StatementID: u32;
 
         // Decodes MySQLStatementReset from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): MySQLStatementReset {
-            return MySQLStatementReset.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): MySQLStatementReset {
+            return MySQLStatementReset.decodeDataView(new DataView(buf));
         }
 
         // Decodes MySQLStatementReset from a DataView
-        static decode(view: DataView): MySQLStatementReset {
+        static decodeDataView(view: DataView): MySQLStatementReset {
             const decoder = new __proto.Decoder(view);
             const obj = new MySQLStatementReset();
 
@@ -51112,7 +50352,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -51125,7 +50365,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -51138,7 +50378,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -51151,7 +50391,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Database = events.DatabaseMetadata.decode(
+                        obj.Database = events.DatabaseMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -51228,14 +50468,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes MySQLStatementReset to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes MySQLStatementReset to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes MySQLStatementReset to the Array<u8>
@@ -51321,12 +50558,12 @@ export namespace events {
         public RowsCount: u32;
 
         // Decodes MySQLStatementFetch from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): MySQLStatementFetch {
-            return MySQLStatementFetch.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): MySQLStatementFetch {
+            return MySQLStatementFetch.decodeDataView(new DataView(buf));
         }
 
         // Decodes MySQLStatementFetch from a DataView
-        static decode(view: DataView): MySQLStatementFetch {
+        static decodeDataView(view: DataView): MySQLStatementFetch {
             const decoder = new __proto.Decoder(view);
             const obj = new MySQLStatementFetch();
 
@@ -51337,7 +50574,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -51350,7 +50587,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -51363,7 +50600,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -51376,7 +50613,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Database = events.DatabaseMetadata.decode(
+                        obj.Database = events.DatabaseMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -51461,14 +50698,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes MySQLStatementFetch to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes MySQLStatementFetch to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes MySQLStatementFetch to the Array<u8>
@@ -51558,12 +50792,12 @@ export namespace events {
         public Parameters: Array<string> = new Array<string>();
 
         // Decodes MySQLStatementBulkExecute from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): MySQLStatementBulkExecute {
-            return MySQLStatementBulkExecute.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): MySQLStatementBulkExecute {
+            return MySQLStatementBulkExecute.decodeDataView(new DataView(buf));
         }
 
         // Decodes MySQLStatementBulkExecute from a DataView
-        static decode(view: DataView): MySQLStatementBulkExecute {
+        static decodeDataView(view: DataView): MySQLStatementBulkExecute {
             const decoder = new __proto.Decoder(view);
             const obj = new MySQLStatementBulkExecute();
 
@@ -51574,7 +50808,7 @@ export namespace events {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Metadata = events.Metadata.decode(
+                        obj.Metadata = events.Metadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -51587,7 +50821,7 @@ export namespace events {
                     }
                     case 2: {
                         const length = decoder.uint32();
-                        obj.User = events.UserMetadata.decode(
+                        obj.User = events.UserMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -51600,7 +50834,7 @@ export namespace events {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Session = events.SessionMetadata.decode(
+                        obj.Session = events.SessionMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -51613,7 +50847,7 @@ export namespace events {
                     }
                     case 4: {
                         const length = decoder.uint32();
-                        obj.Database = events.DatabaseMetadata.decode(
+                        obj.Database = events.DatabaseMetadata.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -51696,14 +50930,11 @@ export namespace events {
             return size;
         }
 
-        // Encodes MySQLStatementBulkExecute to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes MySQLStatementBulkExecute to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes MySQLStatementBulkExecute to the Array<u8>
@@ -51783,12 +51014,12 @@ export namespace plugin {
         public Event: events.OneOf = new events.OneOf();
 
         // Decodes HandleEventRequest from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): HandleEventRequest {
-            return HandleEventRequest.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): HandleEventRequest {
+            return HandleEventRequest.decodeDataView(new DataView(buf));
         }
 
         // Decodes HandleEventRequest from a DataView
-        static decode(view: DataView): HandleEventRequest {
+        static decodeDataView(view: DataView): HandleEventRequest {
             const decoder = new __proto.Decoder(view);
             const obj = new HandleEventRequest();
 
@@ -51799,7 +51030,7 @@ export namespace plugin {
                 switch (number) {
                     case 1: {
                         const length = decoder.uint32();
-                        obj.Event = events.OneOf.decode(
+                        obj.Event = events.OneOf.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -51835,14 +51066,11 @@ export namespace plugin {
             return size;
         }
 
-        // Encodes HandleEventRequest to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes HandleEventRequest to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes HandleEventRequest to the Array<u8>
@@ -51874,12 +51102,12 @@ export namespace plugin {
         public Event: events.OneOf = new events.OneOf();
 
         // Decodes HandleEventResponse from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): HandleEventResponse {
-            return HandleEventResponse.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): HandleEventResponse {
+            return HandleEventResponse.decodeDataView(new DataView(buf));
         }
 
         // Decodes HandleEventResponse from a DataView
-        static decode(view: DataView): HandleEventResponse {
+        static decodeDataView(view: DataView): HandleEventResponse {
             const decoder = new __proto.Decoder(view);
             const obj = new HandleEventResponse();
 
@@ -51898,7 +51126,7 @@ export namespace plugin {
                     }
                     case 3: {
                         const length = decoder.uint32();
-                        obj.Event = events.OneOf.decode(
+                        obj.Event = events.OneOf.decodeDataView(
                             new DataView(
                                 decoder.view.buffer,
                                 decoder.pos + decoder.view.byteOffset,
@@ -51942,14 +51170,11 @@ export namespace plugin {
             return size;
         }
 
-        // Encodes HandleEventResponse to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes HandleEventResponse to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes HandleEventResponse to the Array<u8>
@@ -51989,12 +51214,12 @@ export namespace plugin {
         public Headers: Map<string, string> = new Map<string, string>();
 
         // Decodes RewriteHeadersRequest from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): RewriteHeadersRequest {
-            return RewriteHeadersRequest.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): RewriteHeadersRequest {
+            return RewriteHeadersRequest.decodeDataView(new DataView(buf));
         }
 
         // Decodes RewriteHeadersRequest from a DataView
-        static decode(view: DataView): RewriteHeadersRequest {
+        static decodeDataView(view: DataView): RewriteHeadersRequest {
             const decoder = new __proto.Decoder(view);
             const obj = new RewriteHeadersRequest();
 
@@ -52038,14 +51263,11 @@ export namespace plugin {
             return size;
         }
 
-        // Encodes RewriteHeadersRequest to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes RewriteHeadersRequest to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes RewriteHeadersRequest to the Array<u8>
@@ -52091,12 +51313,12 @@ export namespace plugin {
         public Headers: Map<string, string> = new Map<string, string>();
 
         // Decodes RewriteHeadersResponse from an ArrayBuffer
-        static decodeArrayBuffer(buf: ArrayBuffer): RewriteHeadersResponse {
-            return RewriteHeadersResponse.decode(new DataView(buf));
+        static decode(buf: ArrayBuffer): RewriteHeadersResponse {
+            return RewriteHeadersResponse.decodeDataView(new DataView(buf));
         }
 
         // Decodes RewriteHeadersResponse from a DataView
-        static decode(view: DataView): RewriteHeadersResponse {
+        static decodeDataView(view: DataView): RewriteHeadersResponse {
             const decoder = new __proto.Decoder(view);
             const obj = new RewriteHeadersResponse();
 
@@ -52156,14 +51378,11 @@ export namespace plugin {
             return size;
         }
 
-        // Encodes RewriteHeadersResponse to the DataView
-        encode(): DataView {
-            const source = this.encodeU8Array();
-            const view = new DataView(new ArrayBuffer(source.length));
-            for (let i: i32 = 0; i < source.length; i++) {
-                view.setUint8(i, source.at(i));
-            }
-            return view;
+        // Encodes RewriteHeadersResponse to the ArrayBuffer
+        encode(): ArrayBuffer {
+            return changetype<ArrayBuffer>(
+                StaticArray.fromArray<u8>(this.encodeU8Array())
+            );
         }
 
         // Encodes RewriteHeadersResponse to the Array<u8>
@@ -52240,7 +51459,7 @@ function __decodeMap_string_google_protobuf_Value(
 
             case 2: {
                 const length = decoder.uint32();
-                value = google.protobuf.Value.decode(
+                value = google.protobuf.Value.decodeDataView(
                     new DataView(
                         decoder.view.buffer,
                         decoder.pos + decoder.view.byteOffset,
@@ -52321,7 +51540,7 @@ function __decodeMap_string_wrappers_StringValues(
 
             case 2: {
                 const length = decoder.uint32();
-                value = wrappers.StringValues.decode(
+                value = wrappers.StringValues.decodeDataView(
                     new DataView(
                         decoder.view.buffer,
                         decoder.pos + decoder.view.byteOffset,
@@ -52444,7 +51663,7 @@ function __decodeMap_string_types_CommandLabelV2(
 
             case 2: {
                 const length = decoder.uint32();
-                value = types.CommandLabelV2.decode(
+                value = types.CommandLabelV2.decodeDataView(
                     new DataView(
                         decoder.view.buffer,
                         decoder.pos + decoder.view.byteOffset,
@@ -52537,7 +51756,7 @@ function __decodeMap_string_types_ThresholdIndexSets(
 
             case 2: {
                 const length = decoder.uint32();
-                value = types.ThresholdIndexSets.decode(
+                value = types.ThresholdIndexSets.decodeDataView(
                     new DataView(
                         decoder.view.buffer,
                         decoder.pos + decoder.view.byteOffset,
@@ -52606,7 +51825,7 @@ function __decodeMap_string_types_PluginDataEntry(
 
             case 2: {
                 const length = decoder.uint32();
-                value = types.PluginDataEntry.decode(
+                value = types.PluginDataEntry.decodeDataView(
                     new DataView(
                         decoder.view.buffer,
                         decoder.pos + decoder.view.byteOffset,

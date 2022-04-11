@@ -53,18 +53,31 @@ func (a *MockAPIClient) GetLatestRequest(ctx context.Context) proto.Message {
 	return a.messages[len(a.messages)-1]
 }
 
-// Testing represents WASM test methods
+// MockSecretsCache mock secrets cache
+type MockSecretsCache struct {
+	c map[string]string
+}
+
+// NewMockSecretsCache creates new mock secrets cache
+func NewMockSecretsCache(c map[string]string) *MockSecretsCache {
+	return &MockSecretsCache{c}
+}
+
+// GetSecretString returns secret string from an internal cache
+func (c *MockSecretsCache) GetSecretString(secretId string) (string, error) {
+	value, ok := c.c[secretId]
+	if !ok {
+		return "", trace.Errorf("Secret not found!")
+	}
+
+	return value, nil
+}
+
+// Testing represents WASM testing trait
 type Testing struct {
 	FixtureIndex  *FixtureIndex
 	MockAPIClient *MockAPIClient
-	traits        []*TestingTrait
-}
-
-// TestingTrait represents WASM testing trait
-type TestingTrait struct {
-	ectx   *ExecutionContext
-	run    wasmer.NativeFunction
-	runner *Testing
+	run           NativeFunctionWithExecutionContext
 }
 
 // NewTesting creates new test runner instance
@@ -74,29 +87,11 @@ func NewTesting(dir string) (*Testing, error) {
 		return nil, trace.Wrap(err)
 	}
 
-	return &Testing{FixtureIndex: index, MockAPIClient: NewMockAPI(), traits: make([]*TestingTrait, 0)}, nil
-}
-
-// CreateTrait creates Testing trait and binds it to an ExecutionContext
-func (r *Testing) CreateTrait(ectx *ExecutionContext) Trait {
-	t := &TestingTrait{runner: r, ectx: ectx}
-	r.traits = append(r.traits, t)
-	return t
-}
-
-// For returns TestingTrait bound to the passed execution context
-func (r *Testing) For(ectx *ExecutionContext) (*TestingTrait, error) {
-	for _, t := range r.traits {
-		if t.ectx == ectx {
-			return t, nil
-		}
-	}
-
-	return nil, trace.Errorf("TestingTrait bound to ExecutionContext %v not found", ectx)
+	return &Testing{FixtureIndex: index, MockAPIClient: NewMockAPI()}, nil
 }
 
 // ImportMethodsFromWASM imports WASM methods to go side
-func (r *TestingTrait) ImportMethodsFromWASM(getFunction GetFunctionFn) error {
+func (r *Testing) ImportMethodsFromWASM(getFunction GetFunction) error {
 	var err error
 
 	r.run, err = getFunction("test")
@@ -108,34 +103,38 @@ func (r *TestingTrait) ImportMethodsFromWASM(getFunction GetFunctionFn) error {
 }
 
 // ExportMethodsToWASM exports testing methods to go side
-func (r *TestingTrait) ExportMethodsToWASM(store *wasmer.Store, importObject *wasmer.ImportObject) error {
-	importObject.Register("test", map[string]wasmer.IntoExtern{
-		"getFixtureSize": wasmer.NewFunction(store, wasmer.NewFunctionType(
-			wasmer.NewValueTypes(wasmer.I32), // n:i32
-			wasmer.NewValueTypes(wasmer.I32), // i32
-		), r.getFixtureSize),
-		"getFixtureBody": wasmer.NewFunction(store, wasmer.NewFunctionType(
-			wasmer.NewValueTypes(wasmer.I32, wasmer.I32), // n:i32, addr:usize
-			wasmer.NewValueTypes(),                       // void
-		), r.getFixtureBody),
-		"getLatestAPIRequestSize": wasmer.NewFunction(store, wasmer.NewFunctionType(
-			wasmer.NewValueTypes(),
-			wasmer.NewValueTypes(wasmer.I32), // i32
-		), r.getLatestAPIRequestSize),
-		"getLatestAPIRequestBody": wasmer.NewFunction(store, wasmer.NewFunctionType(
-			wasmer.NewValueTypes(wasmer.I32), // n:i32, addr:usize
-			wasmer.NewValueTypes(),           // void
-		), r.getLatestAPIRequestBody),
-	})
-
-	return nil
+func (r *Testing) ExportMethodsToWASM(exports *Exports) {
+	exports.Define(
+		"test",
+		map[string]Export{
+			"getFixtureSize": {
+				wasmer.NewValueTypes(wasmer.I32), // n:i32
+				wasmer.NewValueTypes(wasmer.I32), // i32
+				r.getFixtureSize,
+			},
+			"getFixtureBody": {
+				wasmer.NewValueTypes(wasmer.I32, wasmer.I32), // n:i32, addr:usize
+				wasmer.NewValueTypes(),                       // void
+				r.getFixtureBody,
+			},
+			"getLatestAPIRequestSize": {
+				wasmer.NewValueTypes(),
+				wasmer.NewValueTypes(wasmer.I32), // i32
+				r.getLatestAPIRequestSize,
+			},
+			"getLatestAPIRequestBody": {
+				wasmer.NewValueTypes(wasmer.I32), // n:i32, addr:usize
+				wasmer.NewValueTypes(),           // void
+				r.getLatestAPIRequestBody,
+			},
+		})
 }
 
 // getFixtureSize returns size of a fixture number n
-func (r *TestingTrait) getFixtureSize(args []wasmer.Value) ([]wasmer.Value, error) {
+func (r *Testing) getFixtureSize(ectx *ExecutionContext, args []wasmer.Value) ([]wasmer.Value, error) {
 	n := int(args[0].I32())
 
-	fixture := r.runner.FixtureIndex.Get(n)
+	fixture := r.FixtureIndex.Get(n)
 	if fixture == nil {
 		return []wasmer.Value{wasmer.NewI32(0)}, trace.Errorf("Fixture %v not found", n)
 	}
@@ -146,12 +145,12 @@ func (r *TestingTrait) getFixtureSize(args []wasmer.Value) ([]wasmer.Value, erro
 }
 
 // getFixtureBody copies fixture number n to the provided memory segment
-func (r *TestingTrait) getFixtureBody(args []wasmer.Value) ([]wasmer.Value, error) {
+func (r *Testing) getFixtureBody(ectx *ExecutionContext, args []wasmer.Value) ([]wasmer.Value, error) {
 	n := int(args[0].I32())
 	addr := int(args[1].I32())
-	memory := r.ectx.Memory
+	data := ectx.Memory.Data()
 
-	fixture := r.runner.FixtureIndex.Get(n)
+	fixture := r.FixtureIndex.Get(n)
 	if fixture == nil {
 		return []wasmer.Value{wasmer.NewI32(0)}, trace.Errorf("Fixture %v not found", n)
 	}
@@ -162,14 +161,14 @@ func (r *TestingTrait) getFixtureBody(args []wasmer.Value) ([]wasmer.Value, erro
 	}
 
 	// DMA copy
-	copy(memory.Data()[addr:], bytes)
+	copy(data[addr:], bytes)
 
 	return nil, nil
 }
 
 // getLatestAPIRequestSize returns size of a latest API request
-func (r *TestingTrait) getLatestAPIRequestSize(args []wasmer.Value) ([]wasmer.Value, error) {
-	request := r.runner.MockAPIClient.GetLatestRequest(r.ectx.CurrentContext)
+func (r *Testing) getLatestAPIRequestSize(ectx *ExecutionContext, args []wasmer.Value) ([]wasmer.Value, error) {
+	request := r.MockAPIClient.GetLatestRequest(ectx.CurrentContext)
 	if request == nil {
 		return []wasmer.Value{wasmer.NewI32(0)}, trace.Errorf("There were no API requests")
 	}
@@ -180,11 +179,11 @@ func (r *TestingTrait) getLatestAPIRequestSize(args []wasmer.Value) ([]wasmer.Va
 }
 
 // getLatestAPIRequestBody copies fixture number n to the provided memory segment
-func (r *TestingTrait) getLatestAPIRequestBody(args []wasmer.Value) ([]wasmer.Value, error) {
+func (r *Testing) getLatestAPIRequestBody(ectx *ExecutionContext, args []wasmer.Value) ([]wasmer.Value, error) {
 	addr := int(args[0].I32())
-	memory := r.ectx.Memory
+	data := ectx.Memory.Data()
 
-	request := r.runner.MockAPIClient.GetLatestRequest(r.ectx.CurrentContext)
+	request := r.MockAPIClient.GetLatestRequest(ectx.CurrentContext)
 	if request == nil {
 		return []wasmer.Value{wasmer.NewI32(0)}, trace.Errorf("There were no API requests")
 	}
@@ -195,14 +194,14 @@ func (r *TestingTrait) getLatestAPIRequestBody(args []wasmer.Value) ([]wasmer.Va
 	}
 
 	// DMA copy
-	copy(memory.Data()[addr:], bytes)
+	copy(data[addr:], bytes)
 
 	return nil, nil
 }
 
 // Run runs test suite
-func (r *TestingTrait) Run() error {
-	_, err := r.run()
+func (r *Testing) Run(ectx *ExecutionContext) error {
+	_, err := r.run(ectx)
 	if err != nil {
 		return trace.Wrap(err)
 	}
