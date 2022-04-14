@@ -16,7 +16,7 @@ limitations under the License.
 package wasm
 
 import (
-	"github.com/gravitational/teleport-plugin-framework/lib/wasm/plugin"
+	"github.com/gravitational/teleport-plugin-framework/lib/plugin"
 	"github.com/gravitational/teleport/api/types/events"
 	"github.com/gravitational/trace"
 )

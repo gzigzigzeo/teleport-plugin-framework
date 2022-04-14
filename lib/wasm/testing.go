@@ -59,8 +59,8 @@ type MockSecretsCache struct {
 }
 
 // NewMockSecretsCache creates new mock secrets cache
-func NewMockSecretsCache(c map[string]string) *MockSecretsCache {
-	return &MockSecretsCache{c}
+func NewMockSecretsCache() *MockSecretsCache {
+	return &MockSecretsCache{c: make(map[string]string)}
 }
 
 // GetSecretString returns secret string from an internal cache
@@ -73,11 +73,17 @@ func (c *MockSecretsCache) GetSecretString(secretId string) (string, error) {
 	return value, nil
 }
 
+// SetSecretString sets secret string
+func (c *MockSecretsCache) SetSecretString(key, value string) {
+	c.c[key] = value
+}
+
 // Testing represents WASM testing trait
 type Testing struct {
-	FixtureIndex  *FixtureIndex
-	MockAPIClient *MockAPIClient
-	run           NativeFunctionWithExecutionContext
+	FixtureIndex     *FixtureIndex
+	MockAPIClient    *MockAPIClient
+	MockSecretsCache *MockSecretsCache
+	run              NativeFunctionWithExecutionContext
 }
 
 // NewTesting creates new test runner instance
@@ -87,7 +93,7 @@ func NewTesting(dir string) (*Testing, error) {
 		return nil, trace.Wrap(err)
 	}
 
-	return &Testing{FixtureIndex: index, MockAPIClient: NewMockAPI()}, nil
+	return &Testing{FixtureIndex: index, MockAPIClient: NewMockAPI(), MockSecretsCache: NewMockSecretsCache()}, nil
 }
 
 // ImportMethodsFromWASM imports WASM methods to go side
@@ -126,6 +132,11 @@ func (r *Testing) ExportMethodsToWASM(exports *Exports) {
 				wasmer.NewValueTypes(wasmer.I32), // n:i32, addr:usize
 				wasmer.NewValueTypes(),           // void
 				r.getLatestAPIRequestBody,
+			},
+			"defineAWSsecret": {
+				wasmer.NewValueTypes(wasmer.I32, wasmer.I32), // key:string, value:string
+				wasmer.NewValueTypes(),                       // void
+				r.defineAWSsecret,
 			},
 		})
 }
@@ -195,6 +206,16 @@ func (r *Testing) getLatestAPIRequestBody(ectx *ExecutionContext, args []wasmer.
 
 	// DMA copy
 	copy(data[addr:], bytes)
+
+	return nil, nil
+}
+
+// defineAWSsecret puts string to the mock secret cache
+func (r *Testing) defineAWSsecret(ectx *ExecutionContext, args []wasmer.Value) ([]wasmer.Value, error) {
+	key := ectx.MemoryInterop.GetString(ectx, args[0])
+	value := ectx.MemoryInterop.GetString(ectx, args[1])
+
+	r.MockSecretsCache.SetSecretString(key, value)
 
 	return nil, nil
 }

@@ -30,22 +30,9 @@ type AWSSecretsManager struct {
 	cache SecretsCache
 }
 
-// sess, err := session.NewSession()
-// if err != nil {
-// 	return nil, trace.Wrap(err)
-// }
-
-// svc := secretsmanager.New(sess, aws.NewConfig().WithCredentialsChainVerboseErrors(true))
-// cache, err := secretcache.New(
-// 	func(c *secretcache.Cache) { c.Client = svc },
-// )
-// if err != nil {
-// 	return nil, trace.Wrap(err)
-// }
-
 // NewAWSSecretsManager creates new AWSSecretsManager trait collection
-func NewAWSSecretsManager(cache SecretsCache) (*AWSSecretsManager, error) {
-	return &AWSSecretsManager{cache: cache}, nil
+func NewAWSSecretsManager(cache SecretsCache) *AWSSecretsManager {
+	return &AWSSecretsManager{cache: cache}
 }
 
 // ExportMethodsToWASM exports go methods to WASM

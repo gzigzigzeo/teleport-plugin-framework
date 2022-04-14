@@ -116,12 +116,6 @@ func (e *testTrait) ImportMethodsFromWASM(getFunction GetFunction) error {
 	return nil
 }
 
-func newSecretManager(t *testing.T) *AWSSecretsManager {
-	m, err := NewAWSSecretsManager(NewMockSecretsCache(map[string]string{"foo": "bar"}))
-	require.NoError(t, err)
-	return m
-}
-
 func TestPool(t *testing.T) {
 	ctx := context.Background()
 	log, _ := logrus_hooks.NewNullLogger()
@@ -138,7 +132,7 @@ func TestPool(t *testing.T) {
 		Traits: []interface{}{
 			NewAssemblyScriptEnv(),
 			newTestTrait(),
-			newSecretManager(t),
+			NewAWSSecretsManager(NewMockSecretsCache()),
 		},
 	})
 	require.NoError(t, err)
@@ -176,7 +170,7 @@ func TestRegularMethods(t *testing.T) {
 		Traits: []interface{}{
 			NewAssemblyScriptEnv(),
 			testTrait,
-			newSecretManager(t),
+			NewAWSSecretsManager(NewMockSecretsCache()),
 		},
 	})
 	require.NoError(t, err)
@@ -242,7 +236,7 @@ func TestParallelExecution(t *testing.T) {
 		Traits: []interface{}{
 			NewAssemblyScriptEnv(),
 			testTrait,
-			newSecretManager(t),
+			NewAWSSecretsManager(NewMockSecretsCache()),
 		},
 	})
 	require.NoError(t, err)
@@ -290,7 +284,7 @@ func TestParallelProtobufInteropExecution(t *testing.T) {
 			NewAssemblyScriptEnv(),
 			protobufInterop,
 			testTrait,
-			newSecretManager(t),
+			NewAWSSecretsManager(NewMockSecretsCache()),
 		},
 	})
 	require.NoError(t, err)
@@ -354,7 +348,7 @@ func TestHandleEvent(t *testing.T) {
 			protobufInterop,
 			handleEvent,
 			testTraitFactory,
-			newSecretManager(t),
+			NewAWSSecretsManager(NewMockSecretsCache()),
 		},
 	})
 	require.NoError(t, err)
@@ -401,7 +395,9 @@ func TestAWSSecretsManager(t *testing.T) {
 	require.NoError(t, err)
 
 	testTrait := newTestTrait()
-	awsSecretsManager := newSecretManager(t)
+
+	c := NewMockSecretsCache()
+	c.SetSecretString("foo", "bar")
 
 	p, err := NewExecutionContextPool(ExecutionContextPoolOptions{
 		Log:           log,
@@ -411,7 +407,7 @@ func TestAWSSecretsManager(t *testing.T) {
 		MemoryInterop: NewAssemblyScriptMemoryInterop(),
 		Traits: []interface{}{
 			NewAssemblyScriptEnv(),
-			awsSecretsManager,
+			NewAWSSecretsManager(c),
 			testTrait,
 		},
 	})

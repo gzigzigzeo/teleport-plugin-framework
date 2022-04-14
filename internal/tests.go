@@ -50,6 +50,7 @@ func RunTests(log logrus.FieldLogger, concurrency int) {
 			testRunner,
 			protobufInterop,
 			api,
+			wasm.NewAWSSecretsManager(testRunner.MockSecretsCache),
 		},
 	}
 

@@ -514,11 +514,6 @@ import { rewriteHeaders } from "./index";
 
 // Main test function
 export function test(): void {
-    testAPIHeader()
-}
-
-// Ensure that nomal event passes through
-function testAPIHeader(): void {
     const request = new plugin.RewriteHeadersRequest()
 
     request.Headers = new Map()
@@ -537,6 +532,59 @@ function testAPIHeader(): void {
 ```
 
 Run `yarn test`.
+
+# Retreiving secrets from the Amazon Secrets Manager
+
+You need to provide correct AWS credentials. Secret must exist. The code would look as following (`assembly/rewrite_header.ts`):
+
+```ts
+import { plugin } from "../vendor/teleport"
+import { encodeString } from "../vendor/base64"
+import { getSecretString } from '../vendor/aws_secrets_manager'
+
+// rewriteHeaders rewrites HTTP headers
+export function rewriteHeaders(request: plugin.RewriteHeadersRequest): plugin.RewriteHeadersResponse {
+    const headers = request.Headers
+    const token = getSecretString("mailgun_token") // getSecretString 
+    const apiKey = encodeString(token) // base64 encode token
+
+    headers.set("Authorization", "Basic " + apiKey)
+    
+    const response = new plugin.RewriteHeadersResponse()
+    response.Headers = headers
+    response.Success = true
+    
+    return response
+}
+```
+
+The corresponding test (`assembly/rewrite_headers.test.ts`):
+
+```ts
+import { plugin } from "../vendor/teleport";
+import { rewriteHeaders } from "./index";
+import { defineAWSsecret } from "../vendor/test"
+
+// Main test function
+export function test(): void {
+    const request = new plugin.RewriteHeadersRequest()
+
+    request.Headers = new Map()
+    request.Headers.set("Content-Type", "text/plain")
+
+    defineAWSsecret("mailgun_token", "api:key")
+
+    const requestData = request.encode()
+    const responseData = rewriteHeaders(requestData)
+    const response = plugin.RewriteHeadersResponse.decode(responseData)
+
+    assert(response != null, "rewriteHeaders returned null response")
+    assert(response.Headers.size == 2, "rewriteHeaders resulting headers length must be 2")
+    assert(response.Success == true, "rewriteHeaders was not successfult")
+    assert(response.Headers.get("Authorization") != null, "Authorization header is missing")
+    assert(response.Headers.get("Authorization") == "Basic YXBpOmtleQ==", "Authorization header value is wrong")
+}
+```
 
 # AssemblyScript `env` functions
 

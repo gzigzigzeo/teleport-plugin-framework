@@ -35,3 +35,6 @@ export function getLatestAPIRequest(): ArrayBuffer {
     getLatestAPIRequestBody(changetype<usize>(buf));
     return buf;
 }
+
+// Defines mock secret manager 
+export declare function defineAWSsecret(name: string, value: string): void;

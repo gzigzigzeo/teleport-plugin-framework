@@ -1,3 +1,4 @@
+import { getSecretString } from '../boilerplate/vendor/aws_secrets_manager'
 import { plugin } from "../boilerplate/vendor/teleport"
 
 // rewriteHeaders rewrites HTTP headers
@@ -11,8 +12,9 @@ export function rewriteHeaders(request: plugin.RewriteHeadersRequest): plugin.Re
     }
 
     const headers = request.Headers
-    headers.set("API-Key", "foo")
-    
+    headers.set("foo", "bar")
+    headers.set("secretmanager", getSecretString("baz"))
+
     response.Headers = headers
     response.Success = true
     
