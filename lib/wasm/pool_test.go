@@ -33,14 +33,15 @@ import (
 
 // testTrait represents test trait
 type testTrait struct {
-	OK                    NativeFunctionWithExecutionContext
-	ThrowError            NativeFunctionWithExecutionContext
-	GetStringReturnString NativeFunctionWithExecutionContext
-	InfiniteLoop          NativeFunctionWithExecutionContext
-	Delay100ms            NativeFunctionWithExecutionContext
-	GetEventIndex         NativeFunctionWithExecutionContext
-	GoMethodEntryPoint    NativeFunctionWithExecutionContext
-	GetSecret             NativeFunctionWithExecutionContext
+	OK                        NativeFunctionWithExecutionContext
+	ThrowError                NativeFunctionWithExecutionContext
+	GetStringReturnString     NativeFunctionWithExecutionContext
+	InfiniteLoop              NativeFunctionWithExecutionContext
+	Delay100ms                NativeFunctionWithExecutionContext
+	GetEventIndex             NativeFunctionWithExecutionContext
+	GoMethodEntryPoint        NativeFunctionWithExecutionContext
+	FailingGoMethodEntryPoint NativeFunctionWithExecutionContext
+	GetSecret                 NativeFunctionWithExecutionContext
 }
 
 func newTestTrait() *testTrait {
@@ -56,6 +57,11 @@ func (e *testTrait) ExportMethodsToWASM(exports *Exports) {
 				wasmer.NewValueTypes(),
 				e.goMethod,
 			},
+			"failingGoMethod": {
+				wasmer.NewValueTypes(),
+				wasmer.NewValueTypes(),
+				e.failingGoMethod,
+			},
 		},
 	)
 }
@@ -67,6 +73,11 @@ func (e *testTrait) goMethod(ectx *ExecutionContext, args []wasmer.Value) ([]was
 		return nil, trace.Wrap(err)
 	}
 	return nil, nil
+}
+
+// failingGoMethod returns error
+func (e *testTrait) failingGoMethod(ectx *ExecutionContext, args []wasmer.Value) ([]wasmer.Value, error) {
+	return nil, trace.Errorf("oops")
 }
 
 // ImportMethodsFromWASM reads WASM methods references to the current trait context
@@ -99,6 +110,11 @@ func (e *testTrait) ImportMethodsFromWASM(getFunction GetFunction) error {
 	}
 
 	e.GoMethodEntryPoint, err = getFunction("goMethodEntryPoint")
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	e.FailingGoMethodEntryPoint, err = getFunction("failingGoMethodEntryPoint")
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -431,4 +447,51 @@ func TestAWSSecretsManager(t *testing.T) {
 	})
 
 	require.NoError(t, err)
+}
+
+// TestFailingGoMethod the purpose of this test is to ensure that there would be no crashes
+func TestFailingGoMethod(t *testing.T) {
+	ctx := context.Background()
+	log, _ := logrus_hooks.NewNullLogger()
+
+	b, err := os.ReadFile("test.wasm")
+	require.NoError(t, err)
+
+	testTrait := newTestTrait()
+
+	p, err := NewExecutionContextPool(ExecutionContextPoolOptions{
+		Log:           log,
+		PluginBytes:   b,
+		MemoryInterop: NewAssemblyScriptMemoryInterop(),
+		Timeout:       time.Second,
+		Concurrency:   5,
+		Traits: []interface{}{
+			NewAssemblyScriptEnv(),
+			testTrait,
+			NewAWSSecretsManager(NewMockSecretsCache()),
+		},
+	})
+	require.NoError(t, err)
+
+	count := 10
+
+	wg := sync.WaitGroup{}
+	wg.Add(count)
+
+	for i := 0; i < count; i++ {
+		go func(n int) {
+			_, err := p.Execute(ctx, func(ectx *ExecutionContext) (interface{}, error) {
+				_, err = testTrait.FailingGoMethodEntryPoint(ectx)
+				require.Error(t, err, "oops")
+
+				return nil, err
+			})
+
+			require.Error(t, err, "oops")
+
+			wg.Done()
+		}(i)
+	}
+
+	wg.Wait()
 }

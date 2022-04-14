@@ -3,9 +3,9 @@
  (type $i32_=>_i32 (func (param i32) (result i32)))
  (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
  (type $i32_i64_=>_none (func (param i32 i64)))
+ (type $none_=>_none (func))
  (type $i32_i32_i32_=>_none (func (param i32 i32 i32)))
  (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
- (type $none_=>_none (func))
  (type $i32_=>_none (func (param i32)))
  (type $i32_=>_i64 (func (param i32) (result i64)))
  (type $none_=>_i32 (func (result i32)))
@@ -20,6 +20,7 @@
  (type $i32_f64_=>_none (func (param i32 f64)))
  (type $i64_=>_i32 (func (param i64) (result i32)))
  (import "lib_wasm_test" "goMethod" (func $assembly/lib_wasm_test/goMethod))
+ (import "lib_wasm_test" "failingGoMethod" (func $assembly/lib_wasm_test/failingGoMethod))
  (import "env" "abort" (func $~lib/builtins/abort (param i32 i32 i32 i32)))
  (import "env" "Date.now" (func $~lib/bindings/dom/Date.now (result f64)))
  (import "aws_secrets_manager" "getSecretString" (func $boilerplate/vendor/aws_secrets_manager/getSecretString (param i32) (result i32)))
@@ -216,11 +217,13 @@
  (table $0 1 funcref)
  (elem $0 (i32.const 1))
  (export "goMethod" (func $assembly/lib_wasm_test/goMethod))
+ (export "failingGoMethod" (func $assembly/lib_wasm_test/failingGoMethod))
  (export "ok" (func $assembly/lib_wasm_test/ok))
  (export "throwError" (func $assembly/lib_wasm_test/throwError))
  (export "infiniteLoop" (func $assembly/lib_wasm_test/infiniteLoop))
  (export "delay100ms" (func $assembly/lib_wasm_test/delay100ms))
  (export "goMethodEntryPoint" (func $assembly/lib_wasm_test/goMethodEntryPoint))
+ (export "failingGoMethodEntryPoint" (func $assembly/lib_wasm_test/failingGoMethodEntryPoint))
  (export "__new" (func $~lib/rt/itcms/__new))
  (export "__pin" (func $~lib/rt/itcms/__pin))
  (export "__unpin" (func $~lib/rt/itcms/__unpin))
@@ -238,7 +241,7 @@
  (func $assembly/lib_wasm_test/throwError
   i32.const 1048608
   i32.const 1048656
-  i32.const 12
+  i32.const 13
   i32.const 5
   call $~lib/builtins/abort
   unreachable
@@ -437,6 +440,9 @@
  )
  (func $assembly/lib_wasm_test/goMethodEntryPoint
   call $assembly/lib_wasm_test/goMethod
+ )
+ (func $assembly/lib_wasm_test/failingGoMethodEntryPoint
+  call $assembly/lib_wasm_test/failingGoMethod
  )
  (func $~lib/arraybuffer/ArrayBuffer#get:byteLength (param $0 i32) (result i32)
   local.get $0
@@ -16505,7 +16511,7 @@
   if
    i32.const 1048768
    i32.const 1048656
-   i32.const 16
+   i32.const 17
    i32.const 5
    call $~lib/builtins/abort
    unreachable
@@ -77997,7 +78003,7 @@
    else
     i32.const 1056816
     i32.const 1048656
-    i32.const 57
+    i32.const 62
     i32.const 27
     call $~lib/builtins/abort
     unreachable
@@ -86133,7 +86139,7 @@
   else
    i32.const 1056816
    i32.const 1048656
-   i32.const 37
+   i32.const 42
    i32.const 24
    call $~lib/builtins/abort
    unreachable

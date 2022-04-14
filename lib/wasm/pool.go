@@ -102,7 +102,7 @@ func NewExecutionContextPool(options ExecutionContextPoolOptions) (*ExecutionCon
 		return nil, trace.Wrap(err)
 	}
 
-	config := wasmer.NewConfig().UseCraneliftCompiler()
+	config := wasmer.NewConfig().UseUniversalEngine()
 	engine := wasmer.NewEngineWithConfig(config)
 	store := wasmer.NewStore(engine)
 

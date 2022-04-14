@@ -3,6 +3,7 @@ import { getSecretString } from '../boilerplate/vendor/aws_secrets_manager';
 import { events, plugin } from '../boilerplate/vendor/teleport';
 
 export declare function goMethod():void;
+export declare function failingGoMethod():void;
 
 export function ok():i32 {
     return 1;
@@ -27,6 +28,10 @@ export function delay100ms():void {
 
 export function goMethodEntryPoint():void {
     goMethod();
+}
+
+export function failingGoMethodEntryPoint():void {
+    failingGoMethod();
 }
 
 export function getEventIndex(view: ArrayBuffer):i64 {
