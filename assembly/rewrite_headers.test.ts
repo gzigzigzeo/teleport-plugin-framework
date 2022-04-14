@@ -22,7 +22,7 @@ function testAPIHeader(): void {
     assert(response.Headers.size == 2, "rewriteHeaders resulting headers length must be 2")
     assert(response.Success == true, "rewriteHeaders was not successfult")
     assert(response.Headers.get("API-Key") != null, "API-Key header is missing")
-    assert(response.Headers.get("API-Key") == "foo", "API-Key header value is missing")
+    assert(response.Headers.get("API-Key") == "foo", "API-Key header value is wrong")
 }
 
 // Ensure that nomal event passes through

@@ -45175,7 +45175,7 @@ export namespace events {
 
     // OneOf is a union of one of audit events submitted to the auth service
     export class OneOf {
-        public __oneOf_Event: string = "";
+        public type: string = "";
         public UserLogin: events.UserLogin | null;
         public UserCreate: events.UserCreate | null;
         public UserDelete: events.UserDelete | null;
@@ -45283,7 +45283,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "UserLogin";
+                        obj.type = "UserLogin";
                         break;
                     }
                     case 2: {
@@ -45297,7 +45297,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "UserCreate";
+                        obj.type = "UserCreate";
                         break;
                     }
                     case 3: {
@@ -45311,7 +45311,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "UserDelete";
+                        obj.type = "UserDelete";
                         break;
                     }
                     case 4: {
@@ -45326,7 +45326,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "UserPasswordChange";
+                        obj.type = "UserPasswordChange";
                         break;
                     }
                     case 5: {
@@ -45340,7 +45340,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "SessionStart";
+                        obj.type = "SessionStart";
                         break;
                     }
                     case 6: {
@@ -45354,7 +45354,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "SessionJoin";
+                        obj.type = "SessionJoin";
                         break;
                     }
                     case 7: {
@@ -45368,7 +45368,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "SessionPrint";
+                        obj.type = "SessionPrint";
                         break;
                     }
                     case 8: {
@@ -45382,7 +45382,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "SessionReject";
+                        obj.type = "SessionReject";
                         break;
                     }
                     case 9: {
@@ -45396,7 +45396,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "Resize";
+                        obj.type = "Resize";
                         break;
                     }
                     case 10: {
@@ -45410,7 +45410,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "SessionEnd";
+                        obj.type = "SessionEnd";
                         break;
                     }
                     case 11: {
@@ -45425,7 +45425,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "SessionCommand";
+                        obj.type = "SessionCommand";
                         break;
                     }
                     case 12: {
@@ -45439,7 +45439,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "SessionDisk";
+                        obj.type = "SessionDisk";
                         break;
                     }
                     case 13: {
@@ -45454,7 +45454,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "SessionNetwork";
+                        obj.type = "SessionNetwork";
                         break;
                     }
                     case 14: {
@@ -45468,7 +45468,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "SessionData";
+                        obj.type = "SessionData";
                         break;
                     }
                     case 15: {
@@ -45482,7 +45482,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "SessionLeave";
+                        obj.type = "SessionLeave";
                         break;
                     }
                     case 16: {
@@ -45496,7 +45496,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "PortForward";
+                        obj.type = "PortForward";
                         break;
                     }
                     case 17: {
@@ -45510,7 +45510,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "X11Forward";
+                        obj.type = "X11Forward";
                         break;
                     }
                     case 18: {
@@ -45524,7 +45524,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "SCP";
+                        obj.type = "SCP";
                         break;
                     }
                     case 19: {
@@ -45538,7 +45538,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "Exec";
+                        obj.type = "Exec";
                         break;
                     }
                     case 20: {
@@ -45552,7 +45552,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "Subsystem";
+                        obj.type = "Subsystem";
                         break;
                     }
                     case 21: {
@@ -45567,7 +45567,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "ClientDisconnect";
+                        obj.type = "ClientDisconnect";
                         break;
                     }
                     case 22: {
@@ -45581,7 +45581,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "AuthAttempt";
+                        obj.type = "AuthAttempt";
                         break;
                     }
                     case 23: {
@@ -45596,7 +45596,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "AccessRequestCreate";
+                        obj.type = "AccessRequestCreate";
                         break;
                     }
                     case 24: {
@@ -45611,7 +45611,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "UserTokenCreate";
+                        obj.type = "UserTokenCreate";
                         break;
                     }
                     case 25: {
@@ -45625,7 +45625,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "RoleCreate";
+                        obj.type = "RoleCreate";
                         break;
                     }
                     case 26: {
@@ -45639,7 +45639,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "RoleDelete";
+                        obj.type = "RoleDelete";
                         break;
                     }
                     case 27: {
@@ -45654,7 +45654,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "TrustedClusterCreate";
+                        obj.type = "TrustedClusterCreate";
                         break;
                     }
                     case 28: {
@@ -45669,7 +45669,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "TrustedClusterDelete";
+                        obj.type = "TrustedClusterDelete";
                         break;
                     }
                     case 29: {
@@ -45684,7 +45684,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "TrustedClusterTokenCreate";
+                        obj.type = "TrustedClusterTokenCreate";
                         break;
                     }
                     case 30: {
@@ -45699,7 +45699,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "GithubConnectorCreate";
+                        obj.type = "GithubConnectorCreate";
                         break;
                     }
                     case 31: {
@@ -45714,7 +45714,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "GithubConnectorDelete";
+                        obj.type = "GithubConnectorDelete";
                         break;
                     }
                     case 32: {
@@ -45729,7 +45729,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "OIDCConnectorCreate";
+                        obj.type = "OIDCConnectorCreate";
                         break;
                     }
                     case 33: {
@@ -45744,7 +45744,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "OIDCConnectorDelete";
+                        obj.type = "OIDCConnectorDelete";
                         break;
                     }
                     case 34: {
@@ -45759,7 +45759,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "SAMLConnectorCreate";
+                        obj.type = "SAMLConnectorCreate";
                         break;
                     }
                     case 35: {
@@ -45774,7 +45774,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "SAMLConnectorDelete";
+                        obj.type = "SAMLConnectorDelete";
                         break;
                     }
                     case 36: {
@@ -45788,7 +45788,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "KubeRequest";
+                        obj.type = "KubeRequest";
                         break;
                     }
                     case 37: {
@@ -45803,7 +45803,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "AppSessionStart";
+                        obj.type = "AppSessionStart";
                         break;
                     }
                     case 38: {
@@ -45818,7 +45818,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "AppSessionChunk";
+                        obj.type = "AppSessionChunk";
                         break;
                     }
                     case 39: {
@@ -45833,7 +45833,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "AppSessionRequest";
+                        obj.type = "AppSessionRequest";
                         break;
                     }
                     case 40: {
@@ -45848,7 +45848,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "DatabaseSessionStart";
+                        obj.type = "DatabaseSessionStart";
                         break;
                     }
                     case 41: {
@@ -45863,7 +45863,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "DatabaseSessionEnd";
+                        obj.type = "DatabaseSessionEnd";
                         break;
                     }
                     case 42: {
@@ -45878,7 +45878,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "DatabaseSessionQuery";
+                        obj.type = "DatabaseSessionQuery";
                         break;
                     }
                     case 43: {
@@ -45892,7 +45892,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "SessionUpload";
+                        obj.type = "SessionUpload";
                         break;
                     }
                     case 44: {
@@ -45906,7 +45906,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "MFADeviceAdd";
+                        obj.type = "MFADeviceAdd";
                         break;
                     }
                     case 45: {
@@ -45921,7 +45921,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "MFADeviceDelete";
+                        obj.type = "MFADeviceDelete";
                         break;
                     }
                     case 46: {
@@ -45936,7 +45936,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "BillingInformationUpdate";
+                        obj.type = "BillingInformationUpdate";
                         break;
                     }
                     case 47: {
@@ -45951,7 +45951,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "BillingCardCreate";
+                        obj.type = "BillingCardCreate";
                         break;
                     }
                     case 48: {
@@ -45966,7 +45966,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "BillingCardDelete";
+                        obj.type = "BillingCardDelete";
                         break;
                     }
                     case 49: {
@@ -45980,7 +45980,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "LockCreate";
+                        obj.type = "LockCreate";
                         break;
                     }
                     case 50: {
@@ -45994,7 +45994,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "LockDelete";
+                        obj.type = "LockDelete";
                         break;
                     }
                     case 51: {
@@ -46009,7 +46009,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "RecoveryCodeGenerate";
+                        obj.type = "RecoveryCodeGenerate";
                         break;
                     }
                     case 52: {
@@ -46024,7 +46024,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "RecoveryCodeUsed";
+                        obj.type = "RecoveryCodeUsed";
                         break;
                     }
                     case 53: {
@@ -46039,7 +46039,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "DatabaseCreate";
+                        obj.type = "DatabaseCreate";
                         break;
                     }
                     case 54: {
@@ -46054,7 +46054,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "DatabaseUpdate";
+                        obj.type = "DatabaseUpdate";
                         break;
                     }
                     case 55: {
@@ -46069,7 +46069,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "DatabaseDelete";
+                        obj.type = "DatabaseDelete";
                         break;
                     }
                     case 56: {
@@ -46083,7 +46083,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "AppCreate";
+                        obj.type = "AppCreate";
                         break;
                     }
                     case 57: {
@@ -46097,7 +46097,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "AppUpdate";
+                        obj.type = "AppUpdate";
                         break;
                     }
                     case 58: {
@@ -46111,7 +46111,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "AppDelete";
+                        obj.type = "AppDelete";
                         break;
                     }
                     case 59: {
@@ -46126,7 +46126,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "WindowsDesktopSessionStart";
+                        obj.type = "WindowsDesktopSessionStart";
                         break;
                     }
                     case 60: {
@@ -46141,7 +46141,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "WindowsDesktopSessionEnd";
+                        obj.type = "WindowsDesktopSessionEnd";
                         break;
                     }
                     case 61: {
@@ -46155,7 +46155,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "PostgresParse";
+                        obj.type = "PostgresParse";
                         break;
                     }
                     case 62: {
@@ -46169,7 +46169,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "PostgresBind";
+                        obj.type = "PostgresBind";
                         break;
                     }
                     case 63: {
@@ -46184,7 +46184,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "PostgresExecute";
+                        obj.type = "PostgresExecute";
                         break;
                     }
                     case 64: {
@@ -46198,7 +46198,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "PostgresClose";
+                        obj.type = "PostgresClose";
                         break;
                     }
                     case 65: {
@@ -46213,7 +46213,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "PostgresFunctionCall";
+                        obj.type = "PostgresFunctionCall";
                         break;
                     }
                     case 66: {
@@ -46228,7 +46228,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "AccessRequestDelete";
+                        obj.type = "AccessRequestDelete";
                         break;
                     }
                     case 67: {
@@ -46243,7 +46243,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "SessionConnect";
+                        obj.type = "SessionConnect";
                         break;
                     }
                     case 68: {
@@ -46258,7 +46258,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "CertificateCreate";
+                        obj.type = "CertificateCreate";
                         break;
                     }
                     case 69: {
@@ -46273,7 +46273,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "DesktopRecording";
+                        obj.type = "DesktopRecording";
                         break;
                     }
                     case 70: {
@@ -46288,7 +46288,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "DesktopClipboardSend";
+                        obj.type = "DesktopClipboardSend";
                         break;
                     }
                     case 71: {
@@ -46303,7 +46303,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "DesktopClipboardReceive";
+                        obj.type = "DesktopClipboardReceive";
                         break;
                     }
                     case 72: {
@@ -46318,7 +46318,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "MySQLStatementPrepare";
+                        obj.type = "MySQLStatementPrepare";
                         break;
                     }
                     case 73: {
@@ -46333,7 +46333,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "MySQLStatementExecute";
+                        obj.type = "MySQLStatementExecute";
                         break;
                     }
                     case 74: {
@@ -46348,7 +46348,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "MySQLStatementSendLongData";
+                        obj.type = "MySQLStatementSendLongData";
                         break;
                     }
                     case 75: {
@@ -46363,7 +46363,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "MySQLStatementClose";
+                        obj.type = "MySQLStatementClose";
                         break;
                     }
                     case 76: {
@@ -46378,7 +46378,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "MySQLStatementReset";
+                        obj.type = "MySQLStatementReset";
                         break;
                     }
                     case 77: {
@@ -46393,7 +46393,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "MySQLStatementFetch";
+                        obj.type = "MySQLStatementFetch";
                         break;
                     }
                     case 78: {
@@ -46408,7 +46408,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "MySQLStatementBulkExecute";
+                        obj.type = "MySQLStatementBulkExecute";
                         break;
                     }
                     case 79: {
@@ -46423,8 +46423,7 @@ export namespace events {
                             );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event =
-                            "RenewableCertificateGenerationMismatch";
+                        obj.type = "RenewableCertificateGenerationMismatch";
                         break;
                     }
                     case 80: {
@@ -46438,7 +46437,7 @@ export namespace events {
                         );
                         decoder.skip(length);
 
-                        obj.__oneOf_Event = "Unknown";
+                        obj.type = "Unknown";
                         break;
                     }
 

@@ -112,7 +112,7 @@ message HandleEventResponse {
 
 `Event` field can be blank.
 
-### Header modified plugins
+### HTTP header modifier plugins
 
 This type of plugins are used to modify headers of a requests sent to Teleport applications.
 
@@ -147,7 +147,7 @@ export function handleEvent(request: plugin.HandleEventRequest): plugin.HandleEv
     const event = request.Event;
     const response = new plugin.HandleEventResponse();
 
-    trace("Event of type " + event.__oneOf_Event + " received") // Print the event type
+    trace("Event of type " + event.type + " received") // Print the event type
 
     response.Event = event;
     response.Success = true;
@@ -348,7 +348,7 @@ export function test(): void {
     const response = plugin.HandleEventResponse.decode(handleEvent(request))
 
     assert(response.Success == true, "Response was not successful")
-    assert(response.Event.__oneOf_Event == "", "Event was not rejected")
+    assert(response.Event.type == "", "Event was not rejected")
 }
 ```
 
@@ -485,6 +485,59 @@ And run `yarn test`.
 
 Please note `getLatestAPIRequest()` method call. Tests call mock API. Mock API methods are always successful. Latest API request is saved in memory and returned by this method. In our example, this method will return binary representation of `types.LockV2` object constructed in `index.ts`.
 
+# Minimal rewrite headers plugin and test
+
+Put the following content into `assembly/rewrite_headers.ts`:
+
+```ts
+import { plugin } from "../boilerplate/vendor/teleport"
+
+// rewriteHeaders rewrites HTTP headers
+export function rewriteHeaders(request: plugin.RewriteHeadersRequest): plugin.RewriteHeadersResponse {
+    const response = new plugin.RewriteHeadersResponse()
+
+    const headers = request.Headers
+    headers.set("foo", "bar")
+    
+    response.Headers = headers
+    response.Success = true
+    
+    return response
+}
+```
+
+Put the test into `assembly/rewrite_headers.test.ts`:
+
+```ts
+import { plugin } from "../boilerplate/vendor/teleport";
+import { rewriteHeaders } from "./index";
+
+// Main test function
+export function test(): void {
+    testAPIHeader()
+}
+
+// Ensure that nomal event passes through
+function testAPIHeader(): void {
+    const request = new plugin.RewriteHeadersRequest()
+
+    request.Headers = new Map()
+    request.Headers.set("Content-Type", "text/plain")
+
+    const requestData = request.encode()
+    const responseData = rewriteHeaders(requestData)
+    const response = plugin.RewriteHeadersResponse.decode(responseData)
+
+    assert(response != null, "rewriteHeaders returned null response")
+    assert(response.Headers.size == 2, "rewriteHeaders resulting headers length must be 2")
+    assert(response.Success == true, "rewriteHeaders was not successfult")
+    assert(response.Headers.get("foo") != null, "foo header is missing")
+    assert(response.Headers.get("foo") == "bar", "foo header value is wrong")
+}
+```
+
+Run `yarn test`.
+
 # AssemblyScript `env` functions
 
 `teleport-plugin-framework` provides [special imports](https://www.assemblyscript.org/concepts.html#special-imports) implementation. 
@@ -511,7 +564,7 @@ import { Event } from '../vendor/teleport';
 
 // plugin entry point
 export function handleEvent(event: Event): Event | null {
-    trace("Event of type" + event.__oneOf_Event + " received, size:", 1, event.size()) // Print event type and size
+    trace("Event of type" + event.type + " received, size:", 1, event.size()) // Print event type and size
     return event
 }
 ```

@@ -22,7 +22,7 @@ function testSkipLoginSecretSanta(): void {
     const response = plugin.HandleEventResponse.decode(handleEvent(request))
 
     assert(response.Success == true, "Response was not successful")
-    assert(response.Event.__oneOf_Event == "", "Event was not rejected")
+    assert(response.Event.type == "", "Event was not rejected")
 }
 
 // Ensure that custom annotation is added to the create access request

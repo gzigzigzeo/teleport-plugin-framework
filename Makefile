@@ -55,16 +55,18 @@ gen-vendor-teleport:
 
 	@protoc \
 		-I$(LOCALDIR)/lib/wasm \
+		-I$(LOCALDIR)/lib/plugin \
 		-I$(API_MOD_PATH)/types \
 		-I$(PROTOBUF_MOD_PATH) \
 		-I$(CUSTOM_IMPORTS_TMP_DIR) \
 		--plugin=./node_modules/protobuf-as/bin/protoc-gen-as \
 		--as_out=boilerplate/vendor \
-		--as_opt=targetFileName=teleport.ts:typeAliases=Event+events.OneOf \
+		--as_opt=config=protobuf-as.json \
 	    types.proto events/events.proto interop.proto
 
 	@protoc \
 		-I$(LOCALDIR)/lib/wasm \
+		-I$(LOCALDIR)/lib/plugin \
 		-I$(API_MOD_PATH)/types \
 		-I$(PROTOBUF_MOD_PATH) \
 		-I$(CUSTOM_IMPORTS_TMP_DIR) \

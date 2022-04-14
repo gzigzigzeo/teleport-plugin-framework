@@ -45,12 +45,12 @@ export function handleEvent(view: ArrayBuffer): ArrayBuffer {
     response.Success = false;
 
     // On UserCreate return error
-    if (request.Event.__oneOf_Event == "UserCreate") {
+    if (request.Event.type == "UserCreate") {
         response.Error = "UserCreate event is not allowed"
     } 
 
     // On UserLogin return success, modified event
-    if (request.Event.__oneOf_Event == "UserLogin") {    
+    if (request.Event.type == "UserLogin") {    
         response.Success = true;
         response.Event = request.Event;
 
@@ -59,7 +59,7 @@ export function handleEvent(view: ArrayBuffer): ArrayBuffer {
     }
 
     // On UserDelete return success, no event
-    if (request.Event.__oneOf_Event == "UserDelete") {
+    if (request.Event.type == "UserDelete") {
         response.Success = true;
     }
 

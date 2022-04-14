@@ -1,0 +1,9 @@
+{
+    "targetFileName": "teleport.ts",
+    "typeAliases": {
+        "Event": "events.OneOf"
+    },
+    "oneOfVarNames": {
+        "events.OneOf.Event": "type"
+    }
+}
