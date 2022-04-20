@@ -64,6 +64,8 @@ type ExecutionContextPoolOptions struct {
 	Concurrency int
 	// Traits represents array of trait objects
 	Traits []interface{}
+	// WasmerCompiler wasmer.Compiler to use
+	WasmerCompiler wasmer.CompilerKind
 }
 
 // Validate validates pool options
@@ -102,7 +104,17 @@ func NewExecutionContextPool(options ExecutionContextPoolOptions) (*ExecutionCon
 		return nil, trace.Wrap(err)
 	}
 
-	config := wasmer.NewConfig().UseUniversalEngine()
+	config := wasmer.NewConfig()
+
+	switch wasmer.CompilerKind(options.WasmerCompiler) {
+	case wasmer.CRANELIFT:
+		config = config.UseCraneliftCompiler()
+	case wasmer.LLVM:
+		config = config.UseLLVMCompiler()
+	case wasmer.SINGLEPASS:
+		config = config.UseSinglepassCompiler()
+	}
+
 	engine := wasmer.NewEngineWithConfig(config)
 	store := wasmer.NewStore(engine)
 

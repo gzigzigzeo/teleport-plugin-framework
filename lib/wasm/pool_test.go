@@ -464,7 +464,7 @@ func TestFailingGoMethod(t *testing.T) {
 		PluginBytes:   b,
 		MemoryInterop: NewAssemblyScriptMemoryInterop(),
 		Timeout:       time.Second,
-		Concurrency:   5,
+		Concurrency:   6,
 		Traits: []interface{}{
 			NewAssemblyScriptEnv(),
 			testTrait,
