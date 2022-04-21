@@ -40,7 +40,7 @@ func (i *ExecutionContext) getFunction(name string) (*wasmer.Function, error) {
 	return fn, nil
 }
 
-// wait executes WASM function with timeout
+// wait executes function with timeout and context handling
 func (i *ExecutionContext) wait(ctx context.Context, timeout time.Duration, fn ExecuteFn) (interface{}, error) {
 	var fnErr error
 	var fnResult interface{}

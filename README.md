@@ -8,6 +8,8 @@ Teleport WASM plugin framework allows to manipulate events forwarded by `event-h
 * node >= 16.3 < 17 (please, use [nvm](https://github.com/nvm-sh/nvm) to install specific version)
 * yarn (check [YARN installation instructions](https://classic.yarnpkg.com/lang/en/docs/install/))
 
+*Please be advised that M1 chip family is not fully supported by `wasmer`. You may encounter random segfaults under a heavy loads. However, development is possible with no restrictions.*
+
 # Installation
 
 ## Non-M1 architecture
@@ -653,7 +655,7 @@ Install [Rust](https://www.rust-lang.org/tools/install).
 git clone git@github.com/gravitational/teleport-plugins.git --branch feature/wasm
 cd event-handler
 make get-custom-wasmer-runtime
-CUSTOM_WASMER_RUNTIME=true make build
+make build
 ```
 
 ## Configuration
@@ -746,7 +748,7 @@ require (
 )
 ```
 
-If you need to make your project usable on Mac M1, you'll have to build it with custom wasmer runtime. You can use the following `Makefile` definitions:
+If you need to make your project usable on Mac M1, you'll have to build it with custom wasmer runtime. You can use the following `Makefile` snippet:
 
 _TODO: Check if rust is installed_
 
@@ -755,28 +757,28 @@ CUSTOM_WASMER_RUNTIME_DIR ?= $(LOCALDIR)wasmer-go # LOCALDIR represents your Mak
 
 # If a custom wasmer runtime exists - provide required build flags
 ifneq ($(wildcard $(CUSTOM_WASMER_RUNTIME_DIR)/.*),)
-	CGO_CFLAGS ?= "-I$(CUSTOM_WASMER_RUNTIME_DIR)/wasmer/packaged/include/"
-	CGO_LDFLAGS ?= "-Wl,-rpath,$(CUSTOM_WASMER_RUNTIME_DIR)/target/release/ -L$(CUSTOM_WASMER_RUNTIME_DIR)/target/release/ -lwasmer_go"
-	TAGS ?= --tags custom_wasmer_runtime 
+    CGO_CFLAGS ?= "-I$(CUSTOM_WASMER_RUNTIME_DIR)/wasmer/packaged/include/"
+    CGO_LDFLAGS ?= "-Wl,-rpath,$(CUSTOM_WASMER_RUNTIME_DIR)/target/release/ -L$(CUSTOM_WASMER_RUNTIME_DIR)/target/release/ -lwasmer_go"
+    TAGS ?= --tags custom_wasmer_runtime 
 endif
 
 # Download and build custom wasmer runtime (required for Mac M1)
 .PHONY: get-custom-wasmer-runtime
 get-custom-wasmer-runtime:
-	git clone git@github.com:wasmerio/wasmer-go.git && cd wasmer-go && cargo build --release && cd ..
+    git clone git@github.com:wasmerio/wasmer-go.git && cd wasmer-go && cargo build --release && cd ..
 
 .PHONY: build
 build: clean
-	GOOS=$(OS) GOARCH=$(ARCH) $(CGOFLAG) CGO_CFLAGS=$(CGO_CFLAGS) CGO_LDFLAGS=$(CGO_LDFLAGS) go build -o $(BUILDDIR)/teleport-plugin-framework $(BUILDFLAGS) $(TAGS)
+    GOOS=$(OS) GOARCH=$(ARCH) $(CGOFLAG) CGO_CFLAGS=$(CGO_CFLAGS) CGO_LDFLAGS=$(CGO_LDFLAGS) go build -o $(BUILDDIR)/teleport-plugin-framework $(BUILDFLAGS) $(TAGS)
 ```
 
 ### Components
 
 AssemblyScript runtime is not thread safe. Hence, to use it in concurrent environment, we have to use multiple `wasmer` instances having isolated memory spaces. 
 
-The entity responsible for managing `wasmer` instances is called `ExecutionContextPool`. It represents the object pool of `ExecutionContext`s. Each `ExecutionContext` is bound to separate `wasmer.Instance` and `wasmer.Memory`. Pool guarantees that an execution context is used in a single go routine at a given moment of time.
+The entity responsible for managing `wasmer` instances is called `ExecutionContextPool`. It represents the object pool of `ExecutionContext` instances. Each `ExecutionContext` is bound to separate `wasmer.Instance` and `wasmer.Memory`. Pool guarantees that an execution context is used in a single go routine at a given moment of time.
 
-The functional blocks of the framework are called `traits`. Each trait declares two method sets: exports and imports. Exports are go methods which become available to WASM scripts. Imports are methods required in WASM module to make trait work. 
+The functional blocks of the framework are called `traits`. Each trait declares two method sets: exports and imports. Exports are go methods which are available to WASM scripts. Imports are methods which are required to be defined in WASM module to make a trait work. 
 
 ### Initializing the pool
 
@@ -791,80 +793,81 @@ import (
 func main() {
     log := logrus.StandardLogger()
 
-	plugin, err := os.ReadFile("build/production.wasm")
-	if err != nil {
-		log.Fatal(err)
-	}
+    plugin, err := os.ReadFile("build/production.wasm")
+    if err != nil {
+        log.Fatal(err)
+    }
 
-	opts := wasm.ExecutionContextPoolOptions{
-		Log:           log,
-		PluginBytes:   plugin,
-		Timeout:       time.Second * 2,
-		Concurrency:   4,
-		MemoryInterop: wasm.NewAssemblyScriptMemoryInterop(),
-		Traits: []interface{}{
+    opts := wasm.ExecutionContextPoolOptions{
+        Log:           log,
+        PluginBytes:   plugin,
+        Timeout:       time.Second * 2,
+        Concurrency:   4,
+        MemoryInterop: wasm.NewAssemblyScriptMemoryInterop(),
+        Traits: []interface{}{
             wasm.NewAssemblyScriptEnv()
-		},
-	}
+        },
+    }
 
-	pool, err := wasm.NewExecutionContextPool(opts)
-	if err != nil {
-		log.Fatal(err)
-	}
+    pool, err := wasm.NewExecutionContextPool(opts)
+    if err != nil {
+        log.Fatal(err)
+    }
 }
 ```
 
 The following options were provided in the snippet above:
 
-* `Timeout` sets the maximum time limit of a WASM method. If a WASM method runs longer, it gets terminated and error is returned.
-* `Concurrency` sets the number of `ExecutionContext`s in this pool.
+* `Timeout` sets the maximum execution time limit of a WASM method. If a WASM method runs longer, it gets terminated and error is returned.
+* `Concurrency` sets the number of `ExecutionContext` instances in this pool.
 * `MemoryInterop` provides the implementation of the interface which defines methods to work with memory objects on WASM side. It allows to read/write strings, allocate memory, etc.
-* `Traits` provides the array of trait structs. In the example above, the only one trait (`AssemblyScriptEnv`) is passed. This trait defines the implementation of AssemblyScript special imports (`trace`, `Date.now`, etc) and does import anything.
+* `Traits` provides the array of trait structs. In the example above, the only one trait (`AssemblyScriptEnv`) is passed. This trait exports AssemblyScript [special imports](https://www.assemblyscript.org/concepts.html#special-imports) (`trace`, `Date.now`, etc). implementations to WASM side.
 
-AssemblyScript uses UTF-16-encoded strings.
+AssemblyScript uses UTF-16 encoded strings.
 
 ### Trait with exports
 
-Trait defines methods which are usable on WASM side and method signatures which are required on WASM side to exist. Both are optional. Let's take a look on `Store` trait which only defines exported methods. It implements [`TraitWithExports`](lib/pool.go) interface.
+Trait can define methods which are usable on WASM side. Let's take a look on `Store` trait. It defines exported methods only (implements [`TraitWithExports`](lib/pool.go) interface).
 
 ```go
 // Store represents store methods bound to specific execution context
 type Store struct {
-	db PersistentStore
+    db PersistentStore
 }
 
 // ExportMethodsToWASM exports Store methods to wasm
 func (t *Store) ExportMethodsToWASM(exports *Exports) {
-	exports.Define(
-		"store",
-		map[string]Export{
-			"takeToken": {
-				wasmer.NewValueTypes(wasmer.I32, wasmer.I32), // prefix string, TTL i32
-				wasmer.NewValueTypes(wasmer.I32),             // i32 - tokens count
-				t.takeToken,
-			},
-		},
-	)
+    // Exports store.takeToken to WASM side
+    exports.Define(
+        "store",
+        map[string]Export{
+            "takeToken": {
+                wasmer.NewValueTypes(wasmer.I32, wasmer.I32), // prefix string, TTL i32
+                wasmer.NewValueTypes(wasmer.I32),             // i32 - tokens count
+                t.takeToken,
+            },
+        },
+    )
 }
 
 // takeToken generates the new token with TTL
 func (t *Store) takeToken(ectx *ExecutionContext, args []wasmer.Value) ([]wasmer.Value, error) {
     // Reads string from the instance memory, converts it to the UTF-8 and returns. args[0] is the memory address.
-	scope := ectx.MemoryInterop.GetString(ectx, args[0])
-	ttl := args[1].I32()
-	n := t.db.TakeToken(scope, time.Duration(ttl)*time.Second)
-	return []wasmer.Value{wasmer.NewI32(n)}, nil
+    scope := ectx.MemoryInterop.GetString(ectx, args[0])
+    ttl := args[1].I32()
+    n := t.db.TakeToken(scope, time.Duration(ttl)*time.Second)
+    return []wasmer.Value{wasmer.NewI32(n)}, nil
 }
 ```
 
-This trait defines `takeToken` method, which can be used on WASM side. In order to use it, you need to have the following declaration in `store.ts`:
+This trait defines `takeToken` method, which can be used on WASM side. It requires to have the following declaration in `store.ts`:
 
 ```typescript
 // takeToken reserves token with TTL within the scope
 export declare function takeToken(scope: string, ttl: i32): i32;
 ```
 
-Please note that all exported and imported methods must have `ectx *ExecutionContext` as the first argument. Context allows to access current instance memory (`ectx.Memory`).
+Please note that both exported and imported methods should have `ectx *ExecutionContext` as a first argument on Go side.
 
 ### Trait with imports
 
@@ -873,36 +876,27 @@ The following trait implements [`TraitWithImports`](lib/pool.go) interface:
 ```go
 // Testing represents WASM testing trait
 type Testing struct {
-	run NativeFunctionWithExecutionContext
+    Test NativeFunctionWithExecutionContext
 }
 
 // ImportMethodsFromWASM imports WASM methods to go side
 func (r *Testing) ImportMethodsFromWASM(getFunction GetFunction) error {
-	var err error
+    var err error
 
-	r.run, err = getFunction("test")
-	if err != nil {
-		return trace.Wrap(err)
-	}
+    // Imports test function from WASM side
+    r.Test, err = getFunction("test")
+    if err != nil {
+        return trace.Wrap(err)
+    }
 
-	return nil
-}
-
-// Run runs test suite
-func (r *Testing) Run(ectx *ExecutionContext, arg wasmer.Value) error {
-	_, err := r.run(ectx, arg)
-	if err != nil {
-		return trace.Wrap(err)
-	}
-
-	return nil
+    return nil
 }
 ```
 
-This trait makes `test` function usable on go side. The function must be defined in WASM module as following:
+This trait makes `Test` function usable on Go side. The function should be defined in the WASM module as following:
 
 ```ts
-export function test(attempts: i32): void {}
+export function test(attempts: i32): bool {}
 ```
 
 The imported function signature (`NativeFunctionWithExecutionContext`) looks as following:
@@ -911,4 +905,61 @@ The imported function signature (`NativeFunctionWithExecutionContext`) looks as 
 type NativeFunctionWithExecutionContext = func(*ExecutionContext, ...wasmer.Value) (wasmer.Value, error)
 ```
 
-The first argument is the `ectx *ExecutionContext` as well. Arguments and return value are all `wasmer.Value`. There is no way of passing null values from WASM side because all returned values are numbers, which are non-nullable in WASM.
+The first argument is the current `ExecutionContext`. Unlike in `wasmer`, arguments and return value are all `wasmer.Value` structs.
+
+WebAssembly does not have dedicated `null` type, hence, there is no way of passing or returning `null` values.
+
+### Method execution
+
+Let't say you want to use execute `Test` function from the example above. 
+
+```go
+package main
+
+import (
+    "github.com/gravitational/teleport-plugin-framework/lib/wasm"
+    "github.com/sirupsen/logrus"
+)
+
+func main() {
+    log := logrus.StandardLogger()
+
+    plugin, err := os.ReadFile("build/production.wasm")
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    testing := wasm.NewTesting()
+
+    opts := wasm.ExecutionContextPoolOptions{
+        Log:           log,
+        PluginBytes:   plugin,
+        Timeout:       time.Second * 2,
+        Concurrency:   4,
+        MemoryInterop: wasm.NewAssemblyScriptMemoryInterop(),
+        Traits: []interface{}{
+            wasm.NewAssemblyScriptEnv(),
+            testing,
+        },
+    }
+
+    pool, err := wasm.NewExecutionContextPool(opts)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    result, err := pool.Execute(context.Background(), func(ectx *wasm.ExecutionContext) (interface{}, error) {
+        return testing.Test(ectx, wasmer.NewI32(5))
+    })
+
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    response := result.(wasmer.Value)
+    log.Println(response.I32()) // bools are represented as I32 in AssemblyScript
+}
+```
+
+`Execute` fetches `ExecutionContext` from the pool, passes it as the first argument of the provided function, and puts `ExecutionContext` back to the pool once the provided function execution is finished. It also enforces execution timeout.
+
