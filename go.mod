@@ -44,3 +44,5 @@ require (
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
 )
+
+replace github.com/wasmerio/wasmer-go => github.com/gzigzigzeo/wasmer-go v1.0.5-0.20220421041604-32e79da17c08

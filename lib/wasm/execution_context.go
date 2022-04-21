@@ -55,7 +55,8 @@ func (i *ExecutionContext) wait(ctx context.Context, timeout time.Duration, fn E
 	go func() {
 		result, err := fn(i)
 		if err != nil {
-			errCh <- err
+			errCh <- trace.Wrap(err)
+			return
 		}
 
 		resultCh <- result

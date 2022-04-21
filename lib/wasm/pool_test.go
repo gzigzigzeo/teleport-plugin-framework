@@ -264,16 +264,16 @@ func TestParallelExecution(t *testing.T) {
 
 	for i := 0; i < count; i++ {
 		go func(n int) {
+			defer wg.Done()
+
 			_, err := p.Execute(ctx, func(ectx *ExecutionContext) (interface{}, error) {
-				_, err = testTrait.Delay100ms(ectx)
+				_, err := testTrait.Delay100ms(ectx)
 				require.NoError(t, err)
 
 				return nil, nil
 			})
 
 			require.NoError(t, err)
-
-			wg.Done()
 		}(i)
 	}
 
@@ -312,7 +312,9 @@ func TestParallelProtobufInteropExecution(t *testing.T) {
 
 	for i := 0; i < count; i++ {
 		go func(i int) {
-			_, err = p.Execute(ctx, func(ectx *ExecutionContext) (interface{}, error) {
+			defer wg.Done()
+
+			_, err := p.Execute(ctx, func(ectx *ExecutionContext) (interface{}, error) {
 				oneof := events.MustToOneOf(&events.UserCreate{
 					Metadata: events.Metadata{
 						Index: int64(i),
@@ -329,8 +331,6 @@ func TestParallelProtobufInteropExecution(t *testing.T) {
 				result, err := testTrait.GetEventIndex(ectx, dataView)
 				require.NoError(t, err)
 				require.Equal(t, result.I64(), int64(i))
-
-				wg.Done()
 
 				return nil, nil
 			})
@@ -464,7 +464,7 @@ func TestFailingGoMethod(t *testing.T) {
 		PluginBytes:   b,
 		MemoryInterop: NewAssemblyScriptMemoryInterop(),
 		Timeout:       time.Second,
-		Concurrency:   6,
+		Concurrency:   10,
 		Traits: []interface{}{
 			NewAssemblyScriptEnv(),
 			testTrait,
@@ -473,23 +473,23 @@ func TestFailingGoMethod(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	count := 10
+	count := 100
 
 	wg := sync.WaitGroup{}
 	wg.Add(count)
 
 	for i := 0; i < count; i++ {
 		go func(n int) {
+			defer wg.Done()
+
 			_, err := p.Execute(ctx, func(ectx *ExecutionContext) (interface{}, error) {
-				_, err = testTrait.FailingGoMethodEntryPoint(ectx)
+				_, err := testTrait.FailingGoMethodEntryPoint(ectx)
 				require.Error(t, err, "oops")
 
 				return nil, err
 			})
 
 			require.Error(t, err, "oops")
-
-			wg.Done()
 		}(i)
 	}
 

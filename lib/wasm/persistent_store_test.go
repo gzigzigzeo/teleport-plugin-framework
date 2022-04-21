@@ -11,6 +11,7 @@ import (
 func TestTakeToken(t *testing.T) {
 	db, err := badger.Open(badger.DefaultOptions("").WithInMemory(true))
 	require.NoError(t, err)
+	defer db.Close()
 
 	s := NewBadgerPersistentStore(db)
 
