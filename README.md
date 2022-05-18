@@ -114,28 +114,6 @@ message HandleEventResponse {
 
 `Event` field can be blank.
 
-### HTTP header modifier plugins
-
-This type of plugins are used to modify headers of a requests sent to Teleport applications.
-
-`RewriteHeaderRequest` has the following definition:
-
-```proto
-message RewriteHeadersRequest {
-    map<string, string> Headers = 1;
-}
-```
-
-`RewriteHeaderResponse` is defined as:
-
-```proto
-message RewriteHeadersResponse {
-    bool Success = 1;
-    string Error = 2;
-    map<string, string> Headers = 3;
-}
-```
-
 # Minimal event plugin and test
 
 The following code receives an upcoming event and returns it unchanged. Put it to `assembly/event_handler.ts`.
@@ -487,107 +465,6 @@ And run `yarn test`.
 
 Please note `getLatestAPIRequest()` method call. Tests call mock API. Mock API methods are always successful. Latest API request is saved in memory and returned by this method. In our example, this method will return binary representation of `types.LockV2` object constructed in `index.ts`.
 
-# Minimal rewrite headers plugin and test
-
-Put the following content into `assembly/rewrite_headers.ts`:
-
-```ts
-import { plugin } from "../boilerplate/vendor/teleport"
-
-// rewriteHeaders rewrites HTTP headers
-export function rewriteHeaders(request: plugin.RewriteHeadersRequest): plugin.RewriteHeadersResponse {
-    const response = new plugin.RewriteHeadersResponse()
-
-    const headers = request.Headers
-    headers.set("foo", "bar")
-    
-    response.Headers = headers
-    response.Success = true
-    
-    return response
-}
-```
-
-Put the test into `assembly/rewrite_headers.test.ts`:
-
-```ts
-import { plugin } from "../boilerplate/vendor/teleport";
-import { rewriteHeaders } from "./index";
-
-// Main test function
-export function test(): void {
-    const request = new plugin.RewriteHeadersRequest()
-
-    request.Headers = new Map()
-    request.Headers.set("Content-Type", "text/plain")
-
-    const requestData = request.encode()
-    const responseData = rewriteHeaders(requestData)
-    const response = plugin.RewriteHeadersResponse.decode(responseData)
-
-    assert(response != null, "rewriteHeaders returned null response")
-    assert(response.Headers.size == 2, "rewriteHeaders resulting headers length must be 2")
-    assert(response.Success == true, "rewriteHeaders was not successfult")
-    assert(response.Headers.get("foo") != null, "foo header is missing")
-    assert(response.Headers.get("foo") == "bar", "foo header value is wrong")
-}
-```
-
-Run `yarn test`.
-
-# Retreiving secrets from the Amazon Secrets Manager
-
-You need to provide correct AWS credentials. Secret must exist. The code would look as following (`assembly/rewrite_header.ts`):
-
-```ts
-import { plugin } from "../vendor/teleport"
-import { encodeString } from "../vendor/base64"
-import { getSecretString } from '../vendor/aws_secrets_manager'
-
-// rewriteHeaders rewrites HTTP headers
-export function rewriteHeaders(request: plugin.RewriteHeadersRequest): plugin.RewriteHeadersResponse {
-    const headers = request.Headers
-    const token = getSecretString("mailgun_token") // getSecretString 
-    const apiKey = encodeString(token) // base64 encode token
-
-    headers.set("Authorization", "Basic " + apiKey)
-    
-    const response = new plugin.RewriteHeadersResponse()
-    response.Headers = headers
-    response.Success = true
-    
-    return response
-}
-```
-
-The corresponding test (`assembly/rewrite_headers.test.ts`):
-
-```ts
-import { plugin } from "../vendor/teleport";
-import { rewriteHeaders } from "./index";
-import { defineAWSsecret } from "../vendor/test"
-
-// Main test function
-export function test(): void {
-    const request = new plugin.RewriteHeadersRequest()
-
-    request.Headers = new Map()
-    request.Headers.set("Content-Type", "text/plain")
-
-    defineAWSsecret("mailgun_token", "api:key")
-
-    const requestData = request.encode()
-    const responseData = rewriteHeaders(requestData)
-    const response = plugin.RewriteHeadersResponse.decode(responseData)
-
-    assert(response != null, "rewriteHeaders returned null response")
-    assert(response.Headers.size == 2, "rewriteHeaders resulting headers length must be 2")
-    assert(response.Success == true, "rewriteHeaders was not successfult")
-    assert(response.Headers.get("Authorization") != null, "Authorization header is missing")
-    assert(response.Headers.get("Authorization") == "Basic YXBpOmtleQ==", "Authorization header value is wrong")
-}
-```
-
 # AssemblyScript `env` functions
 
 `teleport-plugin-framework` provides [special imports](https://www.assemblyscript.org/concepts.html#special-imports) implementation. 
@@ -732,7 +609,7 @@ make test
 
 This command will:
 
-1. Build and run AssemblyScript tests in `assembly` folder (`handle_event.test.ts` and `rewrite_headers.test.ts`) using the same execution environment as the production code. 
+1. Build and run AssemblyScript tests in `assembly` folder (`handle_event.test.ts`) using the same execution environment as the production code. 
 2. Build AssemblyScript file [`lib_wasm_test.ts`](assembly/lib_wasm_test.ts), which contains WASM methods for [`pool_test.go`](lib/wasm/pool_test.go).
 3. Run go tests in `lib/wasm` folder.
 

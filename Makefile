@@ -70,5 +70,5 @@ gen-vendor-teleport:
 		-I$(API_MOD_PATH)/types \
 		-I$(PROTOBUF_MOD_PATH) \
 		-I$(CUSTOM_IMPORTS_TMP_DIR) \
-		--gogofast_out=plugins=grpc,Mevents/events.proto=github.com/gravitational/teleport/api/types/events:./lib/wasm/plugin \
+		--gogofast_out=plugins=grpc,Mevents/events.proto=github.com/gravitational/teleport/api/types/events:./lib/plugin \
 	    interop.proto		

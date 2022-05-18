@@ -19,16 +19,3 @@ message HandleEventResponse {
     string Error = 2;
     events.OneOf Event = 3 [ (gogoproto.nullable) = true ];
 }
-
-// RewriteHeaderRequest represents the request passing the collection of HTTP headers
-message RewriteHeadersRequest {
-    map<string, string> Headers = 1;
-}
-
-// RewriteHeaderRequest represents the response, returning success status, 
-// error message and the modified collection of headers 
-message RewriteHeadersResponse {
-    bool Success = 1;
-    string Error = 2;
-    map<string, string> Headers = 3;
-}
