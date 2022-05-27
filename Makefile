@@ -38,12 +38,14 @@ test: build
 	yarn asbuild:dev
 	go test ./... -v
 
+# Builds AssemblyScript files
 .PHONY: asbuild
 asbuild: clean
 	yarn asbuild
 	
 CUSTOM_IMPORTS_TMP_DIR ?= /tmp/protoc-gen-terraform/custom-imports
 
+# Generates AssemblyScript protobuf definitions
 .PHONY: gen-vendor-teleport
 gen-vendor-teleport:
 	$(eval API_MOD_PATH := $(shell go mod download --json github.com/gravitational/teleport/api | jq .Dir))
@@ -60,7 +62,7 @@ gen-vendor-teleport:
 		-I$(PROTOBUF_MOD_PATH) \
 		-I$(CUSTOM_IMPORTS_TMP_DIR) \
 		--plugin=./node_modules/protobuf-as/bin/protoc-gen-as \
-		--as_out=boilerplate/vendor \
+		--as_out=boilerplate/vendor/teleport \
 		--as_opt=config=protobuf-as.json \
 	    types.proto events/events.proto interop.proto
 
@@ -71,4 +73,4 @@ gen-vendor-teleport:
 		-I$(PROTOBUF_MOD_PATH) \
 		-I$(CUSTOM_IMPORTS_TMP_DIR) \
 		--gogofast_out=plugins=grpc,Mevents/events.proto=github.com/gravitational/teleport/api/types/events:./lib/plugin \
-	    interop.proto		
+	    interop.proto

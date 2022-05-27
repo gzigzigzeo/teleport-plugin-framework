@@ -1,15 +1,8 @@
 // Event protobuf class
-import { plugin } from '../vendor/teleport';
+import { HandleEventBase, Event } from '../vendor/handle_event';
 
-// Plugin entry point
-export function handleEvent(request: plugin.HandleEventRequest): plugin.HandleEventResponse {
-    const event = request.Event;
-    const response = new plugin.HandleEventResponse();
-
-    trace("Event of type " + event.type + " received") // Print the event type
-
-    response.Event = event;
-    response.Success = true;
-
-    return response;
+export class HandleEvent extends HandleEventBase {
+    any(event: Event): void {
+        trace(`Event received: ${event.type}, size: ${event.size()}`)
+    }
 }

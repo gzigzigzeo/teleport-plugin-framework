@@ -1,4 +1,4 @@
-import { types, google, events } from './teleport';
+import { types, google, events } from './teleport/teleport';
 
 // usertLock calls API with the provided lock
 export declare function upsertLock(lock: ArrayBuffer): void;

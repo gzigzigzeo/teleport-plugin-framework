@@ -3,7 +3,7 @@
   "version": "9.0.1",
   "description": "Teleport WASM plugin framework",
   "engines": {
-    "node": ">= 16.13 <17"
+    "node": ">= 16.13 <19"
   },
   "devDependencies": {
     "@types/node": "~16.11.6",
@@ -19,19 +19,15 @@
   },
   "scripts": {
     "clean": "rimraf build tmp",
-    "asbuild:development": "asc assembly/index.ts --target development",
-    "asbuild:production": "asc assembly/index.ts --target production",
-    "asbuild:test": "asc assembly/index.test.ts --target test",
-    "asbuild:dev": "asc assembly/lib_wasm_test.ts --target test --outFile lib/wasm/test.wasm --textFile lib/wasm/test.wat",
-    "asbuild": "npm run asbuild:development && npm run asbuild:production && npm run asbuild:test"
+    "asbuild:test": "asc boilerplate/assembly/index.test.ts --target test",
+    "asbuild:dev": "asc assembly/lib_wasm_test.ts --target test --outFile lib/wasm/test.wasm --textFile lib/wasm/test.wat"
   },
   "author": "Victor Sokolov <gzigzigzeo@evilmartians.com>",
   "license": "Apache-2.0",
   "dependencies": {
-    "@assemblyscript/loader": "^0.20.1",
     "as-base64": "^0.2.0",
     "as-sleep": "^0.0.2",
-    "protobuf-as": "github:gravitational/protobuf-as",
+    "protobuf-as": "github:gzigzigzeo/protobuf-as",
     "tslib": "~2.3.1"
   },
   "volta": {

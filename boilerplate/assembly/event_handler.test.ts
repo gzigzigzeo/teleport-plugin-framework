@@ -1,5 +1,5 @@
 import { getFixtureAsHandleEventRequest } from '../vendor/test';
-import { events, plugin } from '../vendor/teleport';
+import { events, plugin } from '../vendor/teleport/teleport';
 import { handleEvent } from './index';
 
 // Main test function

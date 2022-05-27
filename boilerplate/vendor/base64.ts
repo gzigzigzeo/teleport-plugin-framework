@@ -1,5 +1,5 @@
 import { encode, decode } from "as-base64/assembly/index"
-export { encode, decode } from "as-base64/assembly/index"
+export { encode, decode } from "as-base64/assembly/index" // re-export default versions
 
 // encodes string value to base64
 export function encodeString(value: string): string {

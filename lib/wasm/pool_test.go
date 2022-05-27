@@ -370,22 +370,19 @@ func TestHandleEvent(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = p.Execute(ctx, func(ectx *ExecutionContext) (interface{}, error) {
-		r, err := handleEvent.HandleEvent(ectx, &events.UserCreate{
+		_, err := handleEvent.HandleEvent(ectx, &events.UserCreate{
 			Metadata: events.Metadata{
 				Index: int64(0),
 			},
 		})
-		require.NoError(t, err)
-		require.False(t, r.Success)
-		require.Equal(t, r.Error, "UserCreate event is not allowed")
+		require.Error(t, err)
 
-		r, err = handleEvent.HandleEvent(ectx, &events.UserLogin{
+		r, err := handleEvent.HandleEvent(ectx, &events.UserLogin{
 			Metadata: events.Metadata{
 				Index: int64(1),
 			},
 		})
 		require.NoError(t, err)
-		require.True(t, r.Success)
 		require.Equal(t, r.Event.GetUserLogin().Metadata.Index, int64(999))
 
 		r, err = handleEvent.HandleEvent(ectx, &events.UserDelete{
@@ -394,7 +391,6 @@ func TestHandleEvent(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		require.True(t, r.Success)
 		require.Nil(t, r.Event)
 
 		return nil, nil

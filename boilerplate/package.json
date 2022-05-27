@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Teleport WASM plugin",
   "engines": {
-    "node": ">= 16.13 <17"
+    "node": ">= 16.13 <19"
   },
   "devDependencies": {
     "@types/node": "~16.11.6",
@@ -28,7 +28,6 @@
   "author": "Victor Sokolov <gzigzigzeo@evilmartians.com>",
   "license": "Apache-2.0",
   "dependencies": {
-    "@assemblyscript/loader": "^0.20.1",
     "as-sleep": "^0.0.2",
     "as-uuid": "^0.0.4",
     "as-base64": "^0.2.0",

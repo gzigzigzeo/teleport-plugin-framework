@@ -1,6 +1,6 @@
 import { sleep } from 'as-sleep/assembly/index';
 import { getSecretString } from '../boilerplate/vendor/aws_secrets_manager';
-import { events, plugin } from '../boilerplate/vendor/teleport';
+import { events, plugin } from '../boilerplate/vendor/teleport/teleport';
 
 export declare function goMethod():void;
 export declare function failingGoMethod():void;
@@ -47,16 +47,13 @@ export function handleEvent(view: ArrayBuffer): ArrayBuffer {
     const request = plugin.HandleEventRequest.decode(view)
     const response = new plugin.HandleEventResponse()
 
-    response.Success = false;
-
     // On UserCreate return error
     if (request.Event.type == "UserCreate") {
-        response.Error = "UserCreate event is not allowed"
+        throw new Error("Abort!")
     } 
 
     // On UserLogin return success, modified event
     if (request.Event.type == "UserLogin") {    
-        response.Success = true;
         response.Event = request.Event;
 
         const userLogin = response.Event.UserLogin as events.UserLogin
@@ -65,7 +62,7 @@ export function handleEvent(view: ArrayBuffer): ArrayBuffer {
 
     // On UserDelete return success, no event
     if (request.Event.type == "UserDelete") {
-        response.Success = true;
+        response.Event = new events.OneOf();
     }
 
     return response.encode();

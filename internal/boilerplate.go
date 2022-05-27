@@ -19,8 +19,19 @@ var (
 	// nodeVersionGte minimal node version
 	nodeVersionGte = "16.13"
 	// nodeVersionLt max node version
-	nodeVersionLt = "17"
+	nodeVersionLt = "19"
 )
+
+type Exceptions []string
+
+func (e Exceptions) Has(a string) bool {
+	for _, b := range e {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
 
 // GenerateBoilerplate generates boilerplate setup for plugin framework
 func GenerateBoilerplate(fs embed.FS, targetDir string) {
@@ -50,46 +61,25 @@ func GenerateBoilerplate(fs embed.FS, targetDir string) {
 	fmt.Printf("    - Found yarn %v", string(out))
 
 	// Create target directories
-	fmt.Printf("[2] Creating target directory structure: %v, %v/assembly, %v/vendor\n", targetDir, targetDir, targetDir)
+	fmt.Printf("[2] Writing files to %v...\n", targetDir)
 
+	// Check if target directory exists
 	_, err = os.Stat(targetDir)
 	if !os.IsNotExist(err) {
 		bail("Error: target directory exists. Please specify the new path which does not exist. %v", trace.Wrap(err))
 	}
 
-	err = os.MkdirAll(targetDir, perms)
+	// Write everything except boilerplate
+	err = writeFS(fs, ".", targetDir, []string{"boilerplate"})
 	if err != nil {
-		bail("Error: failed to create target directory. %v", trace.Wrap(err))
+		bail("Error writing target directory %v : %v", targetDir, err)
 	}
 
-	err = os.MkdirAll(path.Join(targetDir, "assembly"), perms)
+	// Write boilerplate to the root folder
+	err = writeFS(fs, "boilerplate", targetDir, []string{})
 	if err != nil {
-		bail("Error: failed to create target directory. %v", trace.Wrap(err))
+		bail("Error writing target directory %v : %v", targetDir, err)
 	}
-
-	err = os.MkdirAll(path.Join(targetDir, "vendor"), perms)
-	if err != nil {
-		bail("Error: failed to create target directory. %v", trace.Wrap(err))
-	}
-
-	err = os.MkdirAll(path.Join(targetDir, "fixtures"), perms)
-	if err != nil {
-		bail("Error: failed to create target directory. %v", trace.Wrap(err))
-	}
-
-	// Write target files
-	fmt.Printf("[3] Writing template files\n")
-
-	writeDirFromFS(fs, targetDir, "boilerplate/assembly", "assembly")
-	writeDirFromFS(fs, targetDir, "boilerplate/vendor", "vendor")
-	writeDirFromFS(fs, targetDir, "fixtures", "fixtures")
-
-	writeFileFromFS(fs, targetDir, "boilerplate/package.json", "package.json")
-	writeFileFromFS(fs, targetDir, "boilerplate/tsconfig.json", "tsconfig.json")
-	writeFileFromFS(fs, targetDir, ".prettierrc", ".prettierrc")
-	writeFileFromFS(fs, targetDir, "asconfig.json", "asconfig.json")
-	writeFileFromFS(fs, targetDir, ".eslintrc.json", ".eslintrc.json")
-	writeFileFromFS(fs, targetDir, "boilerplate/gitignore", ".gitignore")
 
 	// Yarn install in target dir
 	fmt.Printf("[4] Running yarn install in %v...\n\n", targetDir)
@@ -129,7 +119,7 @@ func GenerateBoilerplate(fs embed.FS, targetDir string) {
 	fmt.Println()
 }
 
-// cp copies src file to dst
+// cp copies src file to dst from local file system
 func cp(src, dst string) error {
 	in, err := os.Open(src)
 	if err != nil {
@@ -150,6 +140,48 @@ func cp(src, dst string) error {
 	return out.Close()
 }
 
+// WriteFS writes filesystem piece from fs src directory to dst target path
+func writeFS(fs embed.FS, src, dst string, skip Exceptions) error {
+	err := os.MkdirAll(dst, perms)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	entries, err := fs.ReadDir(src)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	for _, entry := range entries {
+		srcPath := path.Join(src, entry.Name())
+		dstPath := path.Join(dst, entry.Name())
+
+		if skip.Has(srcPath) {
+			continue
+		}
+
+		if entry.IsDir() {
+			err = writeFS(fs, srcPath, dstPath, skip)
+			if err != nil {
+				return trace.Wrap(err)
+			}
+			continue
+		}
+
+		b, err := fs.ReadFile(srcPath)
+		if err != nil {
+			return trace.Wrap(err)
+		}
+
+		err = os.WriteFile(dstPath, b, perms)
+		if err != nil {
+			return trace.Wrap(err)
+		}
+	}
+
+	return nil
+}
+
 // checkVersion checks that a version is within the bounds
 func checkVersion(version, gte, lt string) bool {
 	cgte, err := semver.NewConstraint(fmt.Sprintf(">= %v", gte))
@@ -168,29 +200,4 @@ func checkVersion(version, gte, lt string) bool {
 	}
 
 	return cgte.Check(v) && clt.Check(v)
-}
-
-// writeDirFromFS copies directory from embedded fs to target directory on disk
-func writeDirFromFS(fs embed.FS, targetDir, srcPath, targetPath string) {
-	files, err := fs.ReadDir(srcPath)
-	if err != nil {
-		bail("%v", trace.Wrap(err))
-	}
-
-	for _, f := range files {
-		writeFileFromFS(fs, targetDir, path.Join(srcPath, f.Name()), path.Join(targetPath, f.Name()))
-	}
-}
-
-// writeFileFromFS copies file from embedded fs to target directory on disk
-func writeFileFromFS(fs embed.FS, targetDir, srcPath, targetPath string) {
-	b, err := fs.ReadFile(srcPath)
-	if err != nil {
-		bail("%v", trace.Wrap(err))
-	}
-
-	err = os.WriteFile(path.Join(targetDir, targetPath), b, perms)
-	if err != nil {
-		bail("Error writing target file: %v : %v", srcPath, trace.Wrap(err))
-	}
 }

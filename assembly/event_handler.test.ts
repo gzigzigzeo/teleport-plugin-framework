@@ -1,6 +1,6 @@
-import { getFixtureAsHandleEventRequest, getLatestAPIRequest } from "../boilerplate/vendor/test"
-import { events, plugin, types } from "../boilerplate/vendor/teleport";
-import { handleEvent } from "./index";
+import { getFixtureAsHandleEventRequest, getLatestAPIRequest } from '../boilerplate/vendor/test';
+import { events, plugin, types } from '../boilerplate/vendor/teleport/teleport';
+import { handleEvent } from '../boilerplate/assembly/index';
 
 // Main test function
 export function test(): void {
@@ -21,7 +21,6 @@ function testSkipLoginSecretSanta(): void {
     const request = getFixtureAsHandleEventRequest(2)
     const response = plugin.HandleEventResponse.decode(handleEvent(request))
 
-    assert(response.Success == true, "Response was not successful")
     assert(response.Event.type == "", "Event was not rejected")
 }
 

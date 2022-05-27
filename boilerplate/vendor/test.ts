@@ -1,4 +1,4 @@
-import { events, plugin } from './teleport';
+import { events, plugin } from './teleport/teleport';
 
 // Returns size of a fixture with number n
 declare function getFixtureSize(n: i32): i32;

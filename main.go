@@ -17,11 +17,15 @@ var (
 	// We have to place it here because embed does not support relative names in paths
 
 	//go:embed boilerplate/*
+	//go:embed boilerplate/vendor/teleport/__proto.ts
 	//go:embed fixtures/*
 	//go:embed .eslintrc.json
 	//go:embed .prettierrc
 	//go:embed asconfig.json
 	fs embed.FS
+
+	//go:embed _tpl/*
+	tpls embed.FS
 )
 
 // args represents cli args
@@ -43,6 +47,7 @@ func main() {
 	fixtures := app.Command("fixtures", "Fixtures")
 	generateFixture := fixtures.Command("generate", "Generate fixture")
 	listTemplates := fixtures.Command("list-templates", "List fixture templates")
+	genTS := app.Command("gen-ts", "Regenerate ts files from a templates").Hidden()
 
 	new.Arg("dir", "Path to the new plugin").
 		Required().
@@ -79,5 +84,10 @@ func main() {
 		fmt.Println()
 
 		internal.ListTemplates(log)
+	case genTS.FullCommand():
+		fmt.Println(pluginFrameworkName)
+		fmt.Println()
+
+		internal.GenTS(tpls)
 	}
 }

@@ -15,7 +15,5 @@ message HandleEventRequest {
 
 // HandleEventResponse represents the response, returning success status, error message and modified event (optional)
 message HandleEventResponse {
-    bool Success = 1;
-    string Error = 2;
     events.OneOf Event = 3 [ (gogoproto.nullable) = true ];
 }
