@@ -1,10 +1,9 @@
-import * as events from "./teleport/events"
-
-import { Event, OneOf } from "./teleport/events"
-export { Event };
-export { events };
-
+import { events, types, google, wrappers } from "./teleport/teleport"
+import { OneOf as Event } from "./teleport/events"
 import { HandleEventRequest as Request, HandleEventResponse as Response } from "./teleport/plugin"
+
+export { Event };
+export { events, types, google, wrappers };
 export { Request, Response };
 
 export class HandleEventBase {
@@ -27,323 +26,323 @@ export class HandleEventBase {
         }
 
         switch(event.type_index) {        
-            case OneOf.EVENT_ACCESS_REQUEST_CREATE_INDEX:
+            case Event.EVENT_ACCESS_REQUEST_CREATE_INDEX:
                 this.accessRequestCreate(event.AccessRequestCreate as events.AccessRequestCreate)
                 break
         
-            case OneOf.EVENT_ACCESS_REQUEST_DELETE_INDEX:
+            case Event.EVENT_ACCESS_REQUEST_DELETE_INDEX:
                 this.accessRequestDelete(event.AccessRequestDelete as events.AccessRequestDelete)
                 break
         
-            case OneOf.EVENT_APP_CREATE_INDEX:
+            case Event.EVENT_APP_CREATE_INDEX:
                 this.appCreate(event.AppCreate as events.AppCreate)
                 break
         
-            case OneOf.EVENT_APP_DELETE_INDEX:
+            case Event.EVENT_APP_DELETE_INDEX:
                 this.appDelete(event.AppDelete as events.AppDelete)
                 break
         
-            case OneOf.EVENT_APP_SESSION_CHUNK_INDEX:
+            case Event.EVENT_APP_SESSION_CHUNK_INDEX:
                 this.appSessionChunk(event.AppSessionChunk as events.AppSessionChunk)
                 break
         
-            case OneOf.EVENT_APP_SESSION_REQUEST_INDEX:
+            case Event.EVENT_APP_SESSION_REQUEST_INDEX:
                 this.appSessionRequest(event.AppSessionRequest as events.AppSessionRequest)
                 break
         
-            case OneOf.EVENT_APP_SESSION_START_INDEX:
+            case Event.EVENT_APP_SESSION_START_INDEX:
                 this.appSessionStart(event.AppSessionStart as events.AppSessionStart)
                 break
         
-            case OneOf.EVENT_APP_UPDATE_INDEX:
+            case Event.EVENT_APP_UPDATE_INDEX:
                 this.appUpdate(event.AppUpdate as events.AppUpdate)
                 break
         
-            case OneOf.EVENT_AUTH_ATTEMPT_INDEX:
+            case Event.EVENT_AUTH_ATTEMPT_INDEX:
                 this.authAttempt(event.AuthAttempt as events.AuthAttempt)
                 break
         
-            case OneOf.EVENT_BILLING_CARD_CREATE_INDEX:
+            case Event.EVENT_BILLING_CARD_CREATE_INDEX:
                 this.billingCardCreate(event.BillingCardCreate as events.BillingCardCreate)
                 break
         
-            case OneOf.EVENT_BILLING_CARD_DELETE_INDEX:
+            case Event.EVENT_BILLING_CARD_DELETE_INDEX:
                 this.billingCardDelete(event.BillingCardDelete as events.BillingCardDelete)
                 break
         
-            case OneOf.EVENT_BILLING_INFORMATION_UPDATE_INDEX:
+            case Event.EVENT_BILLING_INFORMATION_UPDATE_INDEX:
                 this.billingInformationUpdate(event.BillingInformationUpdate as events.BillingInformationUpdate)
                 break
         
-            case OneOf.EVENT_CERTIFICATE_CREATE_INDEX:
+            case Event.EVENT_CERTIFICATE_CREATE_INDEX:
                 this.certificateCreate(event.CertificateCreate as events.CertificateCreate)
                 break
         
-            case OneOf.EVENT_CLIENT_DISCONNECT_INDEX:
+            case Event.EVENT_CLIENT_DISCONNECT_INDEX:
                 this.clientDisconnect(event.ClientDisconnect as events.ClientDisconnect)
                 break
         
-            case OneOf.EVENT_DATABASE_CREATE_INDEX:
+            case Event.EVENT_DATABASE_CREATE_INDEX:
                 this.databaseCreate(event.DatabaseCreate as events.DatabaseCreate)
                 break
         
-            case OneOf.EVENT_DATABASE_DELETE_INDEX:
+            case Event.EVENT_DATABASE_DELETE_INDEX:
                 this.databaseDelete(event.DatabaseDelete as events.DatabaseDelete)
                 break
         
-            case OneOf.EVENT_DATABASE_SESSION_END_INDEX:
+            case Event.EVENT_DATABASE_SESSION_END_INDEX:
                 this.databaseSessionEnd(event.DatabaseSessionEnd as events.DatabaseSessionEnd)
                 break
         
-            case OneOf.EVENT_DATABASE_SESSION_QUERY_INDEX:
+            case Event.EVENT_DATABASE_SESSION_QUERY_INDEX:
                 this.databaseSessionQuery(event.DatabaseSessionQuery as events.DatabaseSessionQuery)
                 break
         
-            case OneOf.EVENT_DATABASE_SESSION_START_INDEX:
+            case Event.EVENT_DATABASE_SESSION_START_INDEX:
                 this.databaseSessionStart(event.DatabaseSessionStart as events.DatabaseSessionStart)
                 break
         
-            case OneOf.EVENT_DATABASE_UPDATE_INDEX:
+            case Event.EVENT_DATABASE_UPDATE_INDEX:
                 this.databaseUpdate(event.DatabaseUpdate as events.DatabaseUpdate)
                 break
         
-            case OneOf.EVENT_DESKTOP_CLIPBOARD_RECEIVE_INDEX:
+            case Event.EVENT_DESKTOP_CLIPBOARD_RECEIVE_INDEX:
                 this.desktopClipboardReceive(event.DesktopClipboardReceive as events.DesktopClipboardReceive)
                 break
         
-            case OneOf.EVENT_DESKTOP_CLIPBOARD_SEND_INDEX:
+            case Event.EVENT_DESKTOP_CLIPBOARD_SEND_INDEX:
                 this.desktopClipboardSend(event.DesktopClipboardSend as events.DesktopClipboardSend)
                 break
         
-            case OneOf.EVENT_DESKTOP_RECORDING_INDEX:
+            case Event.EVENT_DESKTOP_RECORDING_INDEX:
                 this.desktopRecording(event.DesktopRecording as events.DesktopRecording)
                 break
         
-            case OneOf.EVENT_EXEC_INDEX:
+            case Event.EVENT_EXEC_INDEX:
                 this.exec(event.Exec as events.Exec)
                 break
         
-            case OneOf.EVENT_GITHUB_CONNECTOR_CREATE_INDEX:
+            case Event.EVENT_GITHUB_CONNECTOR_CREATE_INDEX:
                 this.githubConnectorCreate(event.GithubConnectorCreate as events.GithubConnectorCreate)
                 break
         
-            case OneOf.EVENT_GITHUB_CONNECTOR_DELETE_INDEX:
+            case Event.EVENT_GITHUB_CONNECTOR_DELETE_INDEX:
                 this.githubConnectorDelete(event.GithubConnectorDelete as events.GithubConnectorDelete)
                 break
         
-            case OneOf.EVENT_KUBE_REQUEST_INDEX:
+            case Event.EVENT_KUBE_REQUEST_INDEX:
                 this.kubeRequest(event.KubeRequest as events.KubeRequest)
                 break
         
-            case OneOf.EVENT_LOCK_CREATE_INDEX:
+            case Event.EVENT_LOCK_CREATE_INDEX:
                 this.lockCreate(event.LockCreate as events.LockCreate)
                 break
         
-            case OneOf.EVENT_LOCK_DELETE_INDEX:
+            case Event.EVENT_LOCK_DELETE_INDEX:
                 this.lockDelete(event.LockDelete as events.LockDelete)
                 break
         
-            case OneOf.EVENT_MFA_DEVICE_ADD_INDEX:
+            case Event.EVENT_MFA_DEVICE_ADD_INDEX:
                 this.mfaDeviceAdd(event.MFADeviceAdd as events.MFADeviceAdd)
                 break
         
-            case OneOf.EVENT_MFA_DEVICE_DELETE_INDEX:
+            case Event.EVENT_MFA_DEVICE_DELETE_INDEX:
                 this.mfaDeviceDelete(event.MFADeviceDelete as events.MFADeviceDelete)
                 break
         
-            case OneOf.EVENT_MY_SQL_STATEMENT_BULK_EXECUTE_INDEX:
+            case Event.EVENT_MY_SQL_STATEMENT_BULK_EXECUTE_INDEX:
                 this.mySqlStatementBulkExecute(event.MySQLStatementBulkExecute as events.MySQLStatementBulkExecute)
                 break
         
-            case OneOf.EVENT_MY_SQL_STATEMENT_CLOSE_INDEX:
+            case Event.EVENT_MY_SQL_STATEMENT_CLOSE_INDEX:
                 this.mySqlStatementClose(event.MySQLStatementClose as events.MySQLStatementClose)
                 break
         
-            case OneOf.EVENT_MY_SQL_STATEMENT_EXECUTE_INDEX:
+            case Event.EVENT_MY_SQL_STATEMENT_EXECUTE_INDEX:
                 this.mySqlStatementExecute(event.MySQLStatementExecute as events.MySQLStatementExecute)
                 break
         
-            case OneOf.EVENT_MY_SQL_STATEMENT_FETCH_INDEX:
+            case Event.EVENT_MY_SQL_STATEMENT_FETCH_INDEX:
                 this.mySqlStatementFetch(event.MySQLStatementFetch as events.MySQLStatementFetch)
                 break
         
-            case OneOf.EVENT_MY_SQL_STATEMENT_PREPARE_INDEX:
+            case Event.EVENT_MY_SQL_STATEMENT_PREPARE_INDEX:
                 this.mySqlStatementPrepare(event.MySQLStatementPrepare as events.MySQLStatementPrepare)
                 break
         
-            case OneOf.EVENT_MY_SQL_STATEMENT_RESET_INDEX:
+            case Event.EVENT_MY_SQL_STATEMENT_RESET_INDEX:
                 this.mySqlStatementReset(event.MySQLStatementReset as events.MySQLStatementReset)
                 break
         
-            case OneOf.EVENT_MY_SQL_STATEMENT_SEND_LONG_DATA_INDEX:
+            case Event.EVENT_MY_SQL_STATEMENT_SEND_LONG_DATA_INDEX:
                 this.mySqlStatementSendLongData(event.MySQLStatementSendLongData as events.MySQLStatementSendLongData)
                 break
         
-            case OneOf.EVENT_OIDC_CONNECTOR_CREATE_INDEX:
+            case Event.EVENT_OIDC_CONNECTOR_CREATE_INDEX:
                 this.oidcConnectorCreate(event.OIDCConnectorCreate as events.OIDCConnectorCreate)
                 break
         
-            case OneOf.EVENT_OIDC_CONNECTOR_DELETE_INDEX:
+            case Event.EVENT_OIDC_CONNECTOR_DELETE_INDEX:
                 this.oidcConnectorDelete(event.OIDCConnectorDelete as events.OIDCConnectorDelete)
                 break
         
-            case OneOf.EVENT_PORT_FORWARD_INDEX:
+            case Event.EVENT_PORT_FORWARD_INDEX:
                 this.portForward(event.PortForward as events.PortForward)
                 break
         
-            case OneOf.EVENT_POSTGRES_BIND_INDEX:
+            case Event.EVENT_POSTGRES_BIND_INDEX:
                 this.postgresBind(event.PostgresBind as events.PostgresBind)
                 break
         
-            case OneOf.EVENT_POSTGRES_CLOSE_INDEX:
+            case Event.EVENT_POSTGRES_CLOSE_INDEX:
                 this.postgresClose(event.PostgresClose as events.PostgresClose)
                 break
         
-            case OneOf.EVENT_POSTGRES_EXECUTE_INDEX:
+            case Event.EVENT_POSTGRES_EXECUTE_INDEX:
                 this.postgresExecute(event.PostgresExecute as events.PostgresExecute)
                 break
         
-            case OneOf.EVENT_POSTGRES_FUNCTION_CALL_INDEX:
+            case Event.EVENT_POSTGRES_FUNCTION_CALL_INDEX:
                 this.postgresFunctionCall(event.PostgresFunctionCall as events.PostgresFunctionCall)
                 break
         
-            case OneOf.EVENT_POSTGRES_PARSE_INDEX:
+            case Event.EVENT_POSTGRES_PARSE_INDEX:
                 this.postgresParse(event.PostgresParse as events.PostgresParse)
                 break
         
-            case OneOf.EVENT_RECOVERY_CODE_GENERATE_INDEX:
+            case Event.EVENT_RECOVERY_CODE_GENERATE_INDEX:
                 this.recoveryCodeGenerate(event.RecoveryCodeGenerate as events.RecoveryCodeGenerate)
                 break
         
-            case OneOf.EVENT_RECOVERY_CODE_USED_INDEX:
+            case Event.EVENT_RECOVERY_CODE_USED_INDEX:
                 this.recoveryCodeUsed(event.RecoveryCodeUsed as events.RecoveryCodeUsed)
                 break
         
-            case OneOf.EVENT_RENEWABLE_CERTIFICATE_GENERATION_MISMATCH_INDEX:
+            case Event.EVENT_RENEWABLE_CERTIFICATE_GENERATION_MISMATCH_INDEX:
                 this.renewableCertificateGenerationMismatch(event.RenewableCertificateGenerationMismatch as events.RenewableCertificateGenerationMismatch)
                 break
         
-            case OneOf.EVENT_RESIZE_INDEX:
+            case Event.EVENT_RESIZE_INDEX:
                 this.resize(event.Resize as events.Resize)
                 break
         
-            case OneOf.EVENT_ROLE_CREATE_INDEX:
+            case Event.EVENT_ROLE_CREATE_INDEX:
                 this.roleCreate(event.RoleCreate as events.RoleCreate)
                 break
         
-            case OneOf.EVENT_ROLE_DELETE_INDEX:
+            case Event.EVENT_ROLE_DELETE_INDEX:
                 this.roleDelete(event.RoleDelete as events.RoleDelete)
                 break
         
-            case OneOf.EVENT_SAML_CONNECTOR_CREATE_INDEX:
+            case Event.EVENT_SAML_CONNECTOR_CREATE_INDEX:
                 this.samlConnectorCreate(event.SAMLConnectorCreate as events.SAMLConnectorCreate)
                 break
         
-            case OneOf.EVENT_SAML_CONNECTOR_DELETE_INDEX:
+            case Event.EVENT_SAML_CONNECTOR_DELETE_INDEX:
                 this.samlConnectorDelete(event.SAMLConnectorDelete as events.SAMLConnectorDelete)
                 break
         
-            case OneOf.EVENT_SCP_INDEX:
+            case Event.EVENT_SCP_INDEX:
                 this.scp(event.SCP as events.SCP)
                 break
         
-            case OneOf.EVENT_SESSION_COMMAND_INDEX:
+            case Event.EVENT_SESSION_COMMAND_INDEX:
                 this.sessionCommand(event.SessionCommand as events.SessionCommand)
                 break
         
-            case OneOf.EVENT_SESSION_CONNECT_INDEX:
+            case Event.EVENT_SESSION_CONNECT_INDEX:
                 this.sessionConnect(event.SessionConnect as events.SessionConnect)
                 break
         
-            case OneOf.EVENT_SESSION_DATA_INDEX:
+            case Event.EVENT_SESSION_DATA_INDEX:
                 this.sessionData(event.SessionData as events.SessionData)
                 break
         
-            case OneOf.EVENT_SESSION_DISK_INDEX:
+            case Event.EVENT_SESSION_DISK_INDEX:
                 this.sessionDisk(event.SessionDisk as events.SessionDisk)
                 break
         
-            case OneOf.EVENT_SESSION_END_INDEX:
+            case Event.EVENT_SESSION_END_INDEX:
                 this.sessionEnd(event.SessionEnd as events.SessionEnd)
                 break
         
-            case OneOf.EVENT_SESSION_JOIN_INDEX:
+            case Event.EVENT_SESSION_JOIN_INDEX:
                 this.sessionJoin(event.SessionJoin as events.SessionJoin)
                 break
         
-            case OneOf.EVENT_SESSION_LEAVE_INDEX:
+            case Event.EVENT_SESSION_LEAVE_INDEX:
                 this.sessionLeave(event.SessionLeave as events.SessionLeave)
                 break
         
-            case OneOf.EVENT_SESSION_NETWORK_INDEX:
+            case Event.EVENT_SESSION_NETWORK_INDEX:
                 this.sessionNetwork(event.SessionNetwork as events.SessionNetwork)
                 break
         
-            case OneOf.EVENT_SESSION_PRINT_INDEX:
+            case Event.EVENT_SESSION_PRINT_INDEX:
                 this.sessionPrint(event.SessionPrint as events.SessionPrint)
                 break
         
-            case OneOf.EVENT_SESSION_REJECT_INDEX:
+            case Event.EVENT_SESSION_REJECT_INDEX:
                 this.sessionReject(event.SessionReject as events.SessionReject)
                 break
         
-            case OneOf.EVENT_SESSION_START_INDEX:
+            case Event.EVENT_SESSION_START_INDEX:
                 this.sessionStart(event.SessionStart as events.SessionStart)
                 break
         
-            case OneOf.EVENT_SESSION_UPLOAD_INDEX:
+            case Event.EVENT_SESSION_UPLOAD_INDEX:
                 this.sessionUpload(event.SessionUpload as events.SessionUpload)
                 break
         
-            case OneOf.EVENT_SUBSYSTEM_INDEX:
+            case Event.EVENT_SUBSYSTEM_INDEX:
                 this.subsystem(event.Subsystem as events.Subsystem)
                 break
         
-            case OneOf.EVENT_TRUSTED_CLUSTER_CREATE_INDEX:
+            case Event.EVENT_TRUSTED_CLUSTER_CREATE_INDEX:
                 this.trustedClusterCreate(event.TrustedClusterCreate as events.TrustedClusterCreate)
                 break
         
-            case OneOf.EVENT_TRUSTED_CLUSTER_DELETE_INDEX:
+            case Event.EVENT_TRUSTED_CLUSTER_DELETE_INDEX:
                 this.trustedClusterDelete(event.TrustedClusterDelete as events.TrustedClusterDelete)
                 break
         
-            case OneOf.EVENT_TRUSTED_CLUSTER_TOKEN_CREATE_INDEX:
+            case Event.EVENT_TRUSTED_CLUSTER_TOKEN_CREATE_INDEX:
                 this.trustedClusterTokenCreate(event.TrustedClusterTokenCreate as events.TrustedClusterTokenCreate)
                 break
         
-            case OneOf.EVENT_UNKNOWN_INDEX:
+            case Event.EVENT_UNKNOWN_INDEX:
                 this.unknown(event.Unknown as events.Unknown)
                 break
         
-            case OneOf.EVENT_USER_CREATE_INDEX:
+            case Event.EVENT_USER_CREATE_INDEX:
                 this.userCreate(event.UserCreate as events.UserCreate)
                 break
         
-            case OneOf.EVENT_USER_DELETE_INDEX:
+            case Event.EVENT_USER_DELETE_INDEX:
                 this.userDelete(event.UserDelete as events.UserDelete)
                 break
         
-            case OneOf.EVENT_USER_LOGIN_INDEX:
+            case Event.EVENT_USER_LOGIN_INDEX:
                 this.userLogin(event.UserLogin as events.UserLogin)
                 break
         
-            case OneOf.EVENT_USER_PASSWORD_CHANGE_INDEX:
+            case Event.EVENT_USER_PASSWORD_CHANGE_INDEX:
                 this.userPasswordChange(event.UserPasswordChange as events.UserPasswordChange)
                 break
         
-            case OneOf.EVENT_USER_TOKEN_CREATE_INDEX:
+            case Event.EVENT_USER_TOKEN_CREATE_INDEX:
                 this.userTokenCreate(event.UserTokenCreate as events.UserTokenCreate)
                 break
         
-            case OneOf.EVENT_WINDOWS_DESKTOP_SESSION_END_INDEX:
+            case Event.EVENT_WINDOWS_DESKTOP_SESSION_END_INDEX:
                 this.windowsDesktopSessionEnd(event.WindowsDesktopSessionEnd as events.WindowsDesktopSessionEnd)
                 break
         
-            case OneOf.EVENT_WINDOWS_DESKTOP_SESSION_START_INDEX:
+            case Event.EVENT_WINDOWS_DESKTOP_SESSION_START_INDEX:
                 this.windowsDesktopSessionStart(event.WindowsDesktopSessionStart as events.WindowsDesktopSessionStart)
                 break
         
-            case OneOf.EVENT_X11_FORWARD_INDEX:
+            case Event.EVENT_X11_FORWARD_INDEX:
                 this.x11Forward(event.X11Forward as events.X11Forward)
                 break
 
@@ -606,3 +605,9 @@ export class HandleEventBase {
     }
 
 }
+
+export function handleEvent<T extends HandleEventBase>(requestData: ArrayBuffer): ArrayBuffer {
+    let handler = instantiate<T>(requestData);    
+    handler.run()
+    return handler.getResponse()
+}            

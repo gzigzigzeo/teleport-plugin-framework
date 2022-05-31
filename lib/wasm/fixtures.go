@@ -159,11 +159,11 @@ func (f *Fixture) ToJSON() ([]byte, error) {
 // NewFixtureIndex reads fixtures from directory and unmarshals them to the proto.Message
 func NewFixtureIndex(dir string) (*FixtureIndex, error) {
 	_, err := os.Stat(dir)
-	if err != nil {
-		return nil, trace.BadParameter("Error reading fixture directory %v", dir)
-	}
 	if os.IsNotExist(err) {
 		return nil, trace.BadParameter("Fixture directory does not exists %v", dir)
+	}
+	if err != nil {
+		return nil, trace.BadParameter("Error reading fixture directory %v", dir)
 	}
 
 	matches, err := filepath.Glob(path.Join(dir, "*.json"))

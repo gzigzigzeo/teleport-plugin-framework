@@ -648,6 +648,3 @@ function __sizeMapEntry_string_Value(key: string, value: Value): u32 {
 
   return keySize + 1 + __proto.Sizer.varint64(valueSize) + valueSize;
 }
-
-// Type aliases
-export type Event = OneOf;

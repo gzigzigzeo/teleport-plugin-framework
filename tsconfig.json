@@ -20,7 +20,7 @@
     "strictNullChecks": false
   },
   "include": [
-    "assembly/**/*", "assembly_dev/**/*", "boilerplate/vendor/**/*"
+    "assembly/**/*", "assembly_dev/**/*", "boilerplate/**/*"
   ]
 }
   

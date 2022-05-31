@@ -170,6 +170,3 @@ export class HandleEventResponse {
     return buf;
   } // encode HandleEventResponse
 } // HandleEventResponse
-
-// Type aliases
-export type Event = OneOf;

@@ -25525,6 +25525,3 @@ function __sizeMapEntry_string_PluginDataEntry(
 
   return keySize + 1 + __proto.Sizer.varint64(valueSize) + valueSize;
 }
-
-// Type aliases
-export type Event = OneOf;

@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"sync"
 	"time"
@@ -12,16 +13,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const (
-	// defaultTimeout default timeout for WASM method calls
-	defaultTimeout = time.Second * 30
-	// testWasm WASM test binary file
-	testWasm = "build/test.wasm"
-)
-
 // RunTests runs tests
-func RunTests(log logrus.FieldLogger, concurrency int) {
-	b, err := os.ReadFile(testWasm)
+func RunTests(log logrus.FieldLogger, binary string, fixturesPath string, timeout time.Duration, concurrency int) {
+	b, err := os.ReadFile(binary)
 	if err != nil {
 		bail("%v", trace.Wrap(err))
 	}
@@ -31,7 +25,7 @@ func RunTests(log logrus.FieldLogger, concurrency int) {
 		bail("%v", trace.Wrap(err))
 	}
 
-	testRunner, err := wasm.NewTesting(fixturesDir)
+	testRunner, err := wasm.NewTesting(fixturesPath)
 	if err != nil {
 		log.Fatal(trace.Wrap(err))
 	}
@@ -41,7 +35,7 @@ func RunTests(log logrus.FieldLogger, concurrency int) {
 	opts := wasm.ExecutionContextPoolOptions{
 		Log:           log,
 		MemoryInterop: wasm.NewAssemblyScriptMemoryInterop(),
-		Timeout:       defaultTimeout,
+		Timeout:       timeout,
 		Concurrency:   concurrency,
 		PluginBytes:   b,
 		Traits: []interface{}{
@@ -58,6 +52,8 @@ func RunTests(log logrus.FieldLogger, concurrency int) {
 	if err != nil {
 		bail("%v", trace.Wrap(err))
 	}
+
+	fmt.Println("Running tests...")
 
 	var wg sync.WaitGroup
 
@@ -83,4 +79,6 @@ func RunTests(log logrus.FieldLogger, concurrency int) {
 	}
 
 	wg.Wait()
+
+	fmt.Println("Success!")
 }

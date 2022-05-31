@@ -332,7 +332,7 @@
  (func $assembly/lib_wasm_test/throwError
   i32.const 1048608
   i32.const 1048656
-  i32.const 13
+  i32.const 15
   i32.const 5
   call $~lib/builtins/abort
   unreachable
@@ -16590,7 +16590,7 @@
   if
    i32.const 1048768
    i32.const 1048656
-   i32.const 17
+   i32.const 19
    i32.const 5
    call $~lib/builtins/abort
    unreachable
@@ -78215,7 +78215,7 @@
   if
    i32.const 1056896
    i32.const 1048656
-   i32.const 52
+   i32.const 54
    i32.const 9
    call $~lib/builtins/abort
    unreachable
@@ -78253,7 +78253,7 @@
    else
     i32.const 1056832
     i32.const 1048656
-    i32.const 59
+    i32.const 61
     i32.const 27
     call $~lib/builtins/abort
     unreachable
@@ -86396,7 +86396,7 @@
   else
    i32.const 1056832
    i32.const 1048656
-   i32.const 42
+   i32.const 44
    i32.const 24
    call $~lib/builtins/abort
    unreachable

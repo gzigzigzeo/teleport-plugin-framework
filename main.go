@@ -4,6 +4,7 @@ import (
 	"embed"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/gravitational/kingpin"
 	"github.com/gravitational/teleport-plugin-framework/internal"
@@ -30,10 +31,17 @@ var (
 
 // args represents cli args
 type args struct {
-	targetDir       string
+	targetDir string
+
+	// fixtures generate
 	fixtureTemplate string
 	fixtureName     string
+
+	// test
 	testConcurrency int
+	fixturesPath    string
+	binary          string
+	timeout         time.Duration
 }
 
 func main() {
@@ -50,11 +58,14 @@ func main() {
 	genTS := app.Command("gen-ts", "Regenerate ts files from a templates").Hidden()
 	genMockTemplates := app.Command("gen-mock-templates", "Regenerate fixture templates").Hidden()
 
-	new.Arg("dir", "Path to the new plugin").
-		Required().
-		StringVar(&args.targetDir)
+	new.Arg("dir", "Path to the new plugin").Required().StringVar(&args.targetDir)
 
-	test.Flag("c", "Run multiple concurrent test suites").Default("1").IntVar(&args.testConcurrency)
+	test.Flag("fixturesPath", "Fixtures directory").Default("fixtures").Short('f').StringVar(&args.fixturesPath)
+	test.Flag("concurrency", "Run multiple concurrent test suites").Short('c').Default("1").IntVar(&args.testConcurrency)
+	test.Flag("bin", "Binary file location").Default("build/test.wasm").Short('b').StringVar(&args.binary)
+	test.Flag("timeout", "WASM method timeout").Default("2s").Short('t').DurationVar(&args.timeout)
+
+	generateFixture.Flag("fixturesPath", "Path to fixtures directory").Short('f').Default("fixtures").StringVar(&args.fixturesPath)
 
 	generateFixture.Arg("template", "Fixture template name (use `fixtures list-templates` to get a name)").
 		Required().
@@ -74,12 +85,12 @@ func main() {
 		fmt.Println(pluginFrameworkName)
 		fmt.Println()
 
-		internal.RunTests(log, args.testConcurrency)
+		internal.RunTests(log, args.binary, args.fixturesPath, args.timeout, args.testConcurrency)
 	case generateFixture.FullCommand():
 		fmt.Println(pluginFrameworkName)
 		fmt.Println()
 
-		internal.GenerateFixture(log, args.fixtureTemplate, args.fixtureName)
+		internal.GenerateFixture(log, args.fixtureTemplate, args.fixtureName, args.fixturesPath)
 	case listTemplates.FullCommand():
 		fmt.Println(pluginFrameworkName)
 		fmt.Println()

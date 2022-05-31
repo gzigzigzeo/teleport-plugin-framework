@@ -1,0 +1,21 @@
+{
+    "type": "types.OneOf",
+    "data": {
+      "UserLogin": {
+        "Metadata": {
+          "Index": 1,
+          "ID": "38e5c4bf-0fda-600a-6949-0276f609c1b9",
+          "Type": "user.login",
+          "ClusterName": "test-cluster",
+          "Time": "2022-01-12T14:28:55+03:00"
+        },
+        "User": {
+          "Login": "foo",
+          "User": "foo"
+        },
+        "Status": {
+          "Success": false
+        }
+      }
+    }
+  }

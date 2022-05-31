@@ -1,10 +1,9 @@
-import * as events from "./teleport/events"
-
-import { Event, OneOf } from "./teleport/events"
-export { Event };
-export { events };
-
+import { events, types, google, wrappers } from "./teleport/teleport"
+import { OneOf as Event } from "./teleport/events"
 import { HandleEventRequest as Request, HandleEventResponse as Response } from "./teleport/plugin"
+
+export { Event };
+export { events, types, google, wrappers };
 export { Request, Response };
 
 export class HandleEventBase {
@@ -28,7 +27,7 @@ export class HandleEventBase {
 
         switch(event.type_index) {
 {{- range . }}        
-            case OneOf.{{.Const}}:
+            case Event.{{.Const}}:
                 this.{{.Method}}(event.{{.Type}} as events.{{.Type}})
                 break
 {{ end }}
@@ -54,3 +53,9 @@ export class HandleEventBase {
     }
 {{ end }}
 }
+
+export function handleEvent<T extends HandleEventBase>(requestData: ArrayBuffer): ArrayBuffer {
+    let handler = instantiate<T>(requestData);    
+    handler.run()
+    return handler.getResponse()
+}            

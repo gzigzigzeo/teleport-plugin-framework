@@ -1,0 +1,27 @@
+{
+    "type": "types.OneOf",
+    "data": {
+      "AccessRequestCreate": {
+        "Metadata": {
+          "Index": 1,
+          "ID": "51e9370e-fa4e-07ac-f0b9-6ef688b6e451",
+          "Type": "user.create",
+          "ClusterName": "test-cluster",
+          "Time": "2021-12-20T16:48:17+03:00"
+        },
+        "User": {
+          "Login": "foo",
+          "User": "foo"
+        },
+        "Resource": {
+          "Name": "db.users"
+        },
+        "Roles": [
+          "test-user"
+        ],
+        "RequestID": "adefd683-a66a-9599-33ab-c7e681cf6d95",
+        "RequestState": "PENDING",
+        "Reason": "Need access"
+      }
+    }
+  }

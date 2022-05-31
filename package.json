@@ -19,7 +19,7 @@
   },
   "scripts": {
     "clean": "rimraf build tmp",
-    "asbuild:test": "asc boilerplate/assembly/index.test.ts --target test",
+    "asbuild:test": "asc boilerplate/examples/skip/assembly/event_handler.test.ts --target test",
     "asbuild:dev": "asc assembly/lib_wasm_test.ts --target test --outFile lib/wasm/test.wasm --textFile lib/wasm/test.wat"
   },
   "author": "Victor Sokolov <gzigzigzeo@evilmartians.com>",

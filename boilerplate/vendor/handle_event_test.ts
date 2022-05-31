@@ -1,6 +1,7 @@
-import { getFixture as getRawFixture, getLatestAPIRequest } from './test'
-import { events, Request } from './handle_event'
-import { handleEvent as handleEventBase } from '../assembly'
+import { getFixture as getRawFixture, getLatestAPIRequest } from './test';
+import { events, Request, HandleEventBase, Response } from './handle_event';
+import { handleEvent as handleEventBase } from './handle_event';
+
 export { getLatestAPIRequest };
 
 // Wraps fixture to HandleEventRequest object and returns it
@@ -12,7 +13,8 @@ export function getFixture(n: i32): ArrayBuffer {
     return request.encode()
 }
 
-// Calls handleEvent
-export function handleEvent(requestData: ArrayBuffer): ArrayBuffer {
-    return handleEventBase(requestData)
+// Wraps handleEvent<T> and returns response
+export function handleEvent<T extends HandleEventBase>(requestData: ArrayBuffer): Response {
+    const responseData = handleEventBase<T>(requestData)
+    return Response.decode(responseData)
 }

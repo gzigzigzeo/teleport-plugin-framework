@@ -9,14 +9,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const (
-	// directory containing fixtures
-	fixturesDir = "fixtures"
-)
-
 // GenerateFixture generates fixture
-func GenerateFixture(log logrus.FieldLogger, template string, name string) {
-	index, err := wasm.NewFixtureIndex(fixturesDir)
+func GenerateFixture(log logrus.FieldLogger, template string, name string, fixturesPath string) {
+	index, err := wasm.NewFixtureIndex(fixturesPath)
 	if err != nil {
 		bail("%v", trace.Wrap(err))
 	}

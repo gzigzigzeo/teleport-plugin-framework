@@ -22816,6 +22816,3 @@ function __sizeMapEntry_string_string(key: string, value: string): u32 {
       : 0)
   );
 }
-
-// Type aliases
-export type Event = OneOf;

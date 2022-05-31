@@ -31,10 +31,16 @@ clean:
 	rm -rf build/*
 	go clean
 
+# test examples
+EXAMPLES := $(wildcard boilerplate/examples/*)
+.PHONY: $(EXAMPLES)
+test_examples: $(EXAMPLES)
+$(EXAMPLES): build
+	yarn run asc $(@)/assembly/event_handler.test.ts --outFile build/$(notdir $(@)).wasm --textFile build/$(notdir $(@)).wat --target test	
+	./build/teleport-plugin-framework test -f $(@)/fixtures -b build/$(notdir $(@)).wasm
+
 .PHONY: test
-test: build
-	yarn asbuild:test
-	./build/teleport-plugin-framework test
+test: test_examples
 	yarn asbuild:dev
 	go test ./... -v
 
@@ -64,7 +70,7 @@ gen-vendor-teleport:
 		--plugin=./node_modules/protobuf-as/bin/protoc-gen-as \
 		--as_out=boilerplate/vendor/teleport \
 		--as_opt=config=protobuf-as.json \
-	    types.proto events/events.proto interop.proto
+		types.proto events/events.proto interop.proto
 
 	@protoc \
 		-I$(LOCALDIR)/lib/wasm \
@@ -73,4 +79,4 @@ gen-vendor-teleport:
 		-I$(PROTOBUF_MOD_PATH) \
 		-I$(CUSTOM_IMPORTS_TMP_DIR) \
 		--gogofast_out=plugins=grpc,Mevents/events.proto=github.com/gravitational/teleport/api/types/events:./lib/plugin \
-	    interop.proto
+		interop.proto
