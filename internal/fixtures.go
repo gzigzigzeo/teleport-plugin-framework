@@ -42,6 +42,6 @@ func ListTemplates(log logrus.FieldLogger) {
 	}
 
 	for _, t := range templates {
-		fmt.Printf("%v - %v (%v)\n", fmt.Sprintf("%v fixtures generate %v <name>", os.Args[0], t.Name), t.Description, t.Type)
+		fmt.Printf("%40v - %v\n%42v%v\n\n", t.Name, t.Description, " ", fmt.Sprintf("%v fixtures generate %v <name>", os.Args[0], t.Name))
 	}
 }
