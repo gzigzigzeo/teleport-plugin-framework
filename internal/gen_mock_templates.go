@@ -173,7 +173,7 @@ var (
 
 	replacements = map[string]string{
 		`"Time": "0001-01-01T00:00:00Z"`:    `"Time": "{{ time }}"`,
-		`"Expires": "0001-01-01T00:00:00Z"`: `"Expires": "{{ time }}"`,
+		`"Expires": "0001-01-01T00:00:00Z"`: `"Expires": "{{ expires }}"`,
 		`"Success": true`:                   `"Success": false`,
 	}
 )

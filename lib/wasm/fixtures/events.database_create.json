@@ -22,7 +22,7 @@
             },
             "Resource": {
                 "Name": "Database",
-                "Expires": "{{ time }}",
+                "Expires": "{{ expires }}",
                 "UpdatedBy": "bar",
                 "TTL": "10h"
             },

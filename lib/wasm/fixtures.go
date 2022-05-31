@@ -70,8 +70,9 @@ func NewTemplateBuilder() (*templateBuilder, error) {
 	c := &templateBuilder{}
 
 	t, err := template.New("").Funcs(template.FuncMap{
-		"uuid": c.uuid,
-		"time": c.time,
+		"uuid":    c.uuid,
+		"time":    c.time,
+		"expires": c.expires,
 	}).ParseFS(fixtures, "fixtures/*.json")
 
 	if err != nil {
@@ -95,6 +96,11 @@ func (c *templateBuilder) uuid() string {
 // time represents template function which returns current time
 func (c *templateBuilder) time() string {
 	return time.Now().Format(time.RFC3339)
+}
+
+// expires represents template function which returns time in future
+func (c *templateBuilder) expires() string {
+	return time.Now().Add(time.Hour * 24).Format(time.RFC3339)
 }
 
 // Get returns fixture by template name

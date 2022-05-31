@@ -1,5 +1,6 @@
-import { getFixture, handleEvent } from '../vendor/handle_event_test';
+import { getFixture } from '../vendor/handle_event_test';
 import { events, plugin } from '../vendor/teleport/teleport';
+import { handleEvent } from "./index"
 
 // Main test function
 export function test(): void {

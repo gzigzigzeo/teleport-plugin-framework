@@ -1,10 +1,11 @@
 {
     "type": "types.OneOf",
+    "description": "Postgres client calls an internal function",
     "data": {
         "PostgresFunctionCall": {
             "Metadata": {
                 "Index": "1",
-                "Type": "METADATA_TYPE_PLACEHOLDER",
+                "Type": "db.session.postgres.function",
                 "ID": "{{ uuid }}",
                 "Code": "{{ uuid }}",
                 "Time": "{{ time }}",

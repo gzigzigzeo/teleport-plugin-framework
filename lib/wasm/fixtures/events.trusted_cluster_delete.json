@@ -13,7 +13,7 @@
             },
             "Resource": {
                 "Name": "TrustedCluster",
-                "Expires": "{{ time }}",
+                "Expires": "{{ expires }}",
                 "UpdatedBy": "bar",
                 "TTL": "10h"
             },

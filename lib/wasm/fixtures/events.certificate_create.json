@@ -33,7 +33,7 @@
                     "foo",
                     "bar"
                 ],
-                "Expires": "{{ time }}",
+                "Expires": "{{ expires }}",
                 "RouteToCluster": "test-cluster",
                 "KubernetesCluster": "kube-cluster",
                 "Traits": {

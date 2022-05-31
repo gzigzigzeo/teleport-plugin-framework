@@ -1,10 +1,11 @@
 {
     "type": "types.OneOf",
+    "description": "Recovery token is used",
     "data": {
         "RecoveryCodeUsed": {
             "Metadata": {
                 "Index": "1",
-                "Type": "METADATA_TYPE_PLACEHOLDER",
+                "Type": "recovery_code.used",
                 "ID": "{{ uuid }}",
                 "Code": "{{ uuid }}",
                 "Time": "{{ time }}",

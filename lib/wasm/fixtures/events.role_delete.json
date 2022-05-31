@@ -13,7 +13,7 @@
             },
             "Resource": {
                 "Name": "Role",
-                "Expires": "{{ time }}",
+                "Expires": "{{ expires }}",
                 "UpdatedBy": "bar",
                 "TTL": "10h"
             },

@@ -1,10 +1,11 @@
 {
     "type": "types.OneOf",
+    "description": "Postgres client closes an existing prepared statement",
     "data": {
         "PostgresClose": {
             "Metadata": {
                 "Index": "1",
-                "Type": "METADATA_TYPE_PLACEHOLDER",
+                "Type": "db.session.postgres.statements.close",
                 "ID": "{{ uuid }}",
                 "Code": "{{ uuid }}",
                 "Time": "{{ time }}",

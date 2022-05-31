@@ -1,10 +1,11 @@
 {
     "type": "types.OneOf",
+    "description": " Postgres client creates a prepared statement",
     "data": {
         "PostgresParse": {
             "Metadata": {
                 "Index": "1",
-                "Type": "METADATA_TYPE_PLACEHOLDER",
+                "Type": "db.session.postgres.statements.parse",
                 "ID": "{{ uuid }}",
                 "Code": "{{ uuid }}",
                 "Time": "{{ time }}",

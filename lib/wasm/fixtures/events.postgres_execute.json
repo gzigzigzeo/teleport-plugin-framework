@@ -1,10 +1,11 @@
 {
     "type": "types.OneOf",
+    "description": "Postgres client executes a previously bound prepared statement",
     "data": {
         "PostgresExecute": {
             "Metadata": {
                 "Index": "1",
-                "Type": "METADATA_TYPE_PLACEHOLDER",
+                "Type": "db.session.postgres.statements.execute",
                 "ID": "{{ uuid }}",
                 "Code": "{{ uuid }}",
                 "Time": "{{ time }}",

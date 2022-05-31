@@ -1,10 +1,11 @@
 {
     "type": "types.OneOf",
+    "description": "Renewable certificate's generation counter is invalid",
     "data": {
         "RenewableCertificateGenerationMismatch": {
             "Metadata": {
                 "Index": "1",
-                "Type": "METADATA_TYPE_PLACEHOLDER",
+                "Type": "cert.generation_mismatch",
                 "ID": "{{ uuid }}",
                 "Code": "{{ uuid }}",
                 "Time": "{{ time }}",

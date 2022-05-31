@@ -13,7 +13,7 @@
             },
             "Resource": {
                 "Name": "GithubConnector",
-                "Expires": "{{ time }}",
+                "Expires": "{{ expires }}",
                 "UpdatedBy": "bar",
                 "TTL": "10h"
             },

@@ -1,5 +1,6 @@
-import { getFixture, getLatestAPIRequest, handleEvent } from '../boilerplate/vendor/handle_event_test';
+import { getFixture, getLatestAPIRequest } from '../boilerplate/vendor/handle_event_test';
 import { events, plugin, types } from '../boilerplate/vendor/teleport/teleport';
+import { handleEvent } from "../boilerplate/assembly/index"
 
 // Main test function
 export function test(): void {

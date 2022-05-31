@@ -1,10 +1,11 @@
 {
     "type": "types.OneOf",
+    "description": "Recovery code is generated",
     "data": {
         "RecoveryCodeGenerate": {
             "Metadata": {
                 "Index": "1",
-                "Type": "METADATA_TYPE_PLACEHOLDER",
+                "Type": "recovery_code.generated",
                 "ID": "{{ uuid }}",
                 "Code": "{{ uuid }}",
                 "Time": "{{ time }}",
