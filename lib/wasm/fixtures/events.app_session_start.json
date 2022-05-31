@@ -1,0 +1,52 @@
+{
+    "type": "types.OneOf",
+    "description": "User is issued an application certificate",
+    "data": {
+        "AppSessionStart": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "app.session.start",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "User": {
+                "User": "foo",
+                "Login": "foo",
+                "Impersonator": "foo",
+                "AWSRoleARN": "arn:aws:iam::account:root",
+                "AccessRequests": [
+                    "{{ uuid }}"
+                ]
+            },
+            "Session": {
+                "SessionID": "{{ uuid }}",
+                "WithMFA": "{{ uuid }}"
+            },
+            "Server": {
+                "ServerNamespace": "default",
+                "ServerID": "{{ uuid }}",
+                "ServerHostname": "localhost",
+                "ServerAddr": "127.0.0.1",
+                "ServerLabels": {
+                    "test": "true"
+                }
+            },
+            "Connection": {
+                "LocalAddr": "127.0.0.1",
+                "RemoteAddr": "192.168.0.1",
+                "Protocol": "https"
+            },
+            "PublicAddr": "192.168.0.1",
+            "App": {
+                "AppURI": "http://localhost:3000",
+                "AppPublicAddr": "test.test.teleport.sh",
+                "AppLabels": {
+                    "test": "true"
+                },
+                "AppName": "test"
+            }
+        }
+    }
+}

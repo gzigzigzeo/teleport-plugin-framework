@@ -1,3 +1,5 @@
+// WASM helper methods for pool_test.go
+
 import { sleep } from 'as-sleep/assembly/index';
 import { getSecretString } from '../boilerplate/vendor/aws_secrets_manager';
 import { events, plugin } from '../boilerplate/vendor/teleport/teleport';

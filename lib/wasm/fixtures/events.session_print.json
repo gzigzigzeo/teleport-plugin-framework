@@ -1,0 +1,21 @@
+{
+    "type": "types.OneOf",
+    "description": "Write occurs to the terminal I/O",
+    "data": {
+        "SessionPrint": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "print",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "ChunkIndex": "1",
+            "Data": "AQID",
+            "Bytes": "1",
+            "DelayMilliseconds": "1",
+            "Offset": "1"
+        }
+    }
+}

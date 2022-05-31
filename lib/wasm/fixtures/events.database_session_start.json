@@ -1,0 +1,62 @@
+{
+    "type": "types.OneOf",
+    "description": "session.start",
+    "data": {
+        "DatabaseSessionStart": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "Session start",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "User": {
+                "User": "foo",
+                "Login": "foo",
+                "Impersonator": "foo",
+                "AWSRoleARN": "arn:aws:iam::account:root",
+                "AccessRequests": [
+                    "{{ uuid }}"
+                ]
+            },
+            "Session": {
+                "SessionID": "{{ uuid }}",
+                "WithMFA": "{{ uuid }}"
+            },
+            "Server": {
+                "ServerNamespace": "default",
+                "ServerID": "{{ uuid }}",
+                "ServerHostname": "localhost",
+                "ServerAddr": "127.0.0.1",
+                "ServerLabels": {
+                    "test": "true"
+                }
+            },
+            "Connection": {
+                "LocalAddr": "127.0.0.1",
+                "RemoteAddr": "192.168.0.1",
+                "Protocol": "https"
+            },
+            "Status": {
+                "Success": false,
+                "Error": "An error occured",
+                "UserMessage": "Access denied"
+            },
+            "Database": {
+                "DatabaseService": "foo",
+                "DatabaseProtocol": "postgres",
+                "DatabaseURI": "localhost:3251",
+                "DatabaseName": "foo",
+                "DatabaseUser": "foo",
+                "DatabaseLabels": {
+                    "test": "true"
+                },
+                "DatabaseAWSRegion": "eu-west-1",
+                "DatabaseAWSRedshiftClusterID": "test-aws-cluster",
+                "DatabaseGCPProjectID": "test-project",
+                "DatabaseGCPInstanceID": "{{ uuid }}"
+            }
+        }
+    }
+}

@@ -1,6 +1,5 @@
-import { getFixtureAsHandleEventRequest, getLatestAPIRequest } from '../boilerplate/vendor/test';
+import { getFixture, getLatestAPIRequest, handleEvent } from '../boilerplate/vendor/handle_event_test';
 import { events, plugin, types } from '../boilerplate/vendor/teleport/teleport';
-import { handleEvent } from '../boilerplate/assembly/index';
 
 // Main test function
 export function test(): void {
@@ -12,13 +11,13 @@ export function test(): void {
 
 // Ensure that nomal event passes through
 function testRegularEvent(): void {
-    const request = getFixtureAsHandleEventRequest(1)
+    const request = getFixture(1)
     assert(handleEvent(request) != null, "handleEvent returned null response")
 }
 
 // Ensure that secret santa login hids
 function testSkipLoginSecretSanta(): void {
-    const request = getFixtureAsHandleEventRequest(2)
+    const request = getFixture(2)
     const response = plugin.HandleEventResponse.decode(handleEvent(request))
 
     assert(response.Event.type == "", "Event was not rejected")
@@ -26,7 +25,7 @@ function testSkipLoginSecretSanta(): void {
 
 // Ensure that custom annotation is added to the create access request
 function testAddAnnotation(): void {
-    const request = getFixtureAsHandleEventRequest(3)
+    const request = getFixture(3)
     const response = plugin.HandleEventResponse.decode(handleEvent(request))
 
     assert(response.Event.AccessRequestCreate != null, "AccessRequestCreate is missing")
@@ -39,7 +38,7 @@ function testAddAnnotation(): void {
 }
 
 function testLocking(): void {
-    const request = getFixtureAsHandleEventRequest(4)
+    const request = getFixture(4)
 
     handleEvent(request)
     handleEvent(request)

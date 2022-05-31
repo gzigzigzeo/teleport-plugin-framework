@@ -1,0 +1,73 @@
+{
+    "type": "types.OneOf",
+    "description": "Session has ended",
+    "data": {
+        "SessionEnd": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "session.end",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "User": {
+                "User": "foo",
+                "Login": "foo",
+                "Impersonator": "foo",
+                "AWSRoleARN": "arn:aws:iam::account:root",
+                "AccessRequests": [
+                    "{{ uuid }}"
+                ]
+            },
+            "Session": {
+                "SessionID": "{{ uuid }}",
+                "WithMFA": "{{ uuid }}"
+            },
+            "Connection": {
+                "LocalAddr": "127.0.0.1",
+                "RemoteAddr": "192.168.0.1",
+                "Protocol": "https"
+            },
+            "Server": {
+                "ServerNamespace": "default",
+                "ServerID": "{{ uuid }}",
+                "ServerHostname": "localhost",
+                "ServerAddr": "127.0.0.1",
+                "ServerLabels": {
+                    "test": "true"
+                }
+            },
+            "EnhancedRecording": true,
+            "Interactive": true,
+            "Participants": [
+                "foo",
+                "bar"
+            ],
+            "StartTime": "0001-01-01T00:00:00Z",
+            "EndTime": "0001-01-01T00:00:00Z",
+            "KubernetesCluster": {
+                "KubernetesCluster": "test-kube-cluster",
+                "KubernetesUsers": [
+                    "kube-foo",
+                    "kube-bar"
+                ],
+                "KubernetesGroups": [
+                    "kube-group"
+                ]
+            },
+            "KubernetesPod": {
+                "KubernetesPodName": "test/pod",
+                "KubernetesPodNamespace": "default",
+                "KubernetesContainerName": "test/container",
+                "KubernetesContainerImage": "test-image:latest",
+                "KubernetesNodeName": "test-node"
+            },
+            "InitialCommand": [
+                "ls",
+                "-la"
+            ],
+            "SessionRecording": "off"
+        }
+    }
+}

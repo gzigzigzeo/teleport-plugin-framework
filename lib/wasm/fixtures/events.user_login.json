@@ -1,6 +1,6 @@
 {
     "type": "types.OneOf",
-    "description": "User login event",
+    "description": "User login",
     "data": {
         "UserLogin": {
             "Metadata": {

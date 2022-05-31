@@ -1,0 +1,31 @@
+{
+    "type": "types.OneOf",
+    "description": "User deleted",
+    "data": {
+        "UserDelete": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "user.delete",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "User": {
+                "User": "foo",
+                "Login": "foo",
+                "Impersonator": "foo",
+                "AWSRoleARN": "arn:aws:iam::account:root",
+                "AccessRequests": [
+                    "{{ uuid }}"
+                ]
+            },
+            "Resource": {
+                "Name": "User",
+                "Expires": "{{ time }}",
+                "UpdatedBy": "bar",
+                "TTL": "10h"
+            }
+        }
+    }
+}

@@ -1,0 +1,19 @@
+{
+    "type": "types.OneOf",
+    "description": "Unknown event",
+    "data": {
+        "Unknown": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "unknown",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "UnknownType": "unknown.event",
+            "UnknownCode": "999",
+            "Data": "no data"
+        }
+    }
+}

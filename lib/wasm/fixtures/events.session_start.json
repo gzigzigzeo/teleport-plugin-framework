@@ -1,0 +1,66 @@
+{
+    "type": "types.OneOf",
+    "description": "Session has been initiated or updated",
+    "data": {
+        "SessionStart": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "session.start",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "User": {
+                "User": "foo",
+                "Login": "foo",
+                "Impersonator": "foo",
+                "AWSRoleARN": "arn:aws:iam::account:root",
+                "AccessRequests": [
+                    "{{ uuid }}"
+                ]
+            },
+            "Session": {
+                "SessionID": "{{ uuid }}",
+                "WithMFA": "{{ uuid }}"
+            },
+            "Server": {
+                "ServerNamespace": "default",
+                "ServerID": "{{ uuid }}",
+                "ServerHostname": "localhost",
+                "ServerAddr": "127.0.0.1",
+                "ServerLabels": {
+                    "test": "true"
+                }
+            },
+            "Connection": {
+                "LocalAddr": "127.0.0.1",
+                "RemoteAddr": "192.168.0.1",
+                "Protocol": "https"
+            },
+            "TerminalSize": "80:24",
+            "KubernetesCluster": {
+                "KubernetesCluster": "test-kube-cluster",
+                "KubernetesUsers": [
+                    "kube-foo",
+                    "kube-bar"
+                ],
+                "KubernetesGroups": [
+                    "kube-group"
+                ]
+            },
+            "KubernetesPod": {
+                "KubernetesPodName": "test/pod",
+                "KubernetesPodNamespace": "default",
+                "KubernetesContainerName": "test/container",
+                "KubernetesContainerImage": "test-image:latest",
+                "KubernetesNodeName": "test-node"
+            },
+            "InitialCommand": [
+                "ls",
+                "-la"
+            ],
+            "SessionRecording": "off"
+        }
+    }
+}

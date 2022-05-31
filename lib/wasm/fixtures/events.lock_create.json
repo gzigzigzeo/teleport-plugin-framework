@@ -1,0 +1,31 @@
+{
+    "type": "types.OneOf",
+    "description": "Lock is created/updated",
+    "data": {
+        "LockCreate": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "lock.created",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "Resource": {
+                "Name": "Lock",
+                "Expires": "{{ time }}",
+                "UpdatedBy": "bar",
+                "TTL": "10h"
+            },
+            "User": {
+                "User": "foo",
+                "Login": "foo",
+                "Impersonator": "foo",
+                "AWSRoleARN": "arn:aws:iam::account:root",
+                "AccessRequests": [
+                    "{{ uuid }}"
+                ]
+            }
+        }
+    }
+}

@@ -1,0 +1,22 @@
+{
+    "type": "types.OneOf",
+    "description": "Session has been uploaded to the external storage",
+    "data": {
+        "SessionUpload": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "session.upload",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "SessionMetadata": {
+                "SessionID": "{{ uuid }}",
+                "WithMFA": "{{ uuid }}"
+            },
+            "UID": "{{ uuid }}",
+            "SessionURL": "https://test.teleport.sh/session-1"
+        }
+    }
+}

@@ -48,6 +48,7 @@ func main() {
 	generateFixture := fixtures.Command("generate", "Generate fixture")
 	listTemplates := fixtures.Command("list-templates", "List fixture templates")
 	genTS := app.Command("gen-ts", "Regenerate ts files from a templates").Hidden()
+	genMockTemplates := app.Command("gen-mock-templates", "Regenerate fixture templates").Hidden()
 
 	new.Arg("dir", "Path to the new plugin").
 		Required().
@@ -87,7 +88,11 @@ func main() {
 	case genTS.FullCommand():
 		fmt.Println(pluginFrameworkName)
 		fmt.Println()
-
 		internal.GenTS(tpls)
+
+	case genMockTemplates.FullCommand():
+		fmt.Println(pluginFrameworkName)
+		fmt.Println()
+		internal.GenMockTemplates()
 	}
 }

@@ -1,0 +1,25 @@
+{
+    "type": "types.OneOf",
+    "description": "Billing information updated",
+    "data": {
+        "BillingInformationUpdate": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "billing.update_info",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "User": {
+                "User": "foo",
+                "Login": "foo",
+                "Impersonator": "foo",
+                "AWSRoleARN": "arn:aws:iam::account:root",
+                "AccessRequests": [
+                    "{{ uuid }}"
+                ]
+            }
+        }
+    }
+}

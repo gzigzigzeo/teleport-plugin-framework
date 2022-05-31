@@ -1,0 +1,25 @@
+{
+    "type": "types.OneOf",
+    "description": "Credit card deleted",
+    "data": {
+        "BillingCardDelete": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "billing.delete_card",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "User": {
+                "User": "foo",
+                "Login": "foo",
+                "Impersonator": "foo",
+                "AWSRoleARN": "arn:aws:iam::account:root",
+                "AccessRequests": [
+                    "{{ uuid }}"
+                ]
+            }
+        }
+    }
+}

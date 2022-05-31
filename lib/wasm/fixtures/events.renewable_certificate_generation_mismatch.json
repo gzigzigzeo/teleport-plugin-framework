@@ -1,0 +1,24 @@
+{
+    "type": "types.OneOf",
+    "data": {
+        "RenewableCertificateGenerationMismatch": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "METADATA_TYPE_PLACEHOLDER",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "UserMetadata": {
+                "User": "foo",
+                "Login": "foo",
+                "Impersonator": "foo",
+                "AWSRoleARN": "arn:aws:iam::account:root",
+                "AccessRequests": [
+                    "{{ uuid }}"
+                ]
+            }
+        }
+    }
+}

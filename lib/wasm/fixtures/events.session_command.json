@@ -1,0 +1,46 @@
+{
+    "type": "types.OneOf",
+    "description": "Executable is run within a session",
+    "data": {
+        "SessionCommand": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "session.command",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "User": {
+                "User": "foo",
+                "Login": "foo",
+                "Impersonator": "foo",
+                "AWSRoleARN": "arn:aws:iam::account:root",
+                "AccessRequests": [
+                    "{{ uuid }}"
+                ]
+            },
+            "Session": {
+                "SessionID": "{{ uuid }}",
+                "WithMFA": "{{ uuid }}"
+            },
+            "Server": {
+                "ServerNamespace": "default",
+                "ServerID": "{{ uuid }}",
+                "ServerHostname": "localhost",
+                "ServerAddr": "127.0.0.1",
+                "ServerLabels": {
+                    "test": "true"
+                }
+            },
+            "BPF": {
+                "Program": "block"
+            },
+            "Path": "/usr/local/bin/teleport",
+            "Argv": [
+                "-la"
+            ],
+            "ReturnCode": 1
+        }
+    }
+}

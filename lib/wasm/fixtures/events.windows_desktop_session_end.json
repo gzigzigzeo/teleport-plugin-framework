@@ -1,0 +1,41 @@
+{
+    "type": "types.OneOf",
+    "description": "User disconnects from desktop",
+    "data": {
+        "WindowsDesktopSessionEnd": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "windows.desktop.session.end",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "User": {
+                "User": "foo",
+                "Login": "foo",
+                "Impersonator": "foo",
+                "AWSRoleARN": "arn:aws:iam::account:root",
+                "AccessRequests": [
+                    "{{ uuid }}"
+                ]
+            },
+            "Session": {
+                "SessionID": "{{ uuid }}",
+                "WithMFA": "{{ uuid }}"
+            },
+            "WindowsDesktopService": "rdp-service",
+            "DesktopAddr": "10.0.0.1",
+            "Domain": "local",
+            "WindowsUser": "Administrator",
+            "DesktopLabels": {},
+            "StartTime": "0001-01-01T00:00:00Z",
+            "EndTime": "0001-01-01T00:00:00Z",
+            "DesktopName": "foo-Desktop",
+            "Recorded": true,
+            "Participants": [
+                "Administrator"
+            ]
+        }
+    }
+}

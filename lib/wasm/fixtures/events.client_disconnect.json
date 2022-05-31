@@ -1,0 +1,40 @@
+{
+    "type": "types.OneOf",
+    "description": "Client is disconnected by a server",
+    "data": {
+        "ClientDisconnect": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "client.disconnect",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "User": {
+                "User": "foo",
+                "Login": "foo",
+                "Impersonator": "foo",
+                "AWSRoleARN": "arn:aws:iam::account:root",
+                "AccessRequests": [
+                    "{{ uuid }}"
+                ]
+            },
+            "Connection": {
+                "LocalAddr": "127.0.0.1",
+                "RemoteAddr": "192.168.0.1",
+                "Protocol": "https"
+            },
+            "Server": {
+                "ServerNamespace": "default",
+                "ServerID": "{{ uuid }}",
+                "ServerHostname": "localhost",
+                "ServerAddr": "127.0.0.1",
+                "ServerLabels": {
+                    "test": "true"
+                }
+            },
+            "Reason": "Connection timeout"
+        }
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "type": "types.OneOf",
+    "description": "Desktop access session is recorded",
+    "data": {
+        "DesktopRecording": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "desktop.recording",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "Message": "AQID",
+            "DelayMilliseconds": "1"
+        }
+    }
+}

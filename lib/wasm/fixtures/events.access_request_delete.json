@@ -1,0 +1,26 @@
+{
+    "type": "types.OneOf",
+    "description": "Delete access request",    
+    "data": {
+        "AccessRequestDelete": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "access_request.delete",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "User": {
+                "User": "foo",
+                "Login": "foo",
+                "Impersonator": "foo",
+                "AWSRoleARN": "arn:aws:iam::account:root",
+                "AccessRequests": [
+                    "{{ uuid }}"
+                ]
+            },
+            "RequestID": "{{ uuid }}"
+        }
+    }
+}

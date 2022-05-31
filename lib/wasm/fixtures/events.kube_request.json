@@ -1,0 +1,56 @@
+{
+    "type": "types.OneOf",
+    "description": "Proxy handles generic Kubernetes request",
+    "data": {
+        "KubeRequest": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "kube.request",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "User": {
+                "User": "foo",
+                "Login": "foo",
+                "Impersonator": "foo",
+                "AWSRoleARN": "arn:aws:iam::account:root",
+                "AccessRequests": [
+                    "{{ uuid }}"
+                ]
+            },
+            "Connection": {
+                "LocalAddr": "127.0.0.1",
+                "RemoteAddr": "192.168.0.1",
+                "Protocol": "https"
+            },
+            "Server": {
+                "ServerNamespace": "default",
+                "ServerID": "{{ uuid }}",
+                "ServerHostname": "localhost",
+                "ServerAddr": "127.0.0.1",
+                "ServerLabels": {
+                    "test": "true"
+                }
+            },
+            "RequestPath": "/test",
+            "Verb": "POST",
+            "ResourceAPIGroup": "test",
+            "ResourceNamespace": "default",
+            "ResourceKind": "user",
+            "ResourceName": "foo",
+            "ResponseCode": 1,
+            "Kubernetes": {
+                "KubernetesCluster": "test-kube-cluster",
+                "KubernetesUsers": [
+                    "kube-foo",
+                    "kube-bar"
+                ],
+                "KubernetesGroups": [
+                    "kube-group"
+                ]
+            }
+        }
+    }
+}

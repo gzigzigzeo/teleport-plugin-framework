@@ -1,0 +1,43 @@
+{
+    "type": "types.OneOf",
+    "description": "Session end",
+    "data": {
+        "DatabaseSessionEnd": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "session.end",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "User": {
+                "User": "foo",
+                "Login": "foo",
+                "Impersonator": "foo",
+                "AWSRoleARN": "arn:aws:iam::account:root",
+                "AccessRequests": [
+                    "{{ uuid }}"
+                ]
+            },
+            "Session": {
+                "SessionID": "{{ uuid }}",
+                "WithMFA": "{{ uuid }}"
+            },
+            "Database": {
+                "DatabaseService": "foo",
+                "DatabaseProtocol": "postgres",
+                "DatabaseURI": "localhost:3251",
+                "DatabaseName": "foo",
+                "DatabaseUser": "foo",
+                "DatabaseLabels": {
+                    "test": "true"
+                },
+                "DatabaseAWSRegion": "eu-west-1",
+                "DatabaseAWSRedshiftClusterID": "test-aws-cluster",
+                "DatabaseGCPProjectID": "test-project",
+                "DatabaseGCPInstanceID": "{{ uuid }}"
+            }
+        }
+    }
+}

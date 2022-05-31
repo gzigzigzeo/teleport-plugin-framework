@@ -1,12 +1,12 @@
 {
     "type": "types.OneOf",
-    "description": "Create access request event",
+    "description": "Create access request",
     "data": {
         "AccessRequestCreate": {
             "Metadata": {
                 "Index": 1,
                 "ID": "{{ uuid }}",
-                "Type": "user.create",
+                "Type": "access_request.create",
                 "ClusterName": "test-cluster",
                 "Time": "{{ time }}"
             },

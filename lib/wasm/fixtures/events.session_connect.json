@@ -1,0 +1,30 @@
+{
+    "type": "types.OneOf",
+    "description": "SSH connection is made",
+    "data": {
+        "SessionConnect": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "session.connect",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "Server": {
+                "ServerNamespace": "default",
+                "ServerID": "{{ uuid }}",
+                "ServerHostname": "localhost",
+                "ServerAddr": "127.0.0.1",
+                "ServerLabels": {
+                    "test": "true"
+                }
+            },
+            "Connection": {
+                "LocalAddr": "127.0.0.1",
+                "RemoteAddr": "192.168.0.1",
+                "Protocol": "https"
+            }
+        }
+    }
+}

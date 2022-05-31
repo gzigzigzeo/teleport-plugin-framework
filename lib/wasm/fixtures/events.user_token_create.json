@@ -1,0 +1,31 @@
+{
+    "type": "types.OneOf",
+    "description": "Recovery token created",
+    "data": {
+        "UserTokenCreate": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "recovery_token.create",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "Resource": {
+                "Name": "UserToken",
+                "Expires": "{{ time }}",
+                "UpdatedBy": "bar",
+                "TTL": "10h"
+            },
+            "User": {
+                "User": "foo",
+                "Login": "foo",
+                "Impersonator": "foo",
+                "AWSRoleARN": "arn:aws:iam::account:root",
+                "AccessRequests": [
+                    "{{ uuid }}"
+                ]
+            }
+        }
+    }
+}

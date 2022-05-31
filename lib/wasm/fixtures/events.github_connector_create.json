@@ -1,0 +1,31 @@
+{
+    "type": "types.OneOf",
+    "description": "Github connector created",
+    "data": {
+        "GithubConnectorCreate": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "github.created",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "Resource": {
+                "Name": "GithubConnector",
+                "Expires": "{{ time }}",
+                "UpdatedBy": "bar",
+                "TTL": "10h"
+            },
+            "User": {
+                "User": "foo",
+                "Login": "foo",
+                "Impersonator": "foo",
+                "AWSRoleARN": "arn:aws:iam::account:root",
+                "AccessRequests": [
+                    "{{ uuid }}"
+                ]
+            }
+        }
+    }
+}

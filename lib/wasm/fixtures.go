@@ -47,14 +47,14 @@ type templateBuilder struct {
 	template *template.Template
 }
 
-// fixture respresents fixture template
-type fixture struct {
+// Fixture respresents Fixture template
+type Fixture struct {
 	// Name represents fixture template name
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 	// Type represents fixture proto type
-	Type string `json:"type"`
+	Type string `json:"type,omitempty"`
 	// Description represents fixture template description
-	Description string `json:"description"`
+	Description string `json:"description,omitempty"`
 	// Data represents fixture data in json format
 	Data json.RawMessage `json:"data"`
 }
@@ -98,14 +98,14 @@ func (c *templateBuilder) time() string {
 }
 
 // Get returns fixture by template name
-func (c *templateBuilder) Get(name string) (*fixture, error) {
+func (c *templateBuilder) Get(name string) (*Fixture, error) {
 	b := &strings.Builder{}
 	err := c.template.ExecuteTemplate(b, name, struct{}{})
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	f := &fixture{
+	f := &Fixture{
 		Name: strings.TrimSuffix(name, filepath.Ext(name)),
 	}
 	err = json.Unmarshal([]byte(b.String()), f)
@@ -117,9 +117,9 @@ func (c *templateBuilder) Get(name string) (*fixture, error) {
 }
 
 // All returns all fixture templates
-func (c *templateBuilder) All() ([]*fixture, error) {
+func (c *templateBuilder) All() ([]*Fixture, error) {
 	t := c.template.Templates()
-	var r = make([]*fixture, len(t))
+	var r = make([]*Fixture, len(t))
 
 	for i, tpl := range t {
 		f, err := c.Get(tpl.Name())
@@ -133,7 +133,7 @@ func (c *templateBuilder) All() ([]*fixture, error) {
 }
 
 // GetProtoMessage returns proto message of a fixture
-func (f *fixture) GetProtoMessage() (proto.Message, error) {
+func (f *Fixture) GetProtoMessage() (proto.Message, error) {
 	// FIXME: Resolve from type
 	m := &events.OneOf{}
 
@@ -146,8 +146,8 @@ func (f *fixture) GetProtoMessage() (proto.Message, error) {
 }
 
 // ToJSON returns JSON representation of a fixture
-func (f *fixture) ToJSON() ([]byte, error) {
-	return json.MarshalIndent(f, "", "  ")
+func (f *Fixture) ToJSON() ([]byte, error) {
+	return json.MarshalIndent(f, "", "    ")
 }
 
 // NewFixtureIndex reads fixtures from directory and unmarshals them to the proto.Message
@@ -197,7 +197,7 @@ func (i *FixtureIndex) read(idx int, filename string) error {
 		return trace.Wrap(err)
 	}
 
-	f := &fixture{}
+	f := &Fixture{}
 	err = json.Unmarshal(c, f)
 	if err != nil {
 		return trace.Wrap(err)

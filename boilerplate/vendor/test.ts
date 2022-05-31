@@ -14,14 +14,6 @@ export function getFixture(n: i32): ArrayBuffer {
     return buf;
 }
 
-// Returns HandleEventReuqest object with event taken from fixture n
-export function getFixtureAsHandleEventRequest(n: i32): ArrayBuffer {
-    const fixture = getFixture(n)
-    const request = new plugin.HandleEventRequest()
-    request.Event = events.OneOf.decode(fixture)
-    return request.encode()
-}
-
 // Returns size of a fixture with number n
 declare function getLatestAPIRequestSize(): i32;
 

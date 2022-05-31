@@ -1,0 +1,27 @@
+{
+    "type": "types.OneOf",
+    "description": "HTTP request and response",
+    "data": {
+        "AppSessionRequest": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "app.session.request",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "Path": "/test",
+            "RawQuery": "/test?test=1",
+            "Method": "GET",
+            "App": {
+                "AppURI": "http://localhost:3000",
+                "AppPublicAddr": "test.test.teleport.sh",
+                "AppLabels": {
+                    "test": "true"
+                },
+                "AppName": "test"
+            }
+        }
+    }
+}

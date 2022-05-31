@@ -1,0 +1,80 @@
+{
+    "type": "types.OneOf",
+    "description": "Certificate is issued",
+    "data": {
+        "CertificateCreate": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "cert.create",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "CertificateType": "local",
+            "Identity": {
+                "User": "foo",
+                "Impersonator": "foo",
+                "Roles": [
+                    "foo",
+                    "bar"
+                ],
+                "Usage": [
+                    "baz"
+                ],
+                "Logins": [
+                    "foo"
+                ],
+                "KubernetesGroups": [
+                    "foo",
+                    "bar"
+                ],
+                "KubernetesUsers": [
+                    "foo",
+                    "bar"
+                ],
+                "Expires": "{{ time }}",
+                "RouteToCluster": "test-cluster",
+                "KubernetesCluster": "kube-cluster",
+                "Traits": {
+                    "test": [
+                        "foo",
+                        "bar"
+                    ]
+                },
+                "RouteToApp": {
+                    "Name": "app-route",
+                    "SessionID": "{{ uuid }}",
+                    "PublicAddr": "10.0.0.1",
+                    "ClusterName": "test-cluster",
+                    "AWSRoleARN": "arn:aws:iam::account:root"
+                },
+                "TeleportCluster": "test-cluster",
+                "RouteToDatabase": {
+                    "ServiceName": "db",
+                    "Protocol": "postgres",
+                    "Username": "root",
+                    "Database": "test"
+                },
+                "DatabaseNames": [
+                    "db1",
+                    "db2"
+                ],
+                "DatabaseUsers": [
+                    "postgres",
+                    "root"
+                ],
+                "MFADeviceUUID": "{{ uuid }}",
+                "ClientIP": "10.0.0.1",
+                "AWSRoleARNs": [
+                    "arn:aws:iam::account:root"
+                ],
+                "AccessRequests": [
+                    "{{ uuid }}",
+                    "{{ uuid }}"
+                ],
+                "DisallowReissue": true
+            }
+        }
+    }
+}

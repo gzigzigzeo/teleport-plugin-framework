@@ -1,0 +1,50 @@
+{
+    "type": "types.OneOf",
+    "description": "Data transfer occured on the session",
+    "data": {
+        "SCP": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "scp",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "User": {
+                "User": "foo",
+                "Login": "foo",
+                "Impersonator": "foo",
+                "AWSRoleARN": "arn:aws:iam::account:root",
+                "AccessRequests": [
+                    "{{ uuid }}"
+                ]
+            },
+            "Connection": {
+                "LocalAddr": "127.0.0.1",
+                "RemoteAddr": "192.168.0.1",
+                "Protocol": "https"
+            },
+            "Session": {
+                "SessionID": "{{ uuid }}",
+                "WithMFA": "{{ uuid }}"
+            },
+            "Server": {
+                "ServerNamespace": "default",
+                "ServerID": "{{ uuid }}",
+                "ServerHostname": "localhost",
+                "ServerAddr": "127.0.0.1",
+                "ServerLabels": {
+                    "test": "true"
+                }
+            },
+            "Command": {
+                "Command": "ls -la",
+                "ExitCode": "1",
+                "Error": "Segmentation fault"
+            },
+            "Path": "/tmp/session",
+            "Action": "download"
+        }
+    }
+}

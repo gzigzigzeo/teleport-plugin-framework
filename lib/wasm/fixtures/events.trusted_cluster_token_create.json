@@ -1,0 +1,31 @@
+{
+    "type": "types.OneOf",
+    "description": "Trusted cluster join token created",
+    "data": {
+        "TrustedClusterTokenCreate": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "trusted_cluster_token.create",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "Resource": {
+                "Name": "TrustedClusterToken",
+                "Expires": "{{ time }}",
+                "UpdatedBy": "bar",
+                "TTL": "10h"
+            },
+            "User": {
+                "User": "foo",
+                "Login": "foo",
+                "Impersonator": "foo",
+                "AWSRoleARN": "arn:aws:iam::account:root",
+                "AccessRequests": [
+                    "{{ uuid }}"
+                ]
+            }
+        }
+    }
+}

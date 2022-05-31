@@ -1,0 +1,39 @@
+{
+    "type": "types.OneOf",
+    "description": "App update",
+    "data": {
+        "AppUpdate": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "app.update",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "User": {
+                "User": "foo",
+                "Login": "foo",
+                "Impersonator": "foo",
+                "AWSRoleARN": "arn:aws:iam::account:root",
+                "AccessRequests": [
+                    "{{ uuid }}"
+                ]
+            },
+            "Resource": {
+                "Name": "App",
+                "Expires": "{{ time }}",
+                "UpdatedBy": "bar",
+                "TTL": "10h"
+            },
+            "App": {
+                "AppURI": "http://localhost:3000",
+                "AppPublicAddr": "test.test.teleport.sh",
+                "AppLabels": {
+                    "test": "true"
+                },
+                "AppName": "test"
+            }
+        }
+    }
+}

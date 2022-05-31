@@ -1,0 +1,31 @@
+{
+    "type": "types.OneOf",
+    "events": "SAML connector deleted",
+    "data": {
+        "SAMLConnectorDelete": {
+            "Metadata": {
+                "Index": "1",
+                "Type": "saml.deleted",
+                "ID": "{{ uuid }}",
+                "Code": "{{ uuid }}",
+                "Time": "{{ time }}",
+                "ClusterName": "test-cluster"
+            },
+            "Resource": {
+                "Name": "SAMLConnector",
+                "Expires": "{{ time }}",
+                "UpdatedBy": "bar",
+                "TTL": "10h"
+            },
+            "User": {
+                "User": "foo",
+                "Login": "foo",
+                "Impersonator": "foo",
+                "AWSRoleARN": "arn:aws:iam::account:root",
+                "AccessRequests": [
+                    "{{ uuid }}"
+                ]
+            }
+        }
+    }
+}
