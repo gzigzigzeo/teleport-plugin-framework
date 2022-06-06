@@ -15,5 +15,25 @@ message HandleEventRequest {
 
 // HandleEventResponse represents the response, returning success status, error message and modified event (optional)
 message HandleEventResponse {
-    events.OneOf Event = 3 [ (gogoproto.nullable) = true ];
+    events.OneOf Event = 1 [ (gogoproto.nullable) = true ];
+}
+
+// Severity represents alert severity
+enum Severity {
+    DEBUG = 0;
+    INFO = 1;
+    NOTICE = 2;
+    WARNING = 3;
+    ERROR = 4;
+    CRITICAL = 5;
+    ALERT = 6;
+    EMERGENCY = 7;
+}
+
+// Alert represents alert struct
+message Alert {
+    string Message  = 1;
+    events.OneOf Event = 2 [ (gogoproto.nullable) = true ];
+    map<string,string> Metadata = 3;
+    Severity Severity = 4;
 }

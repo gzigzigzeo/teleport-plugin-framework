@@ -42,6 +42,9 @@ type args struct {
 	fixturesPath    string
 	binary          string
 	timeout         time.Duration
+
+	// new
+	example string
 }
 
 func main() {
@@ -75,12 +78,14 @@ func main() {
 		Required().
 		StringVar(&args.fixtureName)
 
+	new.Flag("example", "Start with example (check examples/ folder)").Default("dump").Short('e').StringVar(&args.example)
+
 	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
 	case new.FullCommand():
 		fmt.Println(pluginFrameworkName)
 		fmt.Println()
 
-		internal.GenerateBoilerplate(fs, args.targetDir)
+		internal.GenerateBoilerplate(fs, args.targetDir, args.example)
 	case test.FullCommand():
 		fmt.Println(pluginFrameworkName)
 		fmt.Println()

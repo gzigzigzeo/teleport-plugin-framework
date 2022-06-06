@@ -5,7 +5,7 @@
         "DatabaseSessionQuery": {
             "Metadata": {
                 "Index": "1",
-                "Type": "session.query",
+                "Type": "db.session.query",
                 "ID": "{{ uuid }}",
                 "Code": "{{ uuid }}",
                 "Time": "{{ time }}",

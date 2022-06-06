@@ -287,7 +287,6 @@ func TestParallelProtobufInteropExecution(t *testing.T) {
 	b, err := os.ReadFile("test.wasm")
 	require.NoError(t, err)
 
-	protobufInterop := NewProtobufInterop()
 	testTrait := newTestTrait()
 
 	p, err := NewExecutionContextPool(ExecutionContextPoolOptions{
@@ -298,7 +297,6 @@ func TestParallelProtobufInteropExecution(t *testing.T) {
 		MemoryInterop: NewAssemblyScriptMemoryInterop(),
 		Traits: []interface{}{
 			NewAssemblyScriptEnv(),
-			protobufInterop,
 			testTrait,
 			NewAWSSecretsManager(NewMockSecretsCache()),
 		},
@@ -321,7 +319,7 @@ func TestParallelProtobufInteropExecution(t *testing.T) {
 					},
 				})
 
-				dataView, err := protobufInterop.SendMessage(ectx, oneof)
+				dataView, err := ectx.MemoryInterop.SendMessage(ectx, oneof)
 				require.NoError(t, err)
 
 				if len(hook.AllEntries()) > 0 {
@@ -349,8 +347,7 @@ func TestHandleEvent(t *testing.T) {
 	b, err := os.ReadFile("test.wasm")
 	require.NoError(t, err)
 
-	protobufInterop := NewProtobufInterop()
-	handleEvent := NewHandleEvent("handleEvent", protobufInterop)
+	handleEvent := NewHandleEvent("handleEvent")
 	testTraitFactory := newTestTrait()
 
 	p, err := NewExecutionContextPool(ExecutionContextPoolOptions{
@@ -361,7 +358,6 @@ func TestHandleEvent(t *testing.T) {
 		MemoryInterop: NewAssemblyScriptMemoryInterop(),
 		Traits: []interface{}{
 			NewAssemblyScriptEnv(),
-			protobufInterop,
 			handleEvent,
 			testTraitFactory,
 			NewAWSSecretsManager(NewMockSecretsCache()),

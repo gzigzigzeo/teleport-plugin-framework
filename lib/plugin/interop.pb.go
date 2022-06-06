@@ -24,6 +24,50 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// Severity represents alert severity
+type Severity int32
+
+const (
+	Severity_DEBUG     Severity = 0
+	Severity_INFO      Severity = 1
+	Severity_NOTICE    Severity = 2
+	Severity_WARNING   Severity = 3
+	Severity_ERROR     Severity = 4
+	Severity_CRITICAL  Severity = 5
+	Severity_ALERT     Severity = 6
+	Severity_EMERGENCY Severity = 7
+)
+
+var Severity_name = map[int32]string{
+	0: "DEBUG",
+	1: "INFO",
+	2: "NOTICE",
+	3: "WARNING",
+	4: "ERROR",
+	5: "CRITICAL",
+	6: "ALERT",
+	7: "EMERGENCY",
+}
+
+var Severity_value = map[string]int32{
+	"DEBUG":     0,
+	"INFO":      1,
+	"NOTICE":    2,
+	"WARNING":   3,
+	"ERROR":     4,
+	"CRITICAL":  5,
+	"ALERT":     6,
+	"EMERGENCY": 7,
+}
+
+func (x Severity) String() string {
+	return proto.EnumName(Severity_name, int32(x))
+}
+
+func (Severity) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_4ebda08fe93041da, []int{0}
+}
+
 // HandleEventRequest represents the request passing the event
 type HandleEventRequest struct {
 	Event                *events.OneOf `protobuf:"bytes,1,opt,name=Event,proto3" json:"Event,omitempty"`
@@ -67,7 +111,7 @@ var xxx_messageInfo_HandleEventRequest proto.InternalMessageInfo
 
 // HandleEventResponse represents the response, returning success status, error message and modified event (optional)
 type HandleEventResponse struct {
-	Event                *events.OneOf `protobuf:"bytes,3,opt,name=Event,proto3" json:"Event,omitempty"`
+	Event                *events.OneOf `protobuf:"bytes,1,opt,name=Event,proto3" json:"Event,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}      `json:"-"`
 	XXX_unrecognized     []byte        `json:"-"`
 	XXX_sizecache        int32         `json:"-"`
@@ -106,26 +150,86 @@ func (m *HandleEventResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_HandleEventResponse proto.InternalMessageInfo
 
+// Alert represents alert struct
+type Alert struct {
+	Message              string            `protobuf:"bytes,1,opt,name=Message,proto3" json:"Message,omitempty"`
+	Event                *events.OneOf     `protobuf:"bytes,2,opt,name=Event,proto3" json:"Event,omitempty"`
+	Metadata             map[string]string `protobuf:"bytes,3,rep,name=Metadata,proto3" json:"Metadata,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	Severity             Severity          `protobuf:"varint,4,opt,name=Severity,proto3,enum=plugin.Severity" json:"Severity,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
+}
+
+func (m *Alert) Reset()         { *m = Alert{} }
+func (m *Alert) String() string { return proto.CompactTextString(m) }
+func (*Alert) ProtoMessage()    {}
+func (*Alert) Descriptor() ([]byte, []int) {
+	return fileDescriptor_4ebda08fe93041da, []int{2}
+}
+func (m *Alert) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *Alert) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_Alert.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *Alert) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Alert.Merge(m, src)
+}
+func (m *Alert) XXX_Size() int {
+	return m.Size()
+}
+func (m *Alert) XXX_DiscardUnknown() {
+	xxx_messageInfo_Alert.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Alert proto.InternalMessageInfo
+
 func init() {
+	proto.RegisterEnum("plugin.Severity", Severity_name, Severity_value)
 	proto.RegisterType((*HandleEventRequest)(nil), "plugin.HandleEventRequest")
 	proto.RegisterType((*HandleEventResponse)(nil), "plugin.HandleEventResponse")
+	proto.RegisterType((*Alert)(nil), "plugin.Alert")
+	proto.RegisterMapType((map[string]string)(nil), "plugin.Alert.MetadataEntry")
 }
 
 func init() { proto.RegisterFile("interop.proto", fileDescriptor_4ebda08fe93041da) }
 
 var fileDescriptor_4ebda08fe93041da = []byte{
-	// 169 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0xcd, 0xcc, 0x2b, 0x49,
-	0x2d, 0xca, 0x2f, 0xd0, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x2b, 0xc8, 0x29, 0x4d, 0xcf,
-	0xcc, 0x93, 0x12, 0x4e, 0x2d, 0x4b, 0xcd, 0x2b, 0x29, 0xd6, 0x87, 0x50, 0x10, 0x49, 0x29, 0x91,
-	0xf4, 0xfc, 0xf4, 0x7c, 0x30, 0x53, 0x1f, 0xc4, 0x82, 0x88, 0x2a, 0x59, 0x72, 0x09, 0x79, 0x24,
-	0xe6, 0xa5, 0xe4, 0xa4, 0xba, 0x82, 0xd4, 0x06, 0xa5, 0x16, 0x96, 0xa6, 0x16, 0x97, 0x08, 0x29,
-	0x73, 0xb1, 0x82, 0xf9, 0x12, 0x8c, 0x0a, 0x8c, 0x1a, 0xdc, 0x46, 0xbc, 0x7a, 0x50, 0x93, 0xfc,
-	0xf3, 0x52, 0xfd, 0xd3, 0x82, 0x20, 0x72, 0x4a, 0x0e, 0x5c, 0xc2, 0x28, 0x5a, 0x8b, 0x0b, 0xf2,
-	0xf3, 0x8a, 0x53, 0x85, 0x34, 0x61, 0x7a, 0x99, 0xb1, 0xe8, 0x75, 0x62, 0x39, 0x71, 0x4f, 0x9e,
-	0x11, 0x6a, 0x82, 0x93, 0xc0, 0x89, 0x87, 0x72, 0x0c, 0x27, 0x1e, 0xc9, 0x31, 0x5e, 0x78, 0x24,
-	0xc7, 0xf8, 0xe0, 0x91, 0x1c, 0x63, 0x12, 0x1b, 0xd8, 0x55, 0xc6, 0x80, 0x00, 0x00, 0x00, 0xff,
-	0xff, 0x33, 0xee, 0xa9, 0x91, 0xd9, 0x00, 0x00, 0x00,
+	// 381 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x51, 0xcd, 0x8e, 0x93, 0x50,
+	0x14, 0x9e, 0x5b, 0x7e, 0x0a, 0xa7, 0x62, 0x6e, 0xee, 0xcc, 0x82, 0xd4, 0x04, 0x9b, 0x71, 0x53,
+	0x8d, 0x61, 0x92, 0xba, 0xf0, 0x6f, 0x23, 0xc5, 0x6b, 0x25, 0x99, 0x42, 0x72, 0xad, 0x31, 0x2e,
+	0x31, 0x73, 0x24, 0x4d, 0x09, 0x20, 0xdc, 0x36, 0xe9, 0x1b, 0x76, 0xe9, 0x13, 0x18, 0xed, 0x13,
+	0xf8, 0x08, 0x06, 0x28, 0x6d, 0xba, 0x71, 0x56, 0x7c, 0xdf, 0xf9, 0x7e, 0xce, 0x09, 0x17, 0xac,
+	0x65, 0x26, 0xb1, 0xcc, 0x0b, 0xb7, 0x28, 0x73, 0x99, 0x33, 0xbd, 0x48, 0xd7, 0xc9, 0x32, 0x1b,
+	0x5e, 0xe2, 0x06, 0x33, 0x59, 0xdd, 0xb4, 0x9f, 0x56, 0x1c, 0x5e, 0x25, 0x79, 0x92, 0x37, 0xf0,
+	0xa6, 0x46, 0xed, 0xf4, 0xfa, 0x35, 0xb0, 0x8f, 0x71, 0x76, 0x97, 0x22, 0xaf, 0xbd, 0x02, 0x7f,
+	0xac, 0xb1, 0x92, 0xec, 0x09, 0x68, 0x0d, 0xb7, 0xc9, 0x88, 0x8c, 0x07, 0x13, 0xcb, 0x3d, 0x34,
+	0x45, 0x19, 0x46, 0xdf, 0x45, 0xab, 0x5d, 0xbf, 0x83, 0xcb, 0xb3, 0x68, 0x55, 0xe4, 0x59, 0x85,
+	0xec, 0xe9, 0xff, 0xb2, 0x53, 0x75, 0xf7, 0xeb, 0x31, 0xe9, 0x1a, 0xfe, 0x12, 0xd0, 0xbc, 0x14,
+	0x4b, 0xc9, 0x6c, 0xe8, 0xcf, 0xb1, 0xaa, 0xe2, 0x04, 0x9b, 0x98, 0x29, 0x3a, 0x7a, 0xaa, 0xeb,
+	0xdd, 0x57, 0xc7, 0x5e, 0x82, 0x31, 0x47, 0x19, 0xdf, 0xc5, 0x32, 0xb6, 0x95, 0x91, 0x32, 0x1e,
+	0x4c, 0x1e, 0xb9, 0xed, 0x1f, 0x71, 0x9b, 0x2d, 0x6e, 0xa7, 0xf2, 0x4c, 0x96, 0x5b, 0x71, 0x34,
+	0xb3, 0xe7, 0x60, 0x7c, 0xc2, 0x0d, 0x96, 0x4b, 0xb9, 0xb5, 0xd5, 0x11, 0x19, 0x3f, 0x9c, 0xd0,
+	0x2e, 0xd8, 0xcd, 0xc5, 0xd1, 0x31, 0x7c, 0x0b, 0xd6, 0x59, 0x11, 0xa3, 0xa0, 0xac, 0x70, 0x7b,
+	0x38, 0xbc, 0x86, 0xec, 0x0a, 0xb4, 0x4d, 0x9c, 0xae, 0xb1, 0x39, 0xda, 0x14, 0x2d, 0x79, 0xd3,
+	0x7b, 0x45, 0x9e, 0xad, 0x4e, 0xab, 0x98, 0x09, 0xda, 0x7b, 0x3e, 0xfd, 0x3c, 0xa3, 0x17, 0xcc,
+	0x00, 0x35, 0x08, 0x3f, 0x44, 0x94, 0x30, 0x00, 0x3d, 0x8c, 0x16, 0x81, 0xcf, 0x69, 0x8f, 0x0d,
+	0xa0, 0xff, 0xc5, 0x13, 0x61, 0x10, 0xce, 0xa8, 0x52, 0xbb, 0xb9, 0x10, 0x91, 0xa0, 0x2a, 0x7b,
+	0x00, 0x86, 0x2f, 0x82, 0x45, 0xe0, 0x7b, 0xb7, 0x54, 0xab, 0x05, 0xef, 0x96, 0x8b, 0x05, 0xd5,
+	0x99, 0x05, 0x26, 0x9f, 0x73, 0x31, 0xe3, 0xa1, 0xff, 0x95, 0xf6, 0xa7, 0x74, 0xf7, 0xc7, 0xb9,
+	0xd8, 0xed, 0x1d, 0xf2, 0x73, 0xef, 0x90, 0xdf, 0x7b, 0x87, 0x7c, 0xd3, 0x9b, 0x57, 0x7f, 0xf1,
+	0x2f, 0x00, 0x00, 0xff, 0xff, 0xba, 0x5b, 0x75, 0x75, 0x39, 0x02, 0x00, 0x00,
 }
 
 func (m *HandleEventRequest) Marshal() (dAtA []byte, err error) {
@@ -201,7 +305,77 @@ func (m *HandleEventResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i = encodeVarintInterop(dAtA, i, uint64(size))
 		}
 		i--
-		dAtA[i] = 0x1a
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *Alert) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Alert) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Alert) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if m.Severity != 0 {
+		i = encodeVarintInterop(dAtA, i, uint64(m.Severity))
+		i--
+		dAtA[i] = 0x20
+	}
+	if len(m.Metadata) > 0 {
+		for k := range m.Metadata {
+			v := m.Metadata[k]
+			baseI := i
+			i -= len(v)
+			copy(dAtA[i:], v)
+			i = encodeVarintInterop(dAtA, i, uint64(len(v)))
+			i--
+			dAtA[i] = 0x12
+			i -= len(k)
+			copy(dAtA[i:], k)
+			i = encodeVarintInterop(dAtA, i, uint64(len(k)))
+			i--
+			dAtA[i] = 0xa
+			i = encodeVarintInterop(dAtA, i, uint64(baseI-i))
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
+	if m.Event != nil {
+		{
+			size, err := m.Event.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintInterop(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Message) > 0 {
+		i -= len(m.Message)
+		copy(dAtA[i:], m.Message)
+		i = encodeVarintInterop(dAtA, i, uint64(len(m.Message)))
+		i--
+		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
@@ -242,6 +416,37 @@ func (m *HandleEventResponse) Size() (n int) {
 	if m.Event != nil {
 		l = m.Event.Size()
 		n += 1 + l + sovInterop(uint64(l))
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *Alert) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Message)
+	if l > 0 {
+		n += 1 + l + sovInterop(uint64(l))
+	}
+	if m.Event != nil {
+		l = m.Event.Size()
+		n += 1 + l + sovInterop(uint64(l))
+	}
+	if len(m.Metadata) > 0 {
+		for k, v := range m.Metadata {
+			_ = k
+			_ = v
+			mapEntrySize := 1 + len(k) + sovInterop(uint64(len(k))) + 1 + len(v) + sovInterop(uint64(len(v)))
+			n += mapEntrySize + 1 + sovInterop(uint64(mapEntrySize))
+		}
+	}
+	if m.Severity != 0 {
+		n += 1 + sovInterop(uint64(m.Severity))
 	}
 	if m.XXX_unrecognized != nil {
 		n += len(m.XXX_unrecognized)
@@ -371,7 +576,7 @@ func (m *HandleEventResponse) Unmarshal(dAtA []byte) error {
 			return fmt.Errorf("proto: HandleEventResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
-		case 3:
+		case 1:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Event", wireType)
 			}
@@ -407,6 +612,271 @@ func (m *HandleEventResponse) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipInterop(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthInterop
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *Alert) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowInterop
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Alert: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Alert: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Message", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowInterop
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthInterop
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthInterop
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Message = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Event", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowInterop
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthInterop
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthInterop
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Event == nil {
+				m.Event = &events.OneOf{}
+			}
+			if err := m.Event.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Metadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowInterop
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthInterop
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthInterop
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Metadata == nil {
+				m.Metadata = make(map[string]string)
+			}
+			var mapkey string
+			var mapvalue string
+			for iNdEx < postIndex {
+				entryPreIndex := iNdEx
+				var wire uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowInterop
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					wire |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				fieldNum := int32(wire >> 3)
+				if fieldNum == 1 {
+					var stringLenmapkey uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowInterop
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						stringLenmapkey |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					intStringLenmapkey := int(stringLenmapkey)
+					if intStringLenmapkey < 0 {
+						return ErrInvalidLengthInterop
+					}
+					postStringIndexmapkey := iNdEx + intStringLenmapkey
+					if postStringIndexmapkey < 0 {
+						return ErrInvalidLengthInterop
+					}
+					if postStringIndexmapkey > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapkey = string(dAtA[iNdEx:postStringIndexmapkey])
+					iNdEx = postStringIndexmapkey
+				} else if fieldNum == 2 {
+					var stringLenmapvalue uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowInterop
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						stringLenmapvalue |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					intStringLenmapvalue := int(stringLenmapvalue)
+					if intStringLenmapvalue < 0 {
+						return ErrInvalidLengthInterop
+					}
+					postStringIndexmapvalue := iNdEx + intStringLenmapvalue
+					if postStringIndexmapvalue < 0 {
+						return ErrInvalidLengthInterop
+					}
+					if postStringIndexmapvalue > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapvalue = string(dAtA[iNdEx:postStringIndexmapvalue])
+					iNdEx = postStringIndexmapvalue
+				} else {
+					iNdEx = entryPreIndex
+					skippy, err := skipInterop(dAtA[iNdEx:])
+					if err != nil {
+						return err
+					}
+					if (skippy < 0) || (iNdEx+skippy) < 0 {
+						return ErrInvalidLengthInterop
+					}
+					if (iNdEx + skippy) > postIndex {
+						return io.ErrUnexpectedEOF
+					}
+					iNdEx += skippy
+				}
+			}
+			m.Metadata[mapkey] = mapvalue
+			iNdEx = postIndex
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Severity", wireType)
+			}
+			m.Severity = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowInterop
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Severity |= Severity(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipInterop(dAtA[iNdEx:])

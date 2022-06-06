@@ -83,17 +83,23 @@ type Testing struct {
 	FixtureIndex     *FixtureIndex
 	MockAPIClient    *MockAPIClient
 	MockSecretsCache *MockSecretsCache
+	Alerting         *Alerting
 	run              NativeFunctionWithExecutionContext
 }
 
 // NewTesting creates new test runner instance
-func NewTesting(dir string) (*Testing, error) {
+func NewTesting(dir string, alerting *Alerting) (*Testing, error) {
 	index, err := NewFixtureIndex(dir)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	return &Testing{FixtureIndex: index, MockAPIClient: NewMockAPI(), MockSecretsCache: NewMockSecretsCache()}, nil
+	return &Testing{
+		FixtureIndex:     index,
+		MockAPIClient:    NewMockAPI(),
+		MockSecretsCache: NewMockSecretsCache(),
+		Alerting:         alerting,
+	}, nil
 }
 
 // ImportMethodsFromWASM imports WASM methods to go side
@@ -113,36 +119,31 @@ func (r *Testing) ExportMethodsToWASM(exports *Exports) {
 	exports.Define(
 		"test",
 		map[string]Export{
-			"getFixtureSize": {
+			"getFixture": {
 				wasmer.NewValueTypes(wasmer.I32), // n:i32
 				wasmer.NewValueTypes(wasmer.I32), // i32
-				r.getFixtureSize,
+				r.sendFixture,
 			},
-			"getFixtureBody": {
-				wasmer.NewValueTypes(wasmer.I32, wasmer.I32), // n:i32, addr:usize
-				wasmer.NewValueTypes(),                       // void
-				r.getFixtureBody,
-			},
-			"getLatestAPIRequestSize": {
+			"getLatestAPIRequest": {
 				wasmer.NewValueTypes(),
 				wasmer.NewValueTypes(wasmer.I32), // i32
-				r.getLatestAPIRequestSize,
-			},
-			"getLatestAPIRequestBody": {
-				wasmer.NewValueTypes(wasmer.I32), // n:i32, addr:usize
-				wasmer.NewValueTypes(),           // void
-				r.getLatestAPIRequestBody,
+				r.getLatestAPIRequest,
 			},
 			"defineAWSsecret": {
 				wasmer.NewValueTypes(wasmer.I32, wasmer.I32), // key:string, value:string
 				wasmer.NewValueTypes(),                       // void
 				r.defineAWSsecret,
 			},
+			"getAlert": {
+				wasmer.NewValueTypes(),
+				wasmer.NewValueTypes(wasmer.I32), // i32
+				r.getAlert,
+			},
 		})
 }
 
-// getFixtureSize returns size of a fixture number n
-func (r *Testing) getFixtureSize(ectx *ExecutionContext, args []wasmer.Value) ([]wasmer.Value, error) {
+// sendFixture returns fixture number n
+func (r *Testing) sendFixture(ectx *ExecutionContext, args []wasmer.Value) ([]wasmer.Value, error) {
 	n := int(args[0].I32())
 
 	fixture := r.FixtureIndex.Get(n)
@@ -150,64 +151,21 @@ func (r *Testing) getFixtureSize(ectx *ExecutionContext, args []wasmer.Value) ([
 		return []wasmer.Value{wasmer.NewI32(0)}, trace.Errorf("Fixture %v not found", n)
 	}
 
-	size := proto.Size(fixture)
+	addr, err := ectx.MemoryInterop.SendMessage(ectx, fixture)
 
-	return []wasmer.Value{wasmer.NewI32(size)}, nil
+	return []wasmer.Value{addr}, err
 }
 
-// getFixtureBody copies fixture number n to the provided memory segment
-func (r *Testing) getFixtureBody(ectx *ExecutionContext, args []wasmer.Value) ([]wasmer.Value, error) {
-	n := int(args[0].I32())
-	addr := int(args[1].I32())
-	data := ectx.Memory.Data()
-
-	fixture := r.FixtureIndex.Get(n)
-	if fixture == nil {
-		return []wasmer.Value{wasmer.NewI32(0)}, trace.Errorf("Fixture %v not found", n)
-	}
-
-	bytes, err := proto.Marshal(fixture)
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	// DMA copy
-	copy(data[addr:], bytes)
-
-	return nil, nil
-}
-
-// getLatestAPIRequestSize returns size of a latest API request
-func (r *Testing) getLatestAPIRequestSize(ectx *ExecutionContext, args []wasmer.Value) ([]wasmer.Value, error) {
+// getLatestAPIRequest returns latest API request
+func (r *Testing) getLatestAPIRequest(ectx *ExecutionContext, args []wasmer.Value) ([]wasmer.Value, error) {
 	request := r.MockAPIClient.GetLatestRequest(ectx.CurrentContext)
 	if request == nil {
 		return []wasmer.Value{wasmer.NewI32(0)}, trace.Errorf("There were no API requests")
 	}
 
-	size := proto.Size(request)
+	addr, err := ectx.MemoryInterop.SendMessage(ectx, request)
 
-	return []wasmer.Value{wasmer.NewI32(size)}, nil
-}
-
-// getLatestAPIRequestBody copies fixture number n to the provided memory segment
-func (r *Testing) getLatestAPIRequestBody(ectx *ExecutionContext, args []wasmer.Value) ([]wasmer.Value, error) {
-	addr := int(args[0].I32())
-	data := ectx.Memory.Data()
-
-	request := r.MockAPIClient.GetLatestRequest(ectx.CurrentContext)
-	if request == nil {
-		return []wasmer.Value{wasmer.NewI32(0)}, trace.Errorf("There were no API requests")
-	}
-
-	bytes, err := proto.Marshal(request)
-	if err != nil {
-		return nil, trace.Wrap(err)
-	}
-
-	// DMA copy
-	copy(data[addr:], bytes)
-
-	return nil, nil
+	return []wasmer.Value{addr}, err
 }
 
 // defineAWSsecret puts string to the mock secret cache
@@ -218,6 +176,17 @@ func (r *Testing) defineAWSsecret(ectx *ExecutionContext, args []wasmer.Value) (
 	r.MockSecretsCache.SetSecretString(key, value)
 
 	return nil, nil
+}
+
+// getAlert returns next alert from a queue
+func (r *Testing) getAlert(ectx *ExecutionContext, args []wasmer.Value) ([]wasmer.Value, error) {
+	select {
+	case evt := <-r.Alerting.Alerts:
+		addr, err := ectx.MemoryInterop.SendMessage(ectx, &evt)
+		return []wasmer.Value{addr}, err
+	default:
+		return []wasmer.Value{}, nil
+	}
 }
 
 // Run runs test suite

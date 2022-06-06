@@ -25,12 +25,12 @@ func RunTests(log logrus.FieldLogger, binary string, fixturesPath string, timeou
 		bail("%v", trace.Wrap(err))
 	}
 
-	testRunner, err := wasm.NewTesting(fixturesPath)
+	alerting := wasm.NewAlerting(255)
+
+	testRunner, err := wasm.NewTesting(fixturesPath, alerting)
 	if err != nil {
 		log.Fatal(trace.Wrap(err))
 	}
-	protobufInterop := wasm.NewProtobufInterop()
-	api := wasm.NewTeleportAPI(testRunner.MockAPIClient, protobufInterop)
 
 	opts := wasm.ExecutionContextPoolOptions{
 		Log:           log,
@@ -41,10 +41,10 @@ func RunTests(log logrus.FieldLogger, binary string, fixturesPath string, timeou
 		Traits: []interface{}{
 			wasm.NewAssemblyScriptEnv(),
 			wasm.NewStore(wasm.NewBadgerPersistentStore(db)),
-			testRunner,
-			protobufInterop,
-			api,
+			wasm.NewTeleportAPI(testRunner.MockAPIClient),
 			wasm.NewAWSSecretsManager(testRunner.MockSecretsCache),
+			alerting,
+			testRunner,
 		},
 	}
 

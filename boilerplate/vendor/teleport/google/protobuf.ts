@@ -290,6 +290,18 @@ export class Struct {
 
     return buf;
   } // encode Struct
+
+  // Returns struct field by name. If field does not exists, it gets created and added to the fields collection.
+  get(name: string): Value {
+    if (this.fields.has(name)) {
+      return this.fields.get(name);
+    }
+
+    const v = new Value();
+    v.setNull();
+    this.fields.set(name, v);
+    return v;
+  }
 } // Struct
 
 /**
@@ -314,8 +326,8 @@ export class Value {
   // Represents a repeated `Value`.
   public list_value: ListValue | null;
 
-  public __oneOf_kind: string = "";
-  public __oneOf_kind_index: u8 = 0;
+  public __kind: string = "";
+  public __kind_index: u8 = 0;
 
   static readonly KIND_NULL_VALUE_INDEX: u8 = 1;
   static readonly KIND_NUMBER_VALUE_INDEX: u8 = 2;
@@ -341,26 +353,26 @@ export class Value {
       switch (number) {
         case 1: {
           obj.null_value = decoder.uint32();
-          obj.__oneOf_kind = "null_value";
-          obj.__oneOf_kind_index = 1;
+          obj.__kind = "null_value";
+          obj.__kind_index = 1;
           break;
         }
         case 2: {
           obj.number_value = decoder.double();
-          obj.__oneOf_kind = "number_value";
-          obj.__oneOf_kind_index = 2;
+          obj.__kind = "number_value";
+          obj.__kind_index = 2;
           break;
         }
         case 3: {
           obj.string_value = decoder.string();
-          obj.__oneOf_kind = "string_value";
-          obj.__oneOf_kind_index = 3;
+          obj.__kind = "string_value";
+          obj.__kind_index = 3;
           break;
         }
         case 4: {
           obj.bool_value = decoder.bool();
-          obj.__oneOf_kind = "bool_value";
-          obj.__oneOf_kind_index = 4;
+          obj.__kind = "bool_value";
+          obj.__kind_index = 4;
           break;
         }
         case 5: {
@@ -374,8 +386,8 @@ export class Value {
           );
           decoder.skip(length);
 
-          obj.__oneOf_kind = "struct_value";
-          obj.__oneOf_kind_index = 5;
+          obj.__kind = "struct_value";
+          obj.__kind_index = 5;
           break;
         }
         case 6: {
@@ -389,8 +401,8 @@ export class Value {
           );
           decoder.skip(length);
 
-          obj.__oneOf_kind = "list_value";
-          obj.__oneOf_kind_index = 6;
+          obj.__kind = "list_value";
+          obj.__kind_index = 6;
           break;
         }
 
@@ -494,6 +506,45 @@ export class Value {
 
     return buf;
   } // encode Value
+
+  // Sets field value
+  set<T>(value: T): Value {
+    this.setNull();
+    this.null_value = 0;
+
+    if (isBoolean<T>(value)) {
+      this.bool_value = value;
+    } else if (isInteger<T>(value) || isFloat<T>(value)) {
+      this.number_value = value;
+    } else if (isString<T>(value)) {
+      this.string_value = value;
+    } else if (value instanceof Struct) {
+      this.struct_value = value;
+    } else if (value instanceof Value) {
+      this.null_value = value.null_value;
+      this.number_value = value.number_value;
+      this.string_value = value.string_value;
+      this.struct_value = value.struct_value;
+      this.list_value = value.list_value;
+    } else if (isArray(value)) {
+      const v = new ListValue();
+      for (let i: i32 = 0; i < value.length; i++) {
+        v.values.push(new Value().set(value[i]));
+      }
+      this.list_value = v;
+    }
+
+    return this;
+  }
+
+  // Sets field value to null
+  setNull(): void {
+    this.null_value = 1;
+    this.bool_value = false;
+    this.string_value = "";
+    this.struct_value = null;
+    this.list_value = null;
+  }
 } // Value
 
 /**

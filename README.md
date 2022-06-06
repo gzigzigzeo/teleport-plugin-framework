@@ -8,7 +8,7 @@ Teleport WASM plugin framework allows to manipulate events forwarded by `event-h
 * node >= 16.3 < 17 (please, use [nvm](https://github.com/nvm-sh/nvm) to install specific version)
 * yarn (check [YARN installation instructions](https://classic.yarnpkg.com/lang/en/docs/install/))
 
-*Please be advised that M1 chip family is not fully supported by `wasmer`. You may encounter random segfaults under a heavy loads. However, development is possible with no restrictions.*
+*Please be advised that M1 chip family is not fully supported by `wasmer`. You may encounter random segfaults under a heavy loads in production. However, development is possible with no restrictions.*
 
 # Installation
 
@@ -45,7 +45,19 @@ Run the following command to generate the minimal plugin setup:
 ./build/teleport-plugin-framework new ~/teleport-plugin
 ```
 
-The tool will check if required node and yarn version is installed in the system, will create file structure for the example plugin and will run `yarn install` in the target folder.
+The tool will check if node and yarn are installed in the system and their versions are correct. It will create file structure for the example plugin and will run `yarn install` in the target folder.
+
+## Use example as a source
+
+Check the [boilerplate/examples](boilerplate/examples) folder for the list of available examples.
+
+Run the command specifying example folder name in `--example` argument:
+
+```sh
+./build/teleport-plugin-framework new ~/teleport-plugin --example count
+```
+
+It will copy example files to the newly generated plugin. `trace` example is copied by default.
 
 ## Check the generated plugin
 
@@ -58,16 +70,19 @@ cd ~/teleport-plugin && yarn test
 This will show the following output:
 
 ```sh
-INFO[0000] teleport-plugin-framework tests
-INFO[0000] Event of type UserCreate received
-INFO[0000] Success!
+WASM plugin framework app v9.0.1
+
+Running tests...
+INFO[0000] Event received: UserCreate, size: 122
+Success!
+✨  Done in 3.01s.```
 ```
 
-Meaning that the setup was successful.
+The setup was successful.
 
 # How plugins work
 
-WASM plugins can be written in any language which supports [WASM as a target](https://webassembly.org/getting-started/developers-guide/). The most reliable choices are [Rust](https://rust-lang.org), C/C++ and [AssemblyScript](https://assemblyscript.org/). We chose [AssemblyScript](https://assemblyscript.org/) as it has the simplest TypeScript-linke syntax and tiny runtime compared to the most available WASM languages.
+WASM plugins can be written in any language which supports [WASM as a target](https://webassembly.org/getting-started/developers-guide/). The most reliable choices are [Rust](https://rust-lang.org), C/C++ and [AssemblyScript](https://assemblyscript.org/). We chose [AssemblyScript](https://assemblyscript.org/) as it has the simplest `TypeScript`-like syntax and tiny runtime compared to the most other available WASM languages.
 
 ## The folder structure
 
@@ -76,11 +91,11 @@ Every plugin consists of the following folders:
 * `assembly` - the plugin code and tests.
 * `build` - the target WASM binaries.
 * `fixtures` - the test fixtures.
-* `vendor` - external method definitions and helper code.
+* `vendor` - external method definitions and helpers.
 
 ## The host-plugin message exchange
 
-Teleport API uses [protocol buffers](https://developers.google.com/protocol-buffers). It is the main protocol for message exchange in Teleport. We use the same protocol to exchange messages with plugins. 
+Teleport API uses [protocol buffers](https://developers.google.com/protocol-buffers). It is the main protocol for message exchange in Teleport. We use the same protocol to exchange messages with the plugins. 
 
 ### `event-handler` plugins
 
@@ -88,11 +103,11 @@ Teleport API uses [protocol buffers](https://developers.google.com/protocol-buff
 
 The plugin pipeline is the following:
 
-1. Event gets received by `event-handler` (it either can be main log event or session event).
+1. Event gets received by `event-handler` (it either can be main audit log event or session event).
 2. `event-handler` encodes an event to the protobuf binary message (`HandleEventRequest`), copies it to the WASM memory and calls the `handleEvent` method.
 3. `handleEvent` method decodes binary message into the counterpart `AssemblyScript` class instance.
 4. After the processing is done, `handleEvent` encodes the result into protobuf binary message (`HandleEventResponse`) and returns it. 
-5. `event-handler` decodes the result and sends it to fluentd. If a resulting event is null, message is skipped.
+5. `event-handler` decodes the result and sends it to `fluentd`. If a resulting event is null, message is skipped.
 
 `HandleEventRequest` has the following definition:
 
@@ -106,62 +121,95 @@ message HandleEventRequest {
 
 ```proto
 message HandleEventResponse {
-    bool Success = 1; // Request was successful
-    string Error = 2; // Error message if a request was not successful
-    events.OneOf Event = 3 [ (gogoproto.nullable) = true ]; // Modified event
+    events.OneOf Event = 1 [ (gogoproto.nullable) = true ]; // Modified event
 }
 ```
 
-`Event` field can be blank.
+Response `Event` field can be null. If it is null, event is not forwarded to `fluentd`.
 
 # Minimal event plugin and test
+
+## The plugin
 
 The following code receives an upcoming event and returns it unchanged. Put it to `assembly/event_handler.ts`.
 
 ```ts
-// Event protobuf class
-import { plugin } from '../vendor/teleport';
+import { HandleEventBase, Event } from '../../../vendor/handle_event';
 
-// Plugin entry point
-export function handleEvent(request: plugin.HandleEventRequest): plugin.HandleEventResponse {
-    const event = request.Event;
-    const response = new plugin.HandleEventResponse();
-
-    trace("Event of type " + event.type + " received") // Print the event type
-
-    response.Event = event;
-    response.Success = true;
-
-    return response;
+export class HandleEvent extends HandleEventBase {
+    any(event: Event): void {
+        trace(`Event received: ${event.type}, size: ${event.size()}`)
+    }
 }
 ```
 
-Now, put the following content into `assembly/event_handler.test.ts`:
+`HandleEventBase` is the base plugin class. `any` method receives each event, regardless of it's type (if defined).
+
+You can use the following response methods:
+
+* `this.skip()` will skip the event.
+* `this.error("Error!")` will raise the exception and stop the plugin execution.
+
+If none of them are called, the source event will be returned. You can modify the source event in-place.
+
+## Test file
+
+Put the following content into `assembly/event_handler.test.ts`:
 
 ```ts
-import { getFixtureAsHandleEventRequest } from '../vendor/test';
-import { events, plugin } from '../vendor/teleport';
-import { handleEvent } from './index';
+// Test helper methods
+import { getFixture, handleEvent } from '../vendor/handle_event_test';
 
-// Main test function
+// Event handler class
+import { HandleEvent } from './event_handler';
+
+// UserCreate event
+import { UserCreate } from '../vendor/teleport/events';
+
+// test function
 export function test(): void {
-    // Get event from fixture #1
-    const request = getFixtureAsHandleEventRequest(1)
+    // Load fixture #1 (UserCreate event) as protobuf message
+    const request = getFixture(1)
 
-    // Send test event to the plugin
-    const responseData = handleEvent(request)
-    assert(responseData != null, "handleEvent returned null response")
-    
-    // Decode the response
-    const response = plugin.HandleEventResponse.decode(responseData)
+    // Send message to the event handler
+    const response = handleEvent<HandleEvent>(request)
 
-    // Ensure that user login has not been changed
+    // Check that response contains UserCreate event
     const event = response.Event
-    assert(event.UserCreate != null, "Event has changed")
+    assert(event.UserCreate != null, "UserCreate event is missing in the response")
 
-    // Ensure that login has not been changed
-    const userCreateEvent = event.UserCreate as events.UserCreate
-    assert(userCreateEvent.User.Login == "foo", "Login has changed")
+    // Check that response UserCreate event login is "foo"
+    const userCreateEvent = event.UserCreate as UserCreate
+    assert(userCreateEvent.User.Login == "foo", "UserCreate user login has changed")
+}
+```
+
+This test requires the fixture. Put the following json into `fixtures/1-regular.json`:
+
+```json
+{
+    "type": "types.OneOf",
+    "data": {
+        "UserCreate": {
+            "Metadata": {
+                "Index": 1,
+                "ID": "36da4091-eb14-f814-69f8-5b97bd919e3d",
+                "Type": "user.create",
+                "ClusterName": "test-cluster",
+                "Time": "2021-12-17T17:11:33+03:00"
+            },
+            "User": {
+                "Login": "foo",
+                "User": "foo"
+            },
+            "Resource": {
+                "Name": "foo"
+            },
+            "Roles": [
+                "test-user"
+            ]
+        }
+    }
 }
 ```
 
@@ -174,16 +222,19 @@ yarn test
 You should see the following output:
 
 ```sh
-INFO   teleport-plugin-framework tests  wasm/assembly_script_env.go:146
-INFO   Success!  wasm/assembly_script_env.go:146
-✨  Done in 2.23s.
+WASM plugin framework app v9.0.1
+
+Running tests...
+INFO[0000] Event received: UserCreate, size: 122
+Success!
+✨  Done in 3.01s.```
 ```
 
-Tests are run in the same environment and follow the same message exchange pipeline as the production environment do.
+Tests are run in the same environment and follow the same message exchange pipeline as the production environment do. The only exception is that all external API methods are mocked.
 
 # Test fixtures
 
-Test events are loaded from json files located in the `fixtures` folder. The fixture file name has the following template: `<id>-<description>.json` where id is the sequential fixture number.
+Test events are loaded from json files located in the `fixtures` folder. The fixture file name has the following template: `<id>-<description>.json` where id is the sequential fixture number, and the description can be anything.
 
 ## Fixture file structure
 
@@ -191,39 +242,43 @@ The fixture has the following structure:
 
 ```json
 {
-  "name": "events.user_create",
-  "type": "types.OneOf",
-  "description": "User login event",
-  "data": {
-    "UserCreate": {
-      "Metadata": {
-        "Index": 1,
-        "ID": "36da4091-eb14-f814-69f8-5b97bd919e3d",
-        "Type": "user.create",
-        "ClusterName": "test-cluster",
-        "Time": "2021-12-17T17:11:33+03:00"
-      },
-      "User": {
-        "Login": "foo",
-        "User": "foo"
-      },
-      "Resource": {
-        "Name": "foo"
-      },
-      "Roles": [
-        "test-user"
-      ]
+    "name": "events.user_create",
+    "type": "types.OneOf",
+    "description": "User create event",
+    "data": {
+        "UserCreate": {
+            "Metadata": {
+                "Index": 1,
+                "ID": "36da4091-eb14-f814-69f8-5b97bd919e3d",
+                "Type": "user.create",
+                "ClusterName": "test-cluster",
+                "Time": "2021-12-17T17:11:33+03:00"
+            },
+            "User": {
+                "Login": "foo",
+                "User": "foo"
+            },
+            "Resource": {
+                "Name": "foo"
+            },
+            "Roles": [
+                "test-user"
+            ]
+        }
     }
-  }
 }
 ```
 
-* `name` - internal fixture type name
-* `type` - the protobuf message type name (would be `types.OneOf` for all events).
-* `description` - fixture description
-* `data` - fixture data
+It represents protobuf message dump as json wrapped into helper structure.
 
-## Generating the fixture file
+Helper structure fields are:
+
+* `name` - fixture template name.
+* `type` - the protobuf message type name (would be `types.OneOf` for all events).
+* `description` - fixture description.
+* `data` - protobuf message json.
+
+## List the available fixture templates
 
 In the plugin folder, run the following command:
 
@@ -231,12 +286,24 @@ In the plugin folder, run the following command:
 ./teleport-plugin-framework fixtures list-templates
 ```
 
-You will see the list of available fixture templates:
+You will see the list of available fixture templates along with the command required for fixture generation:
 
 ```sh
-./teleport-plugin-framework fixtures generate events.user_create <name> - Create user event (types.OneOf)
-./teleport-plugin-framework fixtures generate events.user_login <name> - User login event (types.OneOf)
+WASM plugin framework app v9.0.1
+
+events.access_request_create - Create access request
+                               ./teleport-plugin-framework fixtures generate events.access_request_create <name>
+
+        events.postgres_execute - Postgres client executes a previously bound prepared statement
+                                ./teleport-plugin-framework fixtures generate events.postgres_execute <name>
+
+            events.session_data - Data transfer event
+                                ./teleport-plugin-framework fixtures generate events.session_data <name>
 ```
+
+The fixture templates list represents fixtures for all available events.
+
+## Generate fixture file
 
 To generate the fixture file from a template, choose the required type from the list and run:
 
@@ -244,7 +311,7 @@ To generate the fixture file from a template, choose the required type from the 
 ./teleport-plugin-framework fixtures generate events.user_create supervisor
 ```
 
-Where `supervisor` is the description.
+Where `events.user_create` is the template name, and `supervisor` is the description part of a target file name.
 
 You will get the following response:
 
@@ -252,9 +319,11 @@ You will get the following response:
 Fixture generated: fixtures/5-supervisor.json
 ```
 
+Id (5) would be automatically determined.
+
 Now, you can open the file and change fixture data manually.
 
-## Using the fixture file
+## Using the fixture
 
 To load a fixture in a test, use the following method:
 
@@ -262,212 +331,259 @@ To load a fixture in a test, use the following method:
 let createSupervisorUserEvent = getFixture(5) // Where 5 is the fixture number
 ```
 
-This would return `DataView` with protobuf-encoded fixture data. You can decode it:
+This would return `ArrayBuffer` with protobuf-encoded fixture data. You can decode it:
 
 ```ts
-const event = events.OneOf.decode(createSupervisorUserEvent)
+const request = Request.decode(createSupervisorUserEvent)
 ```
 
-To use fixture with `handleEvent`, call:
+You can send fixture data to the `handlePlugin` method:
 
 ```ts
-const request = getFixtureAsHandleEventRequest(5)
+const response = handleEvent<HandleEvent>(request)
 ```
 
-This method will treat fixture data as an event and will construct `plugin.HandleEventRequest` object.
+# Changing events
 
-Now, you can send this data to the `handlePlugin` method:
+Let's say we want to add a label `'seen-by-us': 'yes'` to all access request events.
 
-```ts
-const response = handleEvent(request)
-```
-
-# Skipping events
-
-Let's say we want to skip logins from a user named `secret-santa`.
-
-Put the following code into `assembly/event_handler.ts`:
+Put the following contents to the `assembly/event_handler.ts`:
 
 ```ts
-import { plugin, events } from '../vendor/teleport';
+// Event protobuf class
+import { AccessRequestCreate } from '../vendor/teleport/events';
+import { HandleEventBase } from '../vendor/handle_event';
 
-// Plugin entry point
-export function handleEvent(request: plugin.HandleEventRequest): plugin.HandleEventResponse {
-    const event = request.Event;
-    const response = new plugin.HandleEventResponse();
-
-    // If this is the login event
-    if (event.UserLogin != null) {
-        const userLogin = event.UserLogin as events.UserLogin
-
-        // And secret santa tries to login - return success response with blank event
-        if (userLogin.User.Login == "secret-santa") {
-            response.Success = true;
-            return response;
-        }
+export class HandleEvent extends HandleEventBase {
+    accessRequestCreate(event: AccessRequestCreate): void {
+        event.Annotations.get("seen-by-us").set("yes")
     }
-
-    // Pass the event through
-    response.Event = event;
-    response.Success = true;
-
-    return response;
 }
 ```
 
-Fixture #2 in the test setup represents the login event of `secret-santa` user. Given that, put the following in `assembly/event_handler.test.ts`:
+As you can see, we do not use `any` method anymore. Instead, we overload `accessRequestCreate` method of the base [`HandleEventBase`](`boilerplate/vendor/handle_event.ts`) class. Base methods exist for all available event types. You can check [handle_event.ts](`boilerplate/vendor/handle_event.ts`) for the list of all available methods.
+
+If `any` method exists and it calls either `skip` or `error`, specific event handler methods won't be called.
+
+Put the following content into `assembly/event_handler.test.ts`:
 
 ```ts
-import { getFixtureAsHandleEventRequest } from '../vendor/test';
-import { plugin } from '../vendor/teleport';
-import { handleEvent } from './index';
+// Test helper methods
+import { getFixture, handleEvent } from '../vendor/handle_event_test';
 
-// Main test function
+// Event handler class
+import { HandleEvent } from './event_handler';
+
+// AccessRequestCreate event
+import { AccessRequestCreate } from '../vendor/teleport/events';
+
+// test function
 export function test(): void {
-    const request = getFixtureAsHandleEventRequest(2)
-    const response = plugin.HandleEventResponse.decode(handleEvent(request))
+    // Load fixture #1 (AccessRequestCreate event) as protobuf message
+    const request = getFixture(1)
 
-    assert(response.Success == true, "Response was not successful")
-    assert(response.Event.type == "", "Event was not rejected")
-}
-```
+    // Send message to the event handler
+    const response = handleEvent<HandleEvent>(request)
 
-And run: `yarn test`.
+    // Check that response contains AccessRequestCreate event
+    const event = response.Event
+    assert(event.AccessRequestCreate != null, "AccessRequestCreate event is missing in the response")
 
-# Modifying events
-
-Let's say we want to add a label `'seen-by-us': 'yes'` to all access requests.
-
-Put the following contents in the `assembly/event_handler.ts`:
-
-```ts
-import { plugin, events, google } from '../vendor/teleport';
-
-// Plugin entry point
-export function handleEvent(request: plugin.HandleEventRequest): plugin.HandleEventResponse {
-    const event = request.Event;
-    const response = new plugin.HandleEventResponse();
-
-    if (event.AccessRequestCreate != null) {
-        const request = event.AccessRequestCreate as events.AccessRequestCreate;
-
-        const value = new google.protobuf.Value()
-        value.string_value = "yes"
-
-        request.Annotations.fields.set("seen-by-us", value)
-    }
-
-    // Pass the modified event through
-    response.Event = event;
-    response.Success = true;
-
-    return response;
-}
-```
-
-Fixture #3 in the test setup represents AccessRequest create event. Given that, put the following contents into `assembly/event_handler.test.ts`:
-
-```ts
-import { getFixtureAsHandleEventRequest } from '../vendor/test';
-import { plugin, events } from '../vendor/teleport';
-import { handleEvent } from './index';
-
-// Main test function
-export function test(): void {
-    const request = getFixtureAsHandleEventRequest(3)
-    const response = plugin.HandleEventResponse.decode(handleEvent(request))
-    assert(response.Event.AccessRequestCreate != null, "AccessRequestCreate is missing")
-
-    const event = response.Event.AccessRequestCreate as events.AccessRequestCreate;
+    const accessRequestCreate = event.AccessRequestCreate as AccessRequestCreate
     assert(
-        event.Annotations.fields.get("seen-by-us").string_value == "yes", 
+        accessRequestCreate.Annotations.fields.get("seen-by-us").string_value == "yes", 
         "seen-by-us annotation is not set"
     )
 }
 ```
 
+Copy fixture from [1-access_request.json](boilerplate/examples/1-access_request.json) to `fixtures/1-access_request.json`.
+
 Run: `yarn test`.
 
-# Counting events and calling Teleport API
+You can use the following command to generate the example above from scratch:
+
+```
+./teleport-event-handler new ~/modify-plugin --example modify
+```
+
+# Skipping events
+
+Let's say we want to prevent sending `secret-santa` user logins to `fluentd`.
+
+Put the following content to the `assembly/event_handler.ts`:
+
+```ts
+import { HandleEventBase } from '../vendor/handle_event';
+import { UserLogin } from '../vendor/teleport/events';
+
+export class HandleEvent extends HandleEventBase {
+    userLogin(event: UserLogin): void {
+        if (event.User.Login == "secret-santa") {
+            return this.skip() // Skip secret-santa login
+        }        
+    }
+}
+```
+
+As you can see, `this.skip()` is called once `secret-santa` user tries to log in. This forces event handler to skip sending the event to `fluentd`.
+
+Here is the test (`assembly/event_handler.test.ts`):
+
+```ts
+// Test helper methods
+import { getFixture, handleEvent } from '../vendor/handle_event_test';
+
+// Event handler class
+import { HandleEvent } from './event_handler';
+
+// UserLogin event
+import { UserLogin } from '../vendor/teleport/events';
+
+// test function
+export function test(): void {
+    testRegularUsersShown()
+    testSecretSantaHidden()
+}
+
+// test that regular users UserLogin events are passed through
+function testRegularUsersShown():void {
+    // Load fixture #1 (UserCreate event) as protobuf message for regular login
+    const request = getFixture(1)
+
+    // Send message to the event handler
+    const response = handleEvent<HandleEvent>(request)
+
+    // Check that response contains UserLogin event
+    const event = response.Event
+    assert(event.UserLogin != null, "UserLogin event is missing in the response")
+
+    // Check that response UserLogin event login is "foo"
+    const userLoginEvent = event.UserLogin as UserLogin
+    assert(userLoginEvent.User.Login == "not-secret-santa", "not-secret-santa UserLogin event is skipped")
+}
+
+// test that secret-santa user logins are hidden
+function testSecretSantaHidden():void {
+    // Load fixture #1 (UserCreate event) as protobuf message for secret santa
+    const request = getFixture(2)
+
+    // Send message to the event handler
+    const response = handleEvent<HandleEvent>(request)
+
+    // Check that response contains UserLogin event
+    const event = response.Event
+    assert(event.UserLogin == null, "secret-santa UserLogin event is not hidden")    
+}
+```
+
+Here are the fixtures: [1-login.json]([boilerplate/examples/skip/fixtures/1-login.json]), [2-login.json]([boilerplate/examples/skip/fixtures/2-login.json]). Put them to `fixtures` folder.
+
+Run:
+
+```
+yarn test
+```
+
+You can use the following command to generate the example above from scratch:
+
+```
+./teleport-event-handler new ~/skip-plugin --example skip
+```
+
+# Counting events and calling the Teleport API
 
 Let's say we want to lock user if he fails to login 3 times within latest 5 minutes.
 
 Put the following content into `assembly/event_handler.ts`:
 
 ```ts
-import { plugin, events } from '../vendor/teleport';
-import * as store from '../vendor/store'
+import { HandleEventBase } from '../vendor/handle_event';
+import { UserLogin } from '../vendor/teleport/events';
+import * as store from '../vendor/store';
 import { createLock } from '../vendor/api';
 
-const maxFailedLoginAttempts = 3;     // 3 tries
-const failedAttemptsTimeout = 60 * 5; // within 5 minutes
+export class HandleEvent extends HandleEventBase {
+    // maximum failed login attempts
+    static readonly maxAttempts:i32 = 3;
 
-// Plugin entry point
-export function handleEvent(request: plugin.HandleEventRequest): plugin.HandleEventResponse {
-    const event = request.Event;
-    const response = new plugin.HandleEventResponse();
+    // within time window
+    static readonly timeWindow:i32 = 5 * 60;
 
-    // If this event is a user login event
-    if (event.UserLogin != null) {
-        const login = event.UserLogin as events.UserLogin;
-    
-        // If a login was not successful        
-        if (login.Status.Success == false) {
-            // Record login attempt and get current attempts within the time frame for a user
-            const count = store.takeToken(login.User.Login, failedAttemptsTimeout) // 5 minutes
-    
-            // If limit is exceeded
-            if (count > maxFailedLoginAttempts) {
-                trace("Suspicious login activity detected, attempts made:", 1, count)
-    
-                // Create lock
-                createLock(login.User, 3600, "Suspicious login activity")
-            }
+    userLogin(event: UserLogin): void {
+        // We do not count success events
+        if (event.Status.Success == true) {
+            return
         }
-    }
-    
-    // Pass the event through
-    response.Event = event;
-    response.Success = true;
 
-    return response;
+        // Record login attempt and get current failed attempts count within the last 5 minutes
+        const count = store.takeToken(event.User.Login, HandleEvent.timeWindow)
+
+        // If there are more than 3 failed login attempts in last 5 minutes - create lock
+        if (count > HandleEvent.maxAttempts) {
+            trace("Suspicious login activity detected, attempts made:", 1, count)
+            trace("Creaing lock for user " + event.User.Login)
+
+            // Call API, create lock
+            createLock(event.User, 3600, "Suspicious login")
+        }
+   }
 }
 ```
 
-Fixture #4 in the test setup represents failed login attempt. Given that, put the following contents into `assembly/event_handler.test.ts`:
+`store.takeToken` is used to calculate a key occurence within the specified time frame. The following statement returns the count of `foo` appearances within last 5 minutes:
 
 ```ts
-import { getFixtureAsHandleEventRequest, getLatestAPIRequest } from '../vendor/test';
-import { plugin, types } from '../vendor/teleport';
-import { handleEvent } from './index';
+const count = store.takeToken("foo", 60 * 5)
+```
 
-// Main test function
+`createLock` is the wrapper over the Teleport API `CreateLock` method.
+
+The test looks as following (`assembly/event_handler.test.ts`):
+
+```ts
+// Test helper methods
+import { getFixture, getLatestAPIRequest, handleEvent } from '../vendor/handle_event_test';
+
+// Event handler class
+import { HandleEvent } from './event_handler';
+
+// types namespace contains lock object
+import { types } from '../vendor/handle_event';
+
+// test function
 export function test(): void {
-    const request = getFixtureAsHandleEventRequest(4)
+    const request = getFixture(1)
 
-    handleEvent(request)
-    handleEvent(request)
-    handleEvent(request)
-
-    const response = plugin.HandleEventResponse.decode(handleEvent(request))
-    assert(response != null, "Event has not been processed")
+    // Fail to login 4 times
+    handleEvent<HandleEvent>(request)
+    handleEvent<HandleEvent>(request)
+    handleEvent<HandleEvent>(request)
+    handleEvent<HandleEvent>(request)
 
     const apiRequest = getLatestAPIRequest()
     assert(apiRequest != null, "API request is missing")
 
     const lock = types.LockV2.decode(apiRequest)
     assert(lock.Spec.Target.Login == "foo", "Lock user foo has not been generated")
-    assert(lock.Spec.Message == "Suspicious login activity", "Lock has the wrong message: " + lock.Spec.Message)
 }
 ```
 
-And run `yarn test`.
+`getLatestAPIRequest` method is available in tests and is used to decode the latest request to the Teleport API. Please note that a type of request must be known onset. In our case, it's `types.LockV2`.
 
-Please note `getLatestAPIRequest()` method call. Tests call mock API. Mock API methods are always successful. Latest API request is saved in memory and returned by this method. In our example, this method will return binary representation of `types.LockV2` object constructed in `index.ts`.
+[1-login-failed.json]([boilerplate/examples/count/fixtures/1-login-failed.json]) fixture is required to run the test. Put it to `fixtures` folder.
+
+Run `yarn test`.
+
+You can use the following command to generate the example above from scratch:
+
+```
+./teleport-event-handler new ~/count-plugin --example count
+```
 
 # AssemblyScript `env` functions
 
-`teleport-plugin-framework` provides [special imports](https://www.assemblyscript.org/concepts.html#special-imports) implementation. 
+`teleport-plugin-framework` provides [special imports](https://www.assemblyscript.org/concepts.html#special-imports) implementations. 
 
 The only function you would use directly is `trace`:
 
@@ -479,38 +595,49 @@ trace("foo", 2, 100, 200)   // Prints "foo 100 200"
 
 It prints data to the plugin log.
 
+# Alerting
+
+There is the way of sending alerts to the external messaging services. Here is the definition of the alert:
+
+```proto
+// Severity represents alert severity
+enum Severity {
+    DEBUG = 0;
+    INFO = 1;
+    NOTICE = 2;
+    WARNING = 3;
+    ERROR = 4;
+    CRITICAL = 5;
+    ALERT = 6;
+    EMERGENCY = 7;
+}
+
+// Alert represents alert struct
+message Alert {
+    string Message  = 1;
+    events.OneOf Event = 2 [ (gogoproto.nullable) = true ];
+    map<string,string> Metadata = 3;
+    Severity Severity = 4;
+}
+```
+
+Here is the `HandleEventBase#alert` method signature:
+
+```ts
+protected alert(severity: Severity, message: string, event: bool, metadata: Map<string, string>):void
+```
+
+**Please note that for now actual alert sending is not implemented in the event handler. Alerts are put into the queue. You need to set up the queue consumer which implements actual sending on the `event-handler` side. Please, refer to [alerting.go](lib/wasm/alerting.go)**
+
 # Connecting the plugin to `event-handler`
 
 ## Prepare the plugin
 
-The following code receives an upcoming event and returns it unchanged. Put it to `assembly/event_handler.ts`.
+Generate the default plugin, which prints event type and size to the logs:
 
-```ts
-// event protobuf class
-import { Event } from '../vendor/teleport';
-
-// plugin entry point
-export function handleEvent(event: Event): Event | null {
-    trace("Event of type" + event.type + " received, size:", 1, event.size()) // Print event type and size
-    return event
-}
 ```
-
-Put the following content into `assembly/event_handler.test.ts`:
-
-```ts
-import { getFixture } from '../vendor/test';
-import { handleEvent } from './index';
-
-// Main test function
-export function test(): void {
-    // Send test event to the plugin
-    const result = handleEvent(getFixture(1))
-    assert(result != null, "Event is not handled")
-}
+./teleport-event-handler new ~/teleport-plugin
 ```
-
-This snippet would print received event type to logs.
 
 ## Installation
 
@@ -609,9 +736,9 @@ make test
 
 This command will:
 
-1. Build and run AssemblyScript tests in `assembly` folder (`handle_event.test.ts`) using the same execution environment as the production code. 
-2. Build AssemblyScript file [`lib_wasm_test.ts`](assembly/lib_wasm_test.ts), which contains WASM methods for [`pool_test.go`](lib/wasm/pool_test.go).
-3. Run go tests in `lib/wasm` folder.
+1. Build AssemblyScript file [`lib_wasm_test.ts`](assembly/lib_wasm_test.ts), which contains WASM methods for [`pool_test.go`](lib/wasm/pool_test.go).
+2. Run go tests in `lib/wasm` folder.
+3. Build and run tests for all examples in `boilerplate/examples` folder.
 
 ## Integrating the plugin framework
 
@@ -697,7 +824,7 @@ The following options were provided in the snippet above:
 
 * `Timeout` sets the maximum execution time limit of a WASM method. If a WASM method runs longer, it gets terminated and error is returned.
 * `Concurrency` sets the number of `ExecutionContext` instances in this pool.
-* `MemoryInterop` provides the implementation of the interface which defines methods to work with memory objects on WASM side. It allows to read/write strings, allocate memory, etc.
+* `MemoryInterop` provides the implementation of the interface which defines methods to work with memory objects on WASM side. It allows to read/write strings, allocate memory, send and receive protobuf messages, etc.
 * `Traits` provides the array of trait structs. In the example above, the only one trait (`AssemblyScriptEnv`) is passed. This trait exports AssemblyScript [special imports](https://www.assemblyscript.org/concepts.html#special-imports) (`trace`, `Date.now`, etc). implementations to WASM side.
 
 AssemblyScript uses UTF-16 encoded strings.
@@ -838,5 +965,5 @@ func main() {
 }
 ```
 
-`Execute` fetches `ExecutionContext` from the pool, passes it as the first argument of the provided function, and puts `ExecutionContext` back to the pool once the provided function execution is finished. It also enforces execution timeout.
+`Execute` fetches `ExecutionContext` from the pool, passes it as the first argument of the provided function, and puts `ExecutionContext` back to the pool once the provided function execution is finished. It also enforces the execution timeout.
 

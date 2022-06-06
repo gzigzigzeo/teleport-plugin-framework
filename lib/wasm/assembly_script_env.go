@@ -23,7 +23,7 @@ import (
 	"github.com/wasmerio/wasmer-go/wasmer"
 )
 
-// AssembylScriptEnv contains common AssemblyScript methods
+// AssemblyScriptEnv contains common AssemblyScript methods
 type AsssemblyScriptEnv struct{}
 
 // NewAssemblyScriptEnv constructs AssemblyScriptEnv trait

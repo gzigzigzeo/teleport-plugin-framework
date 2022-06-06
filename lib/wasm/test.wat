@@ -150,6 +150,14 @@
  (global $boilerplate/vendor/teleport/events/OneOf.EVENT_MY_SQL_STATEMENT_BULK_EXECUTE_INDEX i32 (i32.const 78))
  (global $boilerplate/vendor/teleport/events/OneOf.EVENT_RENEWABLE_CERTIFICATE_GENERATION_MISMATCH_INDEX i32 (i32.const 79))
  (global $boilerplate/vendor/teleport/events/OneOf.EVENT_UNKNOWN_INDEX i32 (i32.const 80))
+ (global $boilerplate/vendor/teleport/plugin/Severity.DEBUG i32 (i32.const 0))
+ (global $boilerplate/vendor/teleport/plugin/Severity.INFO i32 (i32.const 1))
+ (global $boilerplate/vendor/teleport/plugin/Severity.NOTICE i32 (i32.const 2))
+ (global $boilerplate/vendor/teleport/plugin/Severity.WARNING i32 (i32.const 3))
+ (global $boilerplate/vendor/teleport/plugin/Severity.ERROR i32 (i32.const 4))
+ (global $boilerplate/vendor/teleport/plugin/Severity.CRITICAL i32 (i32.const 5))
+ (global $boilerplate/vendor/teleport/plugin/Severity.ALERT i32 (i32.const 6))
+ (global $boilerplate/vendor/teleport/plugin/Severity.EMERGENCY i32 (i32.const 7))
  (global $~lib/shared/runtime/Runtime.Stub i32 (i32.const 0))
  (global $~lib/shared/runtime/Runtime.Minimal i32 (i32.const 1))
  (global $~lib/shared/runtime/Runtime.Incremental i32 (i32.const 2))
@@ -4463,7 +4471,7 @@
   i32.const 0
   call $~lib/rt/itcms/__link
  )
- (func $boilerplate/vendor/teleport/google/protobuf/Value#set:__oneOf_kind (param $0 i32) (param $1 i32)
+ (func $boilerplate/vendor/teleport/google/protobuf/Value#set:__kind (param $0 i32) (param $1 i32)
   local.get $0
   local.get $1
   i32.store offset=32
@@ -4472,7 +4480,7 @@
   i32.const 0
   call $~lib/rt/itcms/__link
  )
- (func $boilerplate/vendor/teleport/google/protobuf/Value#set:__oneOf_kind_index (param $0 i32) (param $1 i32)
+ (func $boilerplate/vendor/teleport/google/protobuf/Value#set:__kind_index (param $0 i32) (param $1 i32)
   local.get $0
   local.get $1
   i32.store8 offset=36
@@ -18425,10 +18433,10 @@
            call $boilerplate/vendor/teleport/google/protobuf/Value#set:null_value
            local.get $2
            i32.const 1051872
-           call $boilerplate/vendor/teleport/google/protobuf/Value#set:__oneOf_kind
+           call $boilerplate/vendor/teleport/google/protobuf/Value#set:__kind
            local.get $2
            i32.const 1
-           call $boilerplate/vendor/teleport/google/protobuf/Value#set:__oneOf_kind_index
+           call $boilerplate/vendor/teleport/google/protobuf/Value#set:__kind_index
            br $break|1
           end
           local.get $2
@@ -18440,10 +18448,10 @@
           call $boilerplate/vendor/teleport/google/protobuf/Value#set:number_value
           local.get $2
           i32.const 1051952
-          call $boilerplate/vendor/teleport/google/protobuf/Value#set:__oneOf_kind
+          call $boilerplate/vendor/teleport/google/protobuf/Value#set:__kind
           local.get $2
           i32.const 2
-          call $boilerplate/vendor/teleport/google/protobuf/Value#set:__oneOf_kind_index
+          call $boilerplate/vendor/teleport/google/protobuf/Value#set:__kind_index
           br $break|1
          end
          local.get $2
@@ -18452,10 +18460,10 @@
          call $boilerplate/vendor/teleport/google/protobuf/Value#set:string_value
          local.get $2
          i32.const 1052000
-         call $boilerplate/vendor/teleport/google/protobuf/Value#set:__oneOf_kind
+         call $boilerplate/vendor/teleport/google/protobuf/Value#set:__kind
          local.get $2
          i32.const 3
-         call $boilerplate/vendor/teleport/google/protobuf/Value#set:__oneOf_kind_index
+         call $boilerplate/vendor/teleport/google/protobuf/Value#set:__kind_index
          br $break|1
         end
         local.get $2
@@ -18471,10 +18479,10 @@
         call $boilerplate/vendor/teleport/google/protobuf/Value#set:bool_value
         local.get $2
         i32.const 1052048
-        call $boilerplate/vendor/teleport/google/protobuf/Value#set:__oneOf_kind
+        call $boilerplate/vendor/teleport/google/protobuf/Value#set:__kind
         local.get $2
         i32.const 4
-        call $boilerplate/vendor/teleport/google/protobuf/Value#set:__oneOf_kind_index
+        call $boilerplate/vendor/teleport/google/protobuf/Value#set:__kind_index
         br $break|1
        end
        local.get $1
@@ -18518,10 +18526,10 @@
        call $boilerplate/vendor/teleport/__proto/Decoder#skip
        local.get $2
        i32.const 1052096
-       call $boilerplate/vendor/teleport/google/protobuf/Value#set:__oneOf_kind
+       call $boilerplate/vendor/teleport/google/protobuf/Value#set:__kind
        local.get $2
        i32.const 5
-       call $boilerplate/vendor/teleport/google/protobuf/Value#set:__oneOf_kind_index
+       call $boilerplate/vendor/teleport/google/protobuf/Value#set:__kind_index
        br $break|1
       end
       local.get $1
@@ -18565,10 +18573,10 @@
       call $boilerplate/vendor/teleport/__proto/Decoder#skip
       local.get $2
       i32.const 1052144
-      call $boilerplate/vendor/teleport/google/protobuf/Value#set:__oneOf_kind
+      call $boilerplate/vendor/teleport/google/protobuf/Value#set:__kind
       local.get $2
       i32.const 6
-      call $boilerplate/vendor/teleport/google/protobuf/Value#set:__oneOf_kind_index
+      call $boilerplate/vendor/teleport/google/protobuf/Value#set:__kind_index
       br $break|1
      end
      local.get $1
@@ -48165,7 +48173,7 @@
    else
     i32.const 1056832
     i32.const 1057264
-    i32.const 420
+    i32.const 432
     i32.const 25
     call $~lib/builtins/abort
     unreachable
@@ -48208,7 +48216,7 @@
    else
     i32.const 1056832
     i32.const 1057264
-    i32.const 429
+    i32.const 441
     i32.const 28
     call $~lib/builtins/abort
     unreachable
@@ -61433,7 +61441,7 @@
    else
     i32.const 1056832
     i32.const 1057264
-    i32.const 472
+    i32.const 484
     i32.const 17
     call $~lib/builtins/abort
     unreachable
@@ -61486,7 +61494,7 @@
    else
     i32.const 1056832
     i32.const 1057264
-    i32.const 484
+    i32.const 496
     i32.const 17
     call $~lib/builtins/abort
     unreachable
@@ -80260,10 +80268,10 @@
   call $boilerplate/vendor/teleport/google/protobuf/Value#set:list_value
   local.get $0
   i32.const 1049424
-  call $boilerplate/vendor/teleport/google/protobuf/Value#set:__oneOf_kind
+  call $boilerplate/vendor/teleport/google/protobuf/Value#set:__kind
   local.get $0
   i32.const 0
-  call $boilerplate/vendor/teleport/google/protobuf/Value#set:__oneOf_kind_index
+  call $boilerplate/vendor/teleport/google/protobuf/Value#set:__kind_index
   local.get $0
   local.set $1
   global.get $~lib/memory/__stack_pointer
@@ -107367,7 +107375,7 @@
    if
     local.get $1
     local.set $6
-    i32.const 26
+    i32.const 10
     local.set $5
     local.get $6
     local.get $5

@@ -1,30 +1,10 @@
-// Returns size of a fixture with number n
-declare function getFixtureSize(n: i32): i32;
+// Gets fixture
+declare function getFixture(n: i32): ArrayBuffer;
 
-// Copies fixture number n to the addr
-declare function getFixtureBody(n: i32, addr: usize): void;
+// Gets latest API request
+declare function getLatestAPIRequest(): ArrayBuffer;
 
-// Returns DataView of a fixture number n
-export function getFixture(n: i32): ArrayBuffer {
-    const size = getFixtureSize(n);
-    const buf = new ArrayBuffer(size);
-    getFixtureBody(n, changetype<usize>(buf));
-    return buf;
-}
+// Gets the next alert from the queue
+declare function getAlert(): ArrayBuffer;
 
-// Returns size of a fixture with number n
-declare function getLatestAPIRequestSize(): i32;
-
-// Copies fixture number n to the addr
-declare function getLatestAPIRequestBody(addr: usize): void;
-
-// Returns DataView of a fixture number n
-export function getLatestAPIRequest(): ArrayBuffer {
-    const size = getLatestAPIRequestSize();
-    const buf = new ArrayBuffer(size);
-    getLatestAPIRequestBody(changetype<usize>(buf));
-    return buf;
-}
-
-// Defines mock secret manager 
-export declare function defineAWSsecret(name: string, value: string): void;
+export { getFixture, getLatestAPIRequest, getAlert };

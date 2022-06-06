@@ -23,14 +23,13 @@ import (
 
 // HandleEvent represents handleEvent trait
 type HandleEvent struct {
-	fnName          string
-	protobufInterop *ProtobufInterop
-	handleEvent     NativeFunctionWithExecutionContext
+	fnName      string
+	handleEvent NativeFunctionWithExecutionContext
 }
 
 // NewHandleEvent creates new HandleEvent trait collection
-func NewHandleEvent(fnName string, protobufInterop *ProtobufInterop) *HandleEvent {
-	return &HandleEvent{fnName: fnName, protobufInterop: protobufInterop}
+func NewHandleEvent(fnName string) *HandleEvent {
+	return &HandleEvent{fnName: fnName}
 }
 
 // ImportMethodsFromWASM imports WASM methods to go side
@@ -54,7 +53,7 @@ func (e *HandleEvent) HandleEvent(ectx *ExecutionContext, evt events.AuditEvent)
 	result := &plugin.HandleEventResponse{}
 
 	// Execute handleEvent method
-	err := e.protobufInterop.ExecuteProtobufMethod(ectx, request, e.handleEvent, result)
+	err := ectx.ExecuteProtobufMethod(request, e.handleEvent, result)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}

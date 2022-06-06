@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/gogo/protobuf/proto"
 	"github.com/gravitational/trace"
 	"github.com/sirupsen/logrus"
 	"github.com/wasmerio/wasmer-go/wasmer"
@@ -78,4 +79,31 @@ func (i *ExecutionContext) wait(ctx context.Context, timeout time.Duration, fn E
 	i.CurrentContext = nil
 
 	return fnResult, fnErr
+}
+
+// ExecuteProtobufMethod executes abitary WASM method which has a single proto.Message argument and a single
+// proto.Message return value. Method must be bound to the same execution context.
+func (ectx *ExecutionContext) ExecuteProtobufMethod(request proto.Message, fn NativeFunctionWithExecutionContext, target proto.Message) error {
+	handle, err := ectx.MemoryInterop.SendMessage(ectx, request)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	// Get the result
+	resultHandle, err := fn(ectx, handle)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	if resultHandle.I32() == 0 {
+		return trace.Errorf("SendMessage returned nil handle")
+	}
+
+	// Get the response
+	err = ectx.MemoryInterop.ReceiveMessage(ectx, resultHandle, target)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	return nil
 }

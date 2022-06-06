@@ -1,11 +1,11 @@
 {
     "type": "types.OneOf",
-    "description": "session.start",
+    "description": "Database session start",
     "data": {
         "DatabaseSessionStart": {
             "Metadata": {
                 "Index": "1",
-                "Type": "Session start",
+                "Type": "db.session.start",
                 "ID": "{{ uuid }}",
                 "Code": "{{ uuid }}",
                 "Time": "{{ time }}",

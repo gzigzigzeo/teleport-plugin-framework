@@ -31,12 +31,11 @@ type TeleportClient interface {
 // TeleportAPITrait represents Teleport API functions bound to the specific instance
 type TeleportAPI struct {
 	client TeleportClient
-	pb     *ProtobufInterop
 }
 
 // NewTeleportAPI creates new NewTeleportAPI collection instance
-func NewTeleportAPI(client TeleportClient, protobufInterop *ProtobufInterop) *TeleportAPI {
-	return &TeleportAPI{pb: protobufInterop, client: client}
+func NewTeleportAPI(client TeleportClient) *TeleportAPI {
+	return &TeleportAPI{client: client}
 }
 
 // RegisterExports registers protobuf interop exports (nothing in our case)
@@ -59,7 +58,7 @@ func (e *TeleportAPI) upsertLock(ectx *ExecutionContext, args []wasmer.Value) ([
 
 	handle := args[0]
 
-	err := e.pb.ReceiveMessage(ectx, handle, lock)
+	err := ectx.MemoryInterop.ReceiveMessage(ectx, handle, lock)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}

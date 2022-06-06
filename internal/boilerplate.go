@@ -34,7 +34,7 @@ func (e Exceptions) Has(a string) bool {
 }
 
 // GenerateBoilerplate generates boilerplate setup for plugin framework
-func GenerateBoilerplate(fs embed.FS, targetDir string) {
+func GenerateBoilerplate(fs embed.FS, targetDir string, example string) {
 	fmt.Println("[1] Checking node & yarn versions...")
 
 	// Check node version
@@ -109,6 +109,15 @@ func GenerateBoilerplate(fs embed.FS, targetDir string) {
 		bail("%v", trace.Wrap(err))
 	}
 
+	if example != "" {
+		err = initExample(example, targetDir)
+		if err != nil {
+			bail("%v", trace.Wrap(err))
+		}
+
+		fmt.Printf("Example %v copied...\n\n", example)
+	}
+
 	fmt.Printf("Now you can run: cd %v && yarn test\n\n", targetDir)
 
 	// TODO: Replace with the actual docs
@@ -117,6 +126,59 @@ func GenerateBoilerplate(fs embed.FS, targetDir string) {
 	fmt.Printf("Happy hacking!")
 
 	fmt.Println()
+}
+
+func initExample(name string, targetDir string) error {
+	assemblyDir := path.Join(targetDir, "examples", name, "assembly")
+	targetAssemblyDir := path.Join(targetDir, "assembly")
+	fixturesDir := path.Join(targetDir, "examples", name, "fixtures")
+	targetFixturesDir := path.Join(targetDir, "fixtures")
+
+	err := cpDir(assemblyDir, targetAssemblyDir, map[string]string{"../../..": ".."})
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	err = cpDir(fixturesDir, targetFixturesDir, nil)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	return nil
+}
+
+// cpDir copies directory content to target location on real fs, non-hierarchically
+func cpDir(src, dst string, replacements map[string]string) error {
+	entries, err := os.ReadDir(src)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	for _, entry := range entries {
+		targetName := path.Join(dst, entry.Name())
+
+		err = cp(path.Join(src, entry.Name()), targetName)
+		if err != nil {
+			return trace.Wrap(err)
+		}
+
+		if (replacements != nil) && (len(replacements) > 0) {
+			content, err := os.ReadFile(targetName)
+			if err != nil {
+				return trace.Wrap(err)
+			}
+
+			for what, with := range replacements {
+				content = []byte(strings.ReplaceAll(string(content), what, with))
+			}
+
+			err = os.WriteFile(targetName, content, perms)
+			if err != nil {
+				return trace.Wrap(err)
+			}
+		}
+	}
+	return nil
 }
 
 // cp copies src file to dst from local file system

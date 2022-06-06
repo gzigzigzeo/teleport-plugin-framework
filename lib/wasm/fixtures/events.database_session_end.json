@@ -5,7 +5,7 @@
         "DatabaseSessionEnd": {
             "Metadata": {
                 "Index": "1",
-                "Type": "session.end",
+                "Type": "db.session.end",
                 "ID": "{{ uuid }}",
                 "Code": "{{ uuid }}",
                 "Time": "{{ time }}",

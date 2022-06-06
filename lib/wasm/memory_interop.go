@@ -3,6 +3,7 @@ package wasm
 import (
 	"encoding/binary"
 
+	"github.com/gogo/protobuf/proto"
 	"github.com/gravitational/trace"
 	"github.com/wasmerio/wasmer-go/wasmer"
 	"golang.org/x/text/encoding/unicode"
@@ -23,8 +24,12 @@ type MemoryInterop interface {
 	PutString(ectx *ExecutionContext, value string) (wasmer.Value, error)
 	// GetSize gets memory segment size
 	Len(ectx *ExecutionContext, value wasmer.Value) int32
-	// New allocates memory on WASM side. typ represents object type, omit if not required.
+	// New allocates memory on WASM side. typ represents object type, omit if not required
 	New(ectx *ExecutionContext, byteSize int, typ int) (wasmer.Value, error)
+	// SendMessage allocates memory and copies proto.Message to the AS side, returns memory address
+	SendMessage(ectx *ExecutionContext, message proto.Message) (wasmer.Value, error)
+	// ReceiveMessage decodes message from WASM side. Type of the message must be known onset
+	ReceiveMessage(ectx *ExecutionContext, arrayBuffer wasmer.Value, message proto.Message) error
 }
 
 // AssemblyScriptMemoryInterop represents struct which works with AssemblyScript memory
@@ -101,4 +106,42 @@ func (m *AssemblyScriptMemoryInterop) Len(ectx *ExecutionContext, value wasmer.V
 // New allocates object by length and type
 func (m *AssemblyScriptMemoryInterop) New(ectx *ExecutionContext, byteSize int, typ int) (wasmer.Value, error) {
 	return m.new(ectx, wasmer.NewI32(byteSize), wasmer.NewI32(AssemblyScriptString))
+}
+
+// SendMessage allocates memory and copies proto.Message to the AS side, returns memory address
+func (m *AssemblyScriptMemoryInterop) SendMessage(ectx *ExecutionContext, message proto.Message) (wasmer.Value, error) {
+	size := proto.Size(message)
+	bytes, err := proto.Marshal(message)
+	if err != nil {
+		return wasmer.NewI32(0), trace.Wrap(err)
+	}
+
+	arrayBuffer, err := m.New(ectx, size, AssemblyScriptArrayBuffer)
+	if err != nil {
+		return wasmer.NewI32(0), trace.Wrap(err)
+	}
+
+	arrayBufferAddr := arrayBuffer.I32()
+
+	// DMA copy
+	memory := ectx.Memory.Data()
+	copy(memory[arrayBufferAddr:], bytes)
+
+	return arrayBuffer, nil
+}
+
+// ReceiveMessage decodes message from WASM side. Type of the message must be known onset.
+func (m *AssemblyScriptMemoryInterop) ReceiveMessage(ectx *ExecutionContext, arrayBuffer wasmer.Value, message proto.Message) error {
+	len := ectx.MemoryInterop.Len(ectx, arrayBuffer)
+
+	bytes := make([]byte, len)
+	memory := ectx.Memory.Data()
+	copy(bytes, memory[arrayBuffer.I32():arrayBuffer.I32()+len])
+
+	err := proto.Unmarshal(bytes, message)
+	if err != nil {
+		return trace.Wrap(err, "Protobuf unmarshal error")
+	}
+
+	return nil
 }

@@ -15670,8 +15670,8 @@ export class MFADevice {
   public u2f: U2FDevice | null;
   public webauthn: WebauthnDevice | null;
 
-  public __oneOf_device: string = "";
-  public __oneOf_device_index: u8 = 0;
+  public __device: string = "";
+  public __device_index: u8 = 0;
 
   static readonly DEVICE_TOTP_INDEX: u8 = 8;
   static readonly DEVICE_U2F_INDEX: u8 = 9;
@@ -15758,8 +15758,8 @@ export class MFADevice {
           );
           decoder.skip(length);
 
-          obj.__oneOf_device = "totp";
-          obj.__oneOf_device_index = 8;
+          obj.__device = "totp";
+          obj.__device_index = 8;
           break;
         }
         case 9: {
@@ -15773,8 +15773,8 @@ export class MFADevice {
           );
           decoder.skip(length);
 
-          obj.__oneOf_device = "u2f";
-          obj.__oneOf_device_index = 9;
+          obj.__device = "u2f";
+          obj.__device_index = 9;
           break;
         }
         case 10: {
@@ -15788,8 +15788,8 @@ export class MFADevice {
           );
           decoder.skip(length);
 
-          obj.__oneOf_device = "webauthn";
-          obj.__oneOf_device_index = 10;
+          obj.__device = "webauthn";
+          obj.__device_index = 10;
           break;
         }
 

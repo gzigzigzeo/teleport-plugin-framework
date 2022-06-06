@@ -3,7 +3,7 @@
   "version": "9.0.1",
   "description": "Teleport WASM plugin framework",
   "engines": {
-    "node": ">= 16.13 <19"
+    "node": ">= 16.13 <17"
   },
   "devDependencies": {
     "@types/node": "~16.11.6",

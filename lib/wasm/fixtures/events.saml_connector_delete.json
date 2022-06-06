@@ -1,6 +1,6 @@
 {
     "type": "types.OneOf",
-    "events": "SAML connector deleted",
+    "description": "SAML connector deleted",
     "data": {
         "SAMLConnectorDelete": {
             "Metadata": {
